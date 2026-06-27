@@ -8,17 +8,18 @@
 
 A simple, fast, and responsive web converter for world currencies and popular cryptocurrencies, featuring 13 languages and dark mode support.
 
-<!-- Real-time GitHub Star Widget -->
-<iframe src="https://ghbtns.com/github-btn.html?user=graf4444&repo=currency-converter&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub Stars"></iframe>
-
-### ⭐ Support the Project
-If you like this project and find it useful, please **give it a star**! It helps more people discover the app and motivates me to add new features.
+⭐ **If you like this project, please support it by giving it a star! It motivates me to add new features.**
 
 ---
 
 ### 🌍 Live Demo
 The application is deployed and ready to use:
 👉 **[Open Currency Converter](https://graf4444.github.io/currency-converter/)**
+
+<p align="center">
+  <img src="assets/desktop-screenshot.png" alt="Desktop Version" width="55%" style="vertical-align: middle; margin-right: 10px;">
+  <img src="assets/mobile-screenshot.png" alt="Mobile Version" width="28%" style="vertical-align: middle;">
+</p>
 
 ---
 
@@ -27,8 +28,13 @@ The application is deployed and ready to use:
 * **No Ads & No Registration:** Open and use instantly without annoying banners or creating an account.
 * **PWA Support (Installable):** You can install the app directly onto your smartphone, tablet, or PC home screen as a standalone application.
 * **Offline Mode:** Works flawlessly without an internet connection using cached exchange rates.
-* **Multilingual:** Fully translated into 13 languages for global convenience.
 * **Smart Storage:** Automatically remembers your last selected currencies and theme preferences.
+
+<details>
+<summary><b>🌐 Supported Languages (13) — Click to expand</b></summary>
+
+* English, Русский, Deutsch, Français, Español, Italiano, Português, Türkçe, 简体中文, 日本語, 한국어, العربية, हिन्दी
+</details>
 
 ---
 
@@ -61,17 +67,18 @@ If you find a bug, have an idea, or want to add a feature:
 
 Простой, быстрый и адаптивный веб-конвертер валют и популярных криптовалют с поддержкой 13 языков и темной темы.
 
-<!-- Живой виджет звезд GitHub -->
-<iframe src="https://ghbtns.com/github-btn.html?user=graf4444&repo=currency-converter&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub Stars"></iframe>
-
-### ⭐ Поддержать проект
-Если вам понравился конвертер, пожалуйста, **поставьте звезду (star)** репозиторию! Это помогает проекту развиваться, поднимает его в поиске и мотивирует меня добавлять новые фичи.
+⭐ **Если вам понравился проект, пожалуйста, поддержите его звездой! Это мотивирует меня добавлять новые фичи.**
 
 ---
 
 ### 🌍 Онлайн демо
 Проект уже развернут и доступен для использования:
 👉 **[Открыть Конвертер Валют](https://graf4444.github.io/currency-converter/)**
+
+<p align="center">
+  <img src="assets/desktop-screenshot.png" alt="Версия для ПК" width="55%" style="vertical-align: middle; margin-right: 10px;">
+  <img src="assets/mobile-screenshot.png" alt="Мобильная версия" width="28%" style="vertical-align: middle;">
+</p>
 
 ---
 
@@ -80,8 +87,13 @@ If you find a bug, have an idea, or want to add a feature:
 * **Без рекламы и регистрации** — открыл и сразу пользуешься, без баннеров и создания аккаунтов.
 * **Поддержка PWA (Установка на устройство)** — приложение можно установить на главный экран смартфона, планшета или ПК как обычную программу.
 * **Оффлайн-режим** — полноценно работает без интернета на основе закэшированных курсов валют.
-* **Мультиязычность** — интерфейс переведен на 13 языков.
 * **Умное сохранение** — приложение запоминает выбранные вами валюты и настройки темы при следующем открытии.
+
+<details>
+<summary><b>🌐 Поддерживаемые языки (13) — Нажмите, чтобы открыть</b></summary>
+
+* Английский, Русский, Немецкий, Французский, Испанский, Итальянский, Португальский, Турецкий, Китайский, Японский, Корейский, Арабский, Хинди
+</details>
 
 ---
 
@@ -103,6 +115,8 @@ If you find a bug, have an idea, or want to add a feature:
 ### 📢 Поделиться проектом
 [![Telegram](https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/share/url?url=https://github.com/graf4444/currency-converter&text=Крутой%20конвертер%20валют%20без%20рекламы%20и%20регистрации!)
 [![VK](https://img.shields.io/badge/ВКонтакте-4C75A3?style=for-the-badge&logo=vk&logoColor=white)](https://vk.com/share.php?url=https://github.com/graf4444/currency-converter)
-[![X](https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/intent/tweet?url=https://github.com/graf4444/currency-converter&text=Highly%20recommend%20this%20minimalist%20currency%20converter!)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https://github.com/graf4444/currency-converter)
+[![Reddit](https://img.shields.io/badge/Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https://github.com/graf4444/currency-converter&title=Отличный%20Конвертер%20Валют%20и%20Криптовалют)
+[![X](https://img.shields.io/badge/X-000000?style=for-the-badge&logo=x&logoColor=white)](https://x.com/intent/tweet?url=https://github.com/graf4444/currency-converter&text=Рекомендую%20этот%20минималистичный%20конвертер%20валют!)
 [![Facebook](https://img.shields.io/badge/Facebook-1877F2?style=for-the-badge&logo=facebook&logoColor=white)](https://www.facebook.com/sharer/sharer.php?u=https://github.com/graf4444/currency-converter)
 [![WhatsApp](https://img.shields.io/badge/WhatsApp-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)](https://api.whatsapp.com/send?text=Отличный%20конвертер%20валют%20без%20рекламы:%20https://github.com/graf4444/currency-converter)
