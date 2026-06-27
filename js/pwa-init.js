@@ -36,6 +36,8 @@ function updatePWAManifest() {
     manifestLink.href = manifestURL;
 }
 
+updatePWAManifest();
+
 // Регистрация Service Worker
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

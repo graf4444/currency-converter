@@ -1,12 +1,14 @@
 {
-  "theme_color": "#0071e3",
-  "background_color": "#f5f5f7",
+  "name": "Currency Converter",
+  "short_name": "Converter",
+  "description": "A convenient fiat and cryptocurrency converter with offline support.",
+  "lang": "en-US",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "scope": "/",
-  "start_url": "/index.html",
-  "name": "Конвертер валют",
-  "short_name": "Конвертер",
-  "description": "Удобный конвертер валют и криптовалют с поддержкой оффлайн-режима",
+  "orientation": "portrait",
+  "background_color": "#f5f5f7",
+  "theme_color": "#0071e3",
   "icons": [
     {
       "src": "https://cdn-icons-png.flaticon.com/512/13974/13974002.png",

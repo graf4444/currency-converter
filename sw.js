@@ -2,7 +2,10 @@ const CACHE_NAME = 'currency-converter-v1';
 const ASSETS = [
   './',
   './index.html',
-  './constants.js',
+  './css/style.css',
+  './js/constants.js',
+  './js/pwa-init.js',
+  './js/app.js',
   'https://cdn-icons-png.flaticon.com/512/13974/13974002.png'
 ];
 
