@@ -8,8 +8,13 @@
 
 A simple, fast, and responsive web converter for world currencies and popular cryptocurrencies, featuring 13 languages and dark mode support.
 
-[![GitHub stars](https://img.shields.io/github/stars/graf4444/currency-converter?style=flat-square)](https://github.com/graf4444/currency-converter/stargazers)
-[![GitHub license](https://img.shields.io/github/license/graf4444/currency-converter?style=flat-square)](https://github.com/graf4444/currency-converter/blob/main/LICENSE)
+<!-- Real-time GitHub Star Widget -->
+<iframe src="https://ghbtns.com/github-btn.html?user=graf4444&repo=currency-converter&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub Stars"></iframe>
+
+### ⭐ Support the Project
+If you like this project and find it useful, please **give it a star**! It helps more people discover the app and motivates me to add new features.
+
+---
 
 ### 🌍 Live Demo
 The application is deployed and ready to use:
@@ -56,8 +61,13 @@ If you find a bug, have an idea, or want to add a feature:
 
 Простой, быстрый и адаптивный веб-конвертер валют и популярных криптовалют с поддержкой 13 языков и темной темы.
 
-[![GitHub stars](https://img.shields.io/github/stars/graf4444/currency-converter?style=flat-square)](https://github.com/graf4444/currency-converter/stargazers)
-[![GitHub license](https://img.shields.io/github/license/graf4444/currency-converter?style=flat-square)](https://github.com/graf4444/currency-converter/blob/main/LICENSE)
+<!-- Живой виджет звезд GitHub -->
+<iframe src="https://ghbtns.com/github-btn.html?user=graf4444&repo=currency-converter&type=star&count=true&size=large" frameborder="0" scrolling="0" width="170" height="30" title="GitHub Stars"></iframe>
+
+### ⭐ Поддержать проект
+Если вам понравился конвертер, пожалуйста, **поставьте звезду (star)** репозиторию! Это помогает проекту развиваться, поднимает его в поиске и мотивирует меня добавлять новые фичи.
+
+---
 
 ### 🌍 Онлайн демо
 Проект уже развернут и доступен для использования:
