@@ -3,222 +3,766 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мини-Конвертер</title>
-    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2344/2344132.png">
+    <title>Universal Currency Converter</title>
+    <link class="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2344/2344132.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     
     <style>
         :root {
-            --bg-color: #121212;
-            --card-color: #1e1e1e;
-            --text-color: #e0e0e0;
-            --accent-color: #00adb5;
+            --bg: #f5f5f7; --card: #ffffff; --text: #1d1d1f; --text-muted: #86868b; --accent: #0071e3; --border: #d2d2d7;
         }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 500px; }
+        [data-theme="dark"] {
+            --bg: #000000; --card: #1c1c1e; --text: #f5f5f7; --text-muted: #86868b; --accent: #2997ff; --border: #333336;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; transition: background 0.2s, color 0.1s; }
+        body { background-color: var(--bg); color: var(--text); padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 480px; display: flex; flex-direction: column; min-height: 90vh; }
         
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px 0; }
-        h1 { font-size: 1.5rem; color: var(--accent-color); }
-        
-        .status { font-size: 0.8rem; opacity: 0.6; padding: 4px 8px; border-radius: 4px; }
-        .online { background: #2e7d32; }
-        .offline { background: #c62828; }
+        h1 { font-size: 1.5rem; font-weight: 700; }
+        .controls { display: flex; gap: 12px; align-items: center; }
+        .theme-toggle { background: none; border: none; font-size: 1.3rem; cursor: pointer; }
+        .lang-select { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; font-size: 0.85rem; outline: none; cursor: pointer; }
 
-        /* Стили списка избранного */
-        .currency-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
-        .currency-card { background: var(--card-color); padding: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; }
-        .currency-info { display: flex; align-items: center; gap: 10px; }
-        .currency-code { font-weight: bold; font-size: 1.2rem; }
-        .remove-btn { background: none; border: none; color: #ff5252; cursor: pointer; font-size: 1.2rem; padding: 0 5px; }
+        .currency-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+        .currency-card { background: var(--card); padding: 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.01); }
+        .currency-meta { display: flex; align-items: center; gap: 12px; min-width: 40%; user-select: none; }
+        .flag { font-size: 2rem; width: 40px; text-align: center; display: inline-block; }
+        .code-name { display: flex; flex-direction: column; overflow: hidden; }
+        .c-code { font-weight: 700; font-size: 1.1rem; }
+        .c-name { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        .currency-input { background: #2d2d2d; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 8px; font-size: 1.3rem; text-align: right; width: 60%; font-variant-numeric: tabular-nums; }
-        .currency-input:focus { border-color: var(--accent-color); outline: none; }
+        .right-block { display: flex; align-items: center; gap: 10px; width: 60%; justify-content: flex-end; overflow: hidden; }
+        .currency-input { background: transparent; border: none; color: var(--text); padding: 5px 0; font-size: 1.4rem; text-align: right; width: 100%; font-variant-numeric: tabular-nums; font-weight: 500; min-width: 0; }
+        .currency-input:focus { outline: none; }
+        .clear-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; opacity: 0.3; padding: 0 4px; display: none; flex-shrink: 0; }
+        .clear-btn.visible { display: inline-block; }
+        .clear-btn:hover { opacity: 0.7; }
 
-        /* Кнопка добавления */
-        .add-selector { width: 100%; padding: 12px; background: var(--card-color); border: 1px dashed var(--accent-color); color: var(--accent-color); border-radius: 12px; font-size: 1rem; cursor: pointer; text-align: center; }
-        select { background: var(--card-color); color: var(--text-color); border: 1px solid #444; padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; font-size: 1rem; display: none;}
+        .add-btn { width: 100%; padding: 14px; background: var(--card); border: 1px dashed var(--accent); color: var(--accent); border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; text-align: center; margin-bottom: 20px; }
+        footer { margin-top: auto; text-align: center; font-size: 0.8rem; color: var(--text-muted); padding: 15px 0; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); z-index: 100; justify-content: center; align-items: flex-end; }
+        .modal-content { background: var(--card); width: 100%; max-width: 500px; height: 85vh; border-radius: 24px 24px 0 0; display: flex; flex-direction: column; padding: 20px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .close-modal { background: none; border: none; font-size: 1rem; color: var(--accent); font-weight: 600; cursor: pointer; }
+        .search-input { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 1rem; margin-bottom: 15px; }
+        .search-input:focus { outline: none; border-color: var(--accent); }
+        
+        .search-results { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+        .section-title { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .section-block { display: flex; flex-direction: column; gap: 8px; }
+
+        .search-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 12px; background: var(--bg); border: 1px solid transparent; }
+        .search-item.clickable { cursor: pointer; }
+        .search-item.clickable:hover { border-color: var(--accent); }
+        .action-icon { font-size: 1.4rem; font-weight: bold; padding-right: 5px; width: 24px; text-align: center; cursor: pointer; }
+
+        /* Стили для перетаскивания элементов */
+        .search-item.dragging { opacity: 0.5; background: var(--border); border: 1px dashed var(--accent); }
+        .drag-handle { cursor: grab; font-size: 1.2rem; color: var(--text-muted); padding: 0 8px; user-select: none; }
+        .drag-handle:active { cursor: grabbing; }
+        .search-item-left { display: flex; align-items: center; gap: 4px; flex-grow: 1; }
+
+        .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--text-muted); border-radius: 50%; border-top-color: transparent; animation: spin 0.8s linear infinite; margin-left: 5px; display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
-<body>
+<body data-theme="dark">
 
 <div class="container">
     <header>
-        <h1>Валюты</h1>
-        <span id="network-status" class="status online">Онлайн</span>
+        <h1 id="ui-title">Курсы валют</h1>
+        <div class="controls">
+            <select class="lang-select" id="lang-picker" onchange="changeLang(this.value)">
+                <option value="ru">🇷🇺 Русский (RU)</option>
+                <option value="en">🇺🇸 English (EN)</option>
+                <option value="es">🇪🇸 Español (ES)</option>
+                <option value="fr">🇫🇷 Français (FR)</option>
+                <option value="de">🇩🇪 Deutsch (DE)</option>
+                <option value="it">🇮🇹 Italiano (IT)</option>
+                <option value="pt">🇧🇷 Português (PT)</option>
+                <option value="tr">🇹🇷 Türkçe (TR)</option>
+                <option value="zh">🇨🇳 中文 (ZH)</option>
+                <option value="ja">🇯🇵 日本語 (JA)</option>
+                <option value="ko">🇰🇷 한국어 (KO)</option>
+                <option value="hi">🇮🇳 हिन्दी (HI)</option>
+                <option value="ar">🇸🇦 العربية (AR)</option>
+            </select>
+            <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">☀️</button>
+        </div>
     </header>
 
     <div id="favorites-container" class="currency-list"></div>
 
-    <button class="add-selector" id="show-select-btn">+ Добавить валюту</button>
-    <select id="currency-picker">
-        <option value="" disabled selected>Выберите валюту...</option>
-    </select>
+    <button class="add-btn" id="ui-add-btn" onclick="openModal()">+ Добавить валюту или крипту</button>
+
+    <footer>
+        <span id="sync-status">Синхронизация...</span><div class="spinner" id="loader"></div>
+        <div id="last-update" style="margin-top: 4px;"></div>
+    </footer>
+</div>
+
+<div class="modal" id="search-modal" onclick="if(event.target===this) closeModal()">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="ui-modal-title">Настройка списка</h3>
+            <button class="close-modal" id="ui-close-btn" onclick="closeModal()">Готово</button>
+        </div>
+        <input type="text" class="search-input" id="search-bar" placeholder="Поиск..." oninput="filterCurrencies()">
+        
+        <div class="search-results">
+            <div id="added-section">
+                <div class="section-title" id="ui-section-added">Ваши валюты</div>
+                <div class="section-block" id="added-container"></div>
+            </div>
+            <div id="available-section">
+                <div class="section-title" id="ui-section-available">Доступные валюты</div>
+                <div class="section-block" id="available-container"></div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    // Конфигурация бесплатного API без ключей
+    const i18n = {
+        ru: { title: "Курсы валют", add: "Настройка списка валют", searchTitle: "Управление списком", close: "Готово", searchPlaceholder: "Поиск по коду или названию...", sync: "Обновление...", online: "Данные актуальны (Сеть)", offline: "Автономный режим (Кэш)", updated: "Обновлено: ", secAdded: "Ваши валюты", secAvailable: "Доступно для добавления" },
+        en: { title: "Currency Rates", add: "Manage Currency List", searchTitle: "Manage List", close: "Done", searchPlaceholder: "Search code or name...", sync: "Syncing...", online: "Rates are live (Network)", offline: "Offline Mode (Cache)", updated: "Updated: ", secAdded: "Your Currencies", secAvailable: "Available to Add" },
+        es: { title: "Tipos de Cambio", add: "Gestionar Lista", searchTitle: "Gestionar Lista", close: "Hecho", searchPlaceholder: "Buscar...", sync: "Sincronizando...", online: "Datos en vivo (Red)", offline: "Modo offline (Caché)", updated: "Actualizado: ", secAdded: "Mis Divisas", secAvailable: "Disponibles" },
+        fr: { title: "Taux de Change", add: "Gérer la liste", searchTitle: "Gérer la liste", close: "Terminé", searchPlaceholder: "Rechercher...", sync: "Synchro...", online: "Données en direct (Réseau)", offline: "Mode hors ligne (Cache)", updated: "Mis à jour: ", secAdded: "Vos devises", secAvailable: "Disponibles" },
+        de: { title: "Wechselkurse", add: "Liste verwalten", searchTitle: "Liste verwalten", close: "Fertig", searchPlaceholder: "Suchen...", sync: "Synchronisieren...", online: "Kurse live (Netzwerk)", offline: "Offline-Modus (Cache)", updated: "Aktualisiert: ", secAdded: "Ihre Währungen", secAvailable: "Verfügbar" },
+        it: { title: "Tassi di Cambio", add: "Gestisci Lista", searchTitle: "Gestisci Lista", close: "Fatto", searchPlaceholder: "Cerca...", sync: "Sincronizzazione...", online: "Dati in tempo reale (Rete)", offline: "Modalità offline (Cache)", updated: "Aggiornato: ", secAdded: "Le tue valute", secAvailable: "Disponibili" },
+        pt: { title: "Taxas de Câmbio", add: "Gerenciar Lista", searchTitle: "Gerenciar Lista", close: "Concluído", searchPlaceholder: "Buscar...", sync: "Sincronizando...", online: "Dados в tempo real (Rede)", offline: "Modo offline (Cache)", updated: "Actualizado: ", secAdded: "Minhas Moedas", secAvailable: "Disponibles" },
+        tr: { title: "Döviz Kurları", add: "Listeyi Yönet", searchTitle: "Listeyi Yönet", close: "Bitti", searchPlaceholder: "Ara...", sync: "Senkronize ediliyor...", online: "Veriler canlı (Ağ)", offline: "Çevrimdışı (Önbelleк)", updated: "Güncellendi: ", secAdded: "Paralarınız", secAvailable: "Eklenebilir" },
+        zh: { title: "汇率行情", add: "管理货币列表", searchTitle: "管理列表", close: "完成", searchPlaceholder: "搜索代码或名称...", sync: "同步中...", online: "数据已实时更新 (网络)", offline: "离线模式 (缓存)", updated: "更新时间: ", secAdded: "我的货币", secAvailable: "可添加货币" },
+        ja: { title: "為替レート", add: "リストを管理", searchTitle: "リストを管理", close: "完了", searchPlaceholder: "検索...", sync: "同期中...", online: "ライブ (ネットワーク)", offline: "オフライン (キャッシュ)", updated: "更新日時: ", secAdded: "选择中", secAvailable: "追加可能" },
+        ko: { title: "환율 정보", add: "리스트 관리", searchTitle: "리스트 관리", close: "完了", searchPlaceholder: "검색...", sync: "동기화 중...", online: "실시간 (네트워크)", offline: "오ф라인 (캐си)", updated: "업데이트: ", secAdded: "내 통화", secAvailable: "추가 가능" },
+        hi: { title: "विदेशी मुद्रा दरें", add: "सूची प्रबंधित करें", searchTitle: "सूची प्रबंधन", close: "हो गया", searchPlaceholder: "خोजें...", sync: "सिнк हो रहा है...", online: "डेटा लाइव है", offline: "ऑफ़ライン मोड", updated: "अद्यतन: ", secAdded: "आपकी मुद्राएं", secAvailable: "जोड़ने के लिए उपलब्ध" },
+        ar: { title: "أسعار العملات", add: "إدارة القائمة", searchTitle: "إماء القائمة", close: "تم", searchPlaceholder: "بحث...", sync: "جاري المزامنة...", online: "البيانات مباشرة", offline: "وضع 오ф라인", updated: "آخر تحديث: ", secAdded: "عملاتك", secAvailable: "متاح للإضافة" }
+    };
+
+    const currencyDb = {
+        "USD": { f: "🇺🇸", n: { ru: "Доллар США", en: "US Dollar" } },
+        "EUR": { f: "🇪🇺", n: { ru: "Евро", en: "Euro" } },
+        "RUB": { f: "🇷🇺", n: { ru: "Российский рубль", en: "Russian Ruble" } },
+        "BYN": { f: "🇧🇾", n: { ru: "Белорусский рубль", en: "Belarusian Ruble" } },
+        "KZT": { f: "🇰🇿", n: { ru: "Казахстанский тенге", en: "Kazakhstani Tenge" } },
+        "UAH": { f: "🇺🇦", n: { ru: "Украинская гривна", en: "Ukrainian Hryvnia" } },
+        "AMD": { f: "🇦🇲", n: { ru: "Армянский драм", en: "Armenian Dram" } },
+        "GEL": { f: "🇬🇪", n: { ru: "Грузинский лари", en: "Georgian Lari" } },
+        "UZS": { f: "🇺🇿", n: { ru: "Узбекский сум", en: "Uzbekistani Som" } },
+        "KGS": { f: "🇰🇬", n: { ru: "Киргизский сом", en: "Kyrgyzstani Som" } },
+        "TJS": { f: "🇹☉", n: { ru: "Таджикский сомони", en: "Tajikistani Somoni" } },
+        "AZN": { f: "🇦🇿", n: { ru: "Азербайджанский манат", en: "Azerbaijani Manat" } },
+        "MDL": { f: "🇲🇩", n: { ru: "Moldovan Leu", en: "Moldovan Leu" } },
+        "AED": { f: "🇦🇪", n: { ru: "Дирхам ОАЭ", en: "UAE Dirham" } },
+        "TRY": { f: "🇹🇷", n: { ru: "Турецкая лира", en: "Turkish Lira" } },
+        "CNY": { f: "🇨🇳", n: { ru: "Китайский юань", en: "Chinese Yuan" } },
+        "GBP": { f: "🇬🇧", n: { ru: "Фунт стерлингов", en: "British Pound" } },
+        "CAD": { f: "🇨🇦", n: { ru: "Канадский доллар", en: "Canadian Dollar" } },
+        "AUD": { f: "🇦🇺", n: { ru: "Австралийский доллар", en: "Australian Dollar" } },
+        "CHF": { f: "🇨🇭", n: { ru: "Швейцарский франк", en: "Swiss Franc" } },
+        "JPY": { f: "🇯🇵", n: { ru: "Японская иена", en: "Japanese Yen" } },
+        "INR": { f: "🇮🇳", n: { ru: "Индийская рупия", en: "Indian Rupee" } },
+        "KRW": { f: "🇰🇷", n: { ru: "Южнокорейская вона", en: "South Korean Won" } },
+        "BRL": { f: "🇧🇷", n: { ru: "Бразильский реал", en: "Brazilian Real" } },
+        "ILS": { f: "🇮🇱", n: { ru: "Новый израильский шекель", en: "Israeli Shekel" } },
+        "PLN": { f: "🇵🇱", n: { ru: "Польский злотый", en: "Polish Zloty" } },
+        "THB": { f: "🇹🇭", n: { ru: "Тайский бат", en: "Thai Baht" } },
+        
+        "AFN": { f: "🇦🇫", n: { ru: "Афганский афгани", en: "Afghan Afghani" } },
+        "ALL": { f: "🇦🇱", n: { ru: "Албанский лек", en: "Albanian Lek" } },
+        "ANG": { f: "🇨🇼", n: { ru: "Нидерландский антильский гульден", en: "Netherlands Antillean Guilder" } },
+        "AOA": { f: "🇦🇴", n: { ru: "Ангольская кванза", en: "Angolan Kwanza" } },
+        "ARS": { f: "🇦🇷", n: { ru: "Аргентинское песо", en: "Argentine Peso" } },
+        "AWG": { f: "🇦🇼", n: { ru: "Арубанский флорин", en: "Aruban Florin" } },
+        "BAM": { f: "🇧🇦", n: { ru: "Конвертируемая марка", en: "Bosnia-Herzegovina Mark" } },
+        "BBD": { f: "🇧🇧", n: { ru: "Барбадосский доллар", en: "Barbadian Dollar" } },
+        "BDT": { f: "🇧🇩", n: { ru: "Бангладешская taka", en: "Bankladeshi Taka" } },
+        "BGN": { f: "🇧🇬", n: { ru: "Болгарский лев", en: "Bulgarian Lev" } },
+        "BHD": { f: "🇧🇭", n: { ru: "Бахрейнский динар", en: "Bahraini Dinar" } },
+        "BIF": { f: "🇧🇮", n: { ru: "Бурундийский франк", en: "Burundian Franc" } },
+        "BMD": { f: "🇧🇲", n: { ru: "Бермудский доллар", en: "Bermudian Dollar" } },
+        "BND": { f: "🇧🇳", n: { ru: "Брунейский доллар", en: "Brunei Dollar" } },
+        "BOB": { f: "🇧🇴", n: { ru: "Боливийский боливиано", en: "Bolivian Boliviano" } },
+        "BSD": { f: "🇧🇸", n: { ru: "Багамский доллар", en: "Bahamian Dollar" } },
+        "BTN": { f: "🇧🇹", n: { ru: "Бутанский нгултрум", en: "Bhutanese Ngultrum" } },
+        "BWP": { f: "🇧🇼", n: { ru: "Ботсванская пула", en: "Botswanan Pula" } },
+        "BZD": { f: "🇧🇿", n: { ru: "Белизский доллар", en: "Belize Dollar" } },
+        "CDF": { f: "🇨🇩", n: { ru: "Конголезский франк", en: "Congolese Franc" } },
+        "CLP": { f: "🇨🇱", n: { ru: "Чилийское песо", en: "Chilean Peso" } },
+        "COP": { f: "🇨🇴", n: { ru: "Колумбийское песо", en: "Colombian Peso" } },
+        "CRC": { f: "🇨🇷", n: { ru: "Коста-риканский колон", en: "Costa Rican Colón" } },
+        "CUP": { f: "🇨🇺", n: { ru: "Кубинское песо", en: "Cuban Peso" } },
+        "CVE": { f: "🇨🇻", n: { ru: "Эскудо Кабо-Верде", en: "Cape Verdean Escudo" } },
+        "CZK": { f: "🇨🇿", n: { ru: "Чешская крона", en: "Czech Koruna" } },
+        "DJF": { f: "🇩🇯", n: { ru: "Франк Джибути", en: "Djiboutian Franc" } },
+        "DKK": { f: "🇩🇰", n: { ru: "Датская крона", en: "Danish Krone" } },
+        "DOP": { f: "🇩🇴", n: { ru: "Доминиканское песо", en: "Dominican Peso" } },
+        "DZD": { f: "🇩🇿", n: { ru: "Алжирский динар", en: "Algerian Dinar" } },
+        "EGP": { f: "🇪🇬", n: { ru: "Египетский фунт", en: "Egyptian Pound" } },
+        "ERN": { f: "🇪🇷", n: { ru: "Эритрейская накфа", en: "Eritrean Nakfa" } },
+        "ETB": { f: "🇪🇹", n: { ru: "Эфиопский быр", en: "Ethiopian Birr" } },
+        "FJD": { f: "🇫🇯", n: { ru: "Доллар Фиджи", en: "Fijian Dollar" } },
+        "FKP": { f: "🇫🇰", n: { ru: "Фунт Фолклендских островов", en: "Falkland Islands Pound" } },
+        "FOK": { f: "🇫🇴", n: { ru: "Фарерская крона", en: "Faroese Króna" } },
+        "GHS": { f: "🇬🇭", n: { ru: "Ганский седи", en: "Ghanaian Cedi" } },
+        "GIP": { f: "🇬🇮", n: { ru: "Гибралтарский фунт", en: "Gibraltar Pound" } },
+        "GMD": { f: "🇬🇲", n: { ru: "Гамбийский даласи", en: "Gambian Dalasi" } },
+        "GNF": { f: "🇬🇳", n: { ru: "Гвинейский франк", en: "Guinean Franc" } },
+        "GTQ": { f: "🇬🇹", n: { ru: "Гватемальский кетсаль", en: "Guatemalan Quetzal" } },
+        "GYD": { f: "🇬🇾", n: { ru: "Гайанский доллар", en: "Guyanese Dollar" } },
+        "HKD": { f: "🇭🇰", n: { ru: "Гонконгский доллар", en: "Hong Kong Dollar" } },
+        "HNL": { f: "🇭🇳", n: { ru: "Гондурасская лемпира", en: "Honduran Lempira" } },
+        "HRK": { f: "🇭🇷", n: { ru: "Хорватская куна", en: "Croatian Kuna" } },
+        "HTG": { f: "🇭🇹", n: { ru: "Гаитянский гурд", en: "Haitian Gourde" } },
+        "HUF": { f: "🇭🇺", n: { ru: "Венгерский форинт", en: "Hungarian Forint" } },
+        "IDR": { f: "🇮🇩", n: { ru: "Индонезийская рупия", en: "Indonesian Rupiah" } },
+        "IQD": { f: "🇮🇶", n: { ru: "Иракский динар", en: "Iraqi Dinar" } },
+        "IRR": { f: "🇮🇷", n: { ru: "Иранский риал", en: "Iranian Rial" } },
+        "ISK": { f: "🇮🇸", n: { ru: "Исландская крона", en: "Icelandic Króna" } },
+        "JMD": { f: "🇯🇲", n: { ru: "Ямайский доллар", en: "Jamaican Dollar" } },
+        "JOD": { f: "🇯🇴", n: { ru: "Иорданский динар", en: "Jordanian Dinar" } },
+        "KES": { f: "🇰🇪", n: { ru: "Кенийский шиллинг", en: "Kenyan Shilling" } },
+        "KHR": { f: "🇰🇭", n: { ru: "Камбоджийский риель", en: "Cambodian Riel" } },
+        "KID": { f: "🇰🇮", n: { ru: "Доллар Кирибати", en: "Kiribati Dollar" } },
+        "KMF": { f: "🇰🇲", n: { ru: "Коморский франк", en: "Comorian Franc" } },
+        "KPW": { f: "🇰🇵", n: { ru: "Северокорейская вона", en: "North Korean Won" } },
+        "KWD": { f: "🇰🇼", n: { ru: "Кувейтский динар", en: "Kuwaiti Dinar" } },
+        "KYD": { f: "🇰🇾", n: { ru: "Доллар Каймановых островов", en: "Cayman Islands Dollar" } },
+        "LAK": { f: "🇱🇦", n: { ru: "Лаосский кип", en: "Laotian Kip" } },
+        "LBP": { f: "🇱🇧", n: { ru: "Ливанский фунт", en: "Lebanese Pound" } },
+        "LKR": { f: "🇱👑", n: { ru: "Шри-Ланкийская рупия", en: "Sri Lankan Rupee" } },
+        "LRD": { f: "🇱🇷", n: { ru: "Либерийский доллар", en: "Liberian Dollar" } },
+        "LSL": { f: "🇱🇸", n: { ru: "Лесотский лоти", en: "Lesotho Loti" } },
+        "LYD": { f: "🇱🇾", n: { ru: "Ливийский динар", en: "Libyan Dinar" } },
+        "MAD": { f: "🇲🇦", n: { ru: "Марокканский дирхам", en: "Moroccan Dirham" } },
+        "MGA": { f: "🇲🇬", n: { ru: "Малагасийский ариари", en: "Malagasy Ariary" } },
+        "MKD": { f: "🇲🇰", n: { ru: "Македонский денар", en: "Macedonian Denar" } },
+        "MMK": { f: "🇲🇲", n: { ru: "Мьянманский кьят", en: "Myanmar Kyat" } },
+        "MNT": { f: "🇲🇳", n: { ru: "Монгольский тугрик", en: "Mongolian Tugrik" } },
+        "MOP": { f: "🇲🇴", n: { ru: "Патака Макао", en: "Macanese Pataca" } },
+        "MRU": { f: "🇲🇷", n: { ru: "Мавританская угия", en: "Mauritanian Ouguiya" } },
+        "MUR": { f: "🇲🇺", n: { ru: "Маврикийская рупия", en: "Mauritian Rupee" } },
+        "MVR": { f: "🇲🇻", n: { ru: "Maldivian Rufiyaa", en: "Maldivian Rufiyaa" } },
+        "MWK": { f: "🇲🇼", n: { ru: "Малавийская квача", en: "Malawian Kwacha" } },
+        "MXN": { f: "🇲🇽", n: { ru: "Мексиканское песо", en: "Mexican Peso" } },
+        "MYR": { f: "🇲🇾", n: { ru: "Малайзийский ринггит", en: "Malaysian Ringgit" } },
+        "MZN": { f: "🇲🇿", n: { ru: "Мозамбикский метикал", en: "Mozambican Metical" } },
+        "NAD": { f: "🇳🇦", n: { ru: "Доллар Намибии", en: "Namibian Dollar" } },
+        "NGN": { f: "🇳🇬", n: { ru: "Нигерийская найра", en: "Nigerian Naira" } },
+        "NIO": { f: "🇳🇮", n: { ru: "Никарагуанская кордоба", en: "Nicaraguan Córdoba" } },
+        "NOK": { f: "🇳🇴", n: { ru: "Норвежская крона", en: "Norwegian Krone" } },
+        "NPR": { f: "🇳🇵", n: { ru: "Непальская рупия", en: "Nepalese Rupee" } },
+        "NZD": { f: "🇳🇿", n: { ru: "Новозеландский доллар", en: "New Zealand Dollar" } },
+        "OMR": { f: "🇴🇲", n: { ru: "Оманский риал", en: "Oman Rate" } },
+        "PAB": { f: "🇵🇦", n: { ru: "Панамское бальбоа", en: "Panamanian Balboa" } },
+        "PEN": { f: "🇵🇪", n: { ru: "Перуанский соль", en: "Peruvian Sol" } },
+        "PGK": { f: "🇵🇬", n: { ru: "Кина Папуа-Новой Гвинеи", en: "Papua New Guinean Kina" } },
+        "PHP": { f: "🇵🇭", n: { ru: "Филиппинское песо", en: "Philippine Peso" } },
+        "PKR": { f: "🇵🇰", n: { ru: "Пакистанская рупия", en: "Pakistani Rupee" } },
+        "PYG": { f: "🇵🇾", n: { ru: "Парагвайский гуарани", en: "Paraguayan Guaraní" } },
+        "QAR": { f: "🇶🇦", n: { ru: "Катарский риал", en: "Qatari Riyal" } },
+        "RON": { f: "🇷🇴", n: { ru: "Румынский лей", en: "Romanian Leu" } },
+        "RSD": { f: "🇷🇸", n: { ru: "Сербский динар", en: "Serbian Dinar" } },
+        "RWF": { f: "🇷🇼", n: { ru: "Франк Руанды", en: "Rwandian Franc" } },
+        "SAR": { f: "🇸🇦", n: { ru: "Саудовский риял", en: "Saudi Riyal" } },
+        "SBD": { f: "🇸🇧", n: { ru: "Доллар Соломоновых островов", en: "Solomon Islands Dollar" } },
+        "SCR": { f: "🇸🇨", n: { ru: "Сейшельская рупия", en: "Seychellois Rupee" } },
+        "SDG": { f: "🇸🇩", n: { ru: "Суданский фунт", en: "Sudanese Pound" } },
+        "SEK": { f: "🇸🇪", n: { ru: "Шведская крона", en: "Swedish Krona" } },
+        "SGD": { f: "🇸🇬", n: { ru: "Сингапурский доллар", en: "Singapore Dollar" } },
+        "SHP": { f: "🇸🇭", n: { ru: "Фунт Святой Елены", en: "Saint Helena Pound" } },
+        "SLE": { f: "🇸🇱", n: { ru: "Леоне Сьерра-Леоне", en: "Sierra Leonean Leone" } },
+        "SLL": { f: "🇸🇱", n: { ru: "Леоне (старый)", en: "Sierra Leonean Leone" } },
+        "SOS": { f: "🇸🇴", n: { ru: "Сомалийский шиллинг", en: "Somali Shilling" } },
+        "SRD": { f: "🇸🇷", n: { ru: "Суринамский доллар", en: "Surinamese Dollar" } },
+        "SSP": { f: "🇸🇸", n: { ru: "Южносуданский фунт", en: "South Sudanese Pound" } },
+        "STN": { f: "🇸🇹", n: { ru: "Добра Сан-Томе и Принсипи", en: "São Tomé and Príncipe Dobra" } },
+        "SYP": { f: "🇸🇾", n: { ru: "Сирийский фунт", en: "Syrian Pound" } },
+        "SZL": { f: "🇸🇿", n: { ru: "Свазилендский лилангени", en: "Swazi Lilangeni" } },
+        "TMT": { f: "🇹🇲", n: { ru: "Туркменский манат", en: "Turkmenistan Manat" } },
+        "TND": { f: "🇹🇳", n: { ru: "Тунисский динар", en: "Tunisian Dinar" } },
+        "TOP": { f: "🇹🇴", n: { ru: "Тонганская паанга", en: "Tongan Paʻanga" } },
+        "TTD": { f: "🇹🇹", n: { ru: "Доллар Тринидада и Тобаго", en: "Trinidad and Tobago Dollar" } },
+        "TVD": { f: "🇹🇻", n: { ru: "Доллар Тувалу", en: "Tuvaluan Dollar" } },
+        "TWD": { f: "🇹🇼", n: { ru: "Новый тайваньский доллар", en: "New Taiwan Dollar" } },
+        "TZS": { f: "🇹🇿", n: { ru: "Танзанийский шиллинг", en: "Tanzanian Shilling" } },
+        "UGX": { f: "🇺🇬", n: { ru: "Угандийский шиллинг", en: "Ugandan Shilling" } },
+        "UYU": { f: "🇺🇾", n: { ru: "Уругвайское песо", en: "Uruguayan Peso" } },
+        "VND": { f: "🇻🇳", n: { ru: "Вьетнамский донг", en: "Vietnamese Đồng" } },
+        "VUV": { f: "🇻🇺", n: { ru: "Вануатский вату", en: "Vanuatu Vatu" } },
+        "WST": { f: "🇼🇸", n: { ru: "Самоанская тала", en: "Samoan Tālā" } },
+        "XAF": { f: "🇨🇲", n: { ru: "Франк КФА СЕАC", en: "Central African CFA Franc" } },
+        "XCD": { f: "🇦🇬", n: { ru: "Восточно-карибский доллар", en: "East Caribbean Dollar" } },
+        "XDR": { f: "🇺🇳", n: { ru: "СДР (Спец. права заимствования)", en: "Special Drawing Rights" } },
+        "XOF": { f: "🇨🇮", n: { ru: "Франк КФА ВСЕАО", en: "West African CFA franc" } },
+        "XPF": { f: "🇵🇫", n: { ru: "Франк КФП", en: "CFP Franc" } },
+        "YER": { f: "🇾🇪", n: { ru: "Йеменский риал", en: "Yemeni Rial" } },
+        "ZAR": { f: "🇿🇦", n: { ru: "Южноафриканский рэнд", en: "South African Rand" } },
+        "ZMW": { f: "🇿🇲", n: { ru: "Замбийская квача", en: "Zambian Kwacha" } },
+        "ZWL": { f: "🇿🇼", n: { ru: "Зимбабвийский доллар", en: "Zimbabwean Dollar" } },
+
+        "BTC":  { f: "₿",  n: { ru: "Bitcoin", en: "Bitcoin" }, id: "bitcoin" },
+        "ETH":  { f: "Ξ",  n: { ru: "Ethereum", en: "Ethereum" }, id: "ethereum" },
+        "USDT": { f: "₮",  n: { ru: "Tether USD", en: "Tether" }, id: "tether" },
+        "BNB":  { f: "🔶", n: { ru: "BNB", en: "BNB" }, id: "binancecoin" },
+        "SOL":  { f: "🟣", n: { ru: "Solana", en: "Solana" }, id: "solana" },
+        "USDC": { f: "🔵", n: { ru: "USD Coin", en: "USD Coin" }, id: "usd-coin" },
+        "XRP":  { f: "✕",  n: { ru: "Ripple", en: "XRP" }, id: "ripple" },
+        "ADA":  { f: "₳",  n: { ru: "Cardano", en: "Cardano" }, id: "cardano" },
+        "STETH": { f: "💧", n: { ru: "Lido Staked Ether", en: "Lido Staked Ether" }, id: "staked-ether" },
+        "AVAX": { f: "🔺", n: { ru: "Avalanche", en: "Avalanche" }, id: "avalanche-2" },
+        "DOGE": { f: "🐕", n: { ru: "Dogecoin", en: "Dogecoin" }, id: "dogecoin" },
+        "DOT":  { f: "●",  n: { ru: "Polkadot", en: "Polkadot" }, id: "polkadot" },
+        "TRX":  { f: "🔴", n: { ru: "TRON", en: "TRON" }, id: "tron" },
+        "LINK": { f: "⬡",  n: { ru: "Chainlink", en: "Chainlink" }, id: "chainlink" },
+        "TON":  { f: "💎", n: { ru: "Toncoin (Telegram)", en: "Toncoin" }, id: "the-open-network" },
+        "MATIC": { f: "💜", n: { ru: "Polygon MATIC", en: "Polygon" }, id: "polygon" },
+        "WBTC": { f: "🧡", n: { ru: "Wrapped Bitcoin", en: "Wrapped Bitcoin" }, id: "wrapped-bitcoin" },
+        "SHIB": { f: "🦊", n: { ru: "Shiba Inu", en: "Shiba Inu" }, id: "shiba-inu" },
+        "DAI":  { f: "🟡", n: { ru: "Dai Stablecoin", en: "Dai" }, id: "dai" },
+        "LTC":  { f: "Ł",  n: { ru: "Litecoin", en: "Litecoin" }, id: "litecoin" },
+        "BCH":  { f: "🟢", n: { ru: "Bitcoin Cash", en: "Bitcoin Cash" }, id: "bitcoin-cash" },
+        "ATOM": { f: "⚛️", n: { ru: "Cosmos", en: "CosmosHub" }, id: "cosmos" },
+        "LEO":  { f: "🦁", n: { ru: "LEO Token", en: "UNUS SED LEO" }, id: "unus-sed-leo" },
+        "UNI":  { f: "🦄", n: { ru: "Uniswap", en: "Uniswap" }, id: "uniswap" },
+        "XMR":  { f: "ɱ",  n: { ru: "Monero (Анонимная)", en: "Monero" }, id: "monero" },
+        "OKB":  { f: "🔵", n: { ru: "OKB Token", en: "OKB" }, id: "okb" },
+        "ETC":  { f: "🍀", n: { ru: "Ethereum Classic", en: "Ethereum Classic" }, id: "ethereum-classic" },
+        "ICP":  { f: "♾️", n: { ru: "Internet Computer", en: "Internet Computer" }, id: "internet-computer" },
+        "FIL":  { f: "⨎",  n: { ru: "Filecoin", en: "Filecoin" }, id: "filecoin" },
+        "LDO":  { f: "🦅", n: { ru: "Lido DAO", en: "Lido DAO" }, id: "lido-dao" },
+        
+        "PAXG": { f: "📀", n: { ru: "Pax Gold (Золото)", en: "Pax Gold" }, id: "pax-gold" },
+        "USDE": { f: "🖤", n: { ru: "Ethena USDe", en: "Ethena USDe" }, id: "ethena-usde" },
+        "FDUSD":{ f: "🟢", n: { ru: "First Digital USD", en: "First Digital USD" }, id: "first-digital-usd" },
+        "PYUSD":{ f: "🔵", n: { ru: "PayPal USD", en: "PayPal USD" }, id: "paypal-usd" }
+    };
+
     const API_URL = "https://open.er-api.com/v6/latest/USD";
-    
-    // Дефолтные настройки, если в кэше пусто
+
     let state = {
-        rates: { "USD": 1, "EUR": 0.92, "RUB": 92.5, "KZT": 450, "BYN": 3.25, "UAH": 39 }, // Заглушка
-        favorites: ['USD', 'EUR', 'RUB'],
+        theme: 'dark', lang: 'ru',
+        rates: { "USD": 1, "EUR": 0.92, "RUB": 92.5 }, 
+        favorites: ['USD', 'EUR', 'RUB', 'BTC', 'TON'],
         lastUpdated: ''
     };
 
-    // Инициализация данных из LocalStorage (Офлайн-кэш данных)
-    if (localStorage.getItem('converter_state')) {
-        state = JSON.parse(localStorage.getItem('converter_state'));
+    if (localStorage.getItem('conv_max_state')) {
+        state = JSON.parse(localStorage.getItem('conv_max_state'));
     }
 
-    const container = document.getElementById('favorites-container');
-    const picker = document.getElementById('currency-picker');
-    const showSelectBtn = document.getElementById('show-select-btn');
-    const statusLabel = document.getElementById('network-status');
+    function getCurrencyName(code) {
+        const item = currencyDb[code];
+        if (!item) return "Currency";
+        return item.n[state.lang] || item.n['en'] || item.n['ru'] || code;
+    }
 
-    // Пересчет всех полей на основе измененного
-    function recalculate(activeCode, value) {
-        if (value === '' || isNaN(value)) value = 0;
+    function applyLocalization() {
+        const t = i18n[state.lang] || i18n['en'];
+        document.getElementById('ui-title').textContent = t.title;
+        document.getElementById('ui-add-btn').textContent = "+ " + t.add;
+        document.getElementById('ui-modal-title').textContent = t.searchTitle;
+        document.getElementById('ui-close-btn').textContent = t.close;
+        document.getElementById('search-bar').placeholder = t.searchPlaceholder;
+        document.getElementById('lang-picker').value = state.lang;
+        document.getElementById('ui-section-added').textContent = t.secAdded;
+        document.getElementById('ui-section-available').textContent = t.secAvailable;
+    }
+
+    function changeLang(lang) {
+        state.lang = lang;
+        applyLocalization();
+        renderMain();
+        saveState();
+    }
+
+    function toggleTheme() {
+        state.theme = state.theme === 'dark' ? 'light' : 'dark';
+        document.body.setAttribute('data-theme', state.theme);
+        document.getElementById('theme-btn').textContent = state.theme === 'dark' ? '☀️' : '🌙';
+        saveState();
+    }
+    
+    document.body.setAttribute('data-theme', state.theme);
+    document.getElementById('theme-btn').textContent = state.theme === 'dark' ? '☀️' : '🌙';
+
+    function saveState() { 
+        state.favorites = [...new Set(state.favorites.filter(c => typeof c === 'string' && c.trim() !== ''))];
+        localStorage.setItem('conv_max_state', JSON.stringify(state)); 
+    }
+
+    // Хелпер: Красивое разделение пробелами + динамический авторазмер текста
+    function formatNumberString(str) {
+        if (!str) return '';
+        const parts = str.split('.');
+        // Форматируем целую часть группами по 3 цифры
+        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        return parts.join('.');
+    }
+
+    function parseCleanNumber(str) {
+        return str.replace(/\s/g, '');
+    }
+
+    function adjustFontSize(input) {
+        const len = input.value.length;
+        if (len > 16) {
+            input.style.fontSize = '0.85rem';
+        } else if (len > 11) {
+            input.style.fontSize = '1.1rem';
+        } else {
+            input.style.fontSize = '1.4rem';
+        }
+    }
+
+    function clearInput(code) {
+        const input = document.getElementById(`input-${code}`);
+        if (input) {
+            input.value = '';
+            input.style.fontSize = '1.4rem';
+            document.getElementById(`clear-${code}`).classList.remove('visible');
+            recalculate(code, '');
+        }
+    }
+
+    function recalculate(activeCode, rawValue) {
+        const cleanValue = parseCleanNumber(rawValue);
+        if (cleanValue === '' || isNaN(cleanValue)) return;
         
-        // Переводим введенное значение в базовую валюту (USD)
-        const valueInUSD = parseFloat(value) / state.rates[activeCode];
+        const valueInUSD = parseFloat(cleanValue) / state.rates[activeCode];
 
-        // Обновляем все остальные инпуты, кроме активного
         state.favorites.forEach(code => {
             if (code !== activeCode) {
                 const input = document.getElementById(`input-${code}`);
+                const clearBtn = document.getElementById(`clear-${code}`);
                 if (input) {
                     const result = valueInUSD * state.rates[code];
-                    // Округляем до 2 знаков, если это не целое
-                    input.value = Number(result.toFixed(2));
+                    let digits = 2;
+                    if (state.rates[code] < 0.001) digits = 6;
+                    else if (state.rates[code] < 0.1) digits = 4;
+                    
+                    const finalVal = parseFloat(cleanValue) === 0 ? '' : Number(result.toFixed(digits));
+                    
+                    if (finalVal === '') {
+                        input.value = '';
+                    } else {
+                        input.value = formatNumberString(finalVal.toString());
+                    }
+                    
+                    adjustFontSize(input);
+                    
+                    if (clearBtn) {
+                        if (input.value !== '') clearBtn.classList.add('visible');
+                        else clearBtn.classList.remove('visible');
+                    }
                 }
             }
         });
     }
 
-    // Рендер карточек на экран
-    function render() {
+    function renderMain() {
+        const container = document.getElementById('favorites-container');
         container.innerHTML = '';
-        
+
         state.favorites.forEach(code => {
+            const dbItem = currencyDb[code] || { f: "🏳️" };
+            const nameLocal = getCurrencyName(code);
             const card = document.createElement('div');
             card.className = 'currency-card';
             card.innerHTML = `
-                <div class="currency-info">
-                    <button class="remove-btn" onclick="removeFavorite('${code}')">×</button>
-                    <span class="currency-code">${code}</span>
+                <div class="currency-meta">
+                    <span class="flag">${dbItem.f}</span>
+                    <div class="code-name">
+                        <span class="c-code">${code}</span>
+                        <span class="c-name">${nameLocal}</span>
+                    </div>
                 </div>
-                <input type="number" inputmode="decimal" class="currency-input" id="input-${code}" placeholder="0" data-code="${code}">
+                <div class="right-block">
+                    <input type="text" inputmode="decimal" class="currency-input" id="input-${code}" placeholder="0" data-code="${code}" autocomplete="off">
+                    <button class="clear-btn" id="clear-${code}" onclick="clearInput('${code}')">×</button>
+                </div>
             `;
             container.appendChild(card);
         });
 
-        // Вешаем слушатели ввода
         document.querySelectorAll('.currency-input').forEach(input => {
             input.addEventListener('input', (e) => {
-                recalculate(e.target.dataset.code, e.target.value);
+                let val = e.target.value.replace(/,/g, '.');
+                // Удаляем всё кроме цифр, точек и пробелов
+                val = val.replace(/[^0-9. ]/g, ''); 
+                
+                // Извлекаем чистую строку без пробелов для манипуляций
+                let clean = parseCleanNumber(val);
+                const parts = clean.split('.');
+                if (parts.length > 2) clean = parts[0] + '.' + parts.slice(1).join('');
+                
+                // Переформатируем инпут пользователя с разделителями
+                if (clean !== '') {
+                    e.target.value = formatNumberString(clean);
+                } else {
+                    e.target.value = '';
+                }
+                
+                adjustFontSize(e.target);
+                
+                const clearBtn = document.getElementById(`clear-${e.target.dataset.code}`);
+                if (clearBtn) {
+                    if (e.target.value !== '') clearBtn.classList.add('visible');
+                    else clearBtn.classList.remove('visible');
+                }
+
+                if (clean === '') {
+                    // Если поле стерли, обнуляем остальные
+                    state.favorites.forEach(c => {
+                        if (c !== e.target.dataset.code) {
+                            const otherInput = document.getElementById(`input-${c}`);
+                            const otherClear = document.getElementById(`clear-${c}`);
+                            if (otherInput) { otherInput.value = ''; otherInput.style.fontSize = '1.4rem'; }
+                            if (otherClear) otherClear.classList.remove('visible');
+                        }
+                    });
+                } else {
+                    recalculate(e.target.dataset.code, clean);
+                }
             });
         });
+        
+        const currentT = i18n[state.lang] || i18n['en'];
+        document.getElementById('last-update').textContent = `${currentT.updated} ${state.lastUpdated || '-'}`;
+    }
 
-        // Заполняем селектор добавления всеми доступными валютами из API
-        picker.innerHTML = '<option value="" disabled selected>Выберите валюту...</option>';
-        Object.keys(state.rates).sort().forEach(code => {
-            if (!state.favorites.includes(code)) {
-                const opt = document.createElement('option');
-                opt.value = code;
-                opt.textContent = code;
-                picker.appendChild(opt);
+    function openModal() { document.getElementById('search-modal').style.display = 'flex'; filterCurrencies(); }
+    function closeModal() { document.getElementById('search-modal').style.display = 'none'; }
+
+    function toggleFavorite(code, shouldAdd) {
+        if (shouldAdd) {
+            if (!state.favorites.includes(code)) state.favorites.push(code);
+        } else {
+            state.favorites = state.favorites.filter(c => c !== code);
+        }
+        state.favorites = [...new Set(state.favorites.filter(Boolean))];
+        saveState();
+        renderMain();
+        filterCurrencies();
+    }
+
+    function setupDragAndDropHandlers() {
+        const container = document.getElementById('added-container');
+        let dragEl = null;
+        let activeTouchEl = null;
+
+        // --- ДЕСКТОПНЫЙ DRAG & DROP ---
+        container.addEventListener('dragstart', (e) => {
+            const item = e.target.closest('.search-item');
+            if (item) {
+                dragEl = item;
+                setTimeout(() => item.classList.add('dragging'), 0);
+            }
+        });
+
+        container.addEventListener('dragend', (e) => {
+            const item = e.target.closest('.search-item');
+            if (item) {
+                item.classList.remove('dragging');
+                saveNewOrder();
+            }
+        });
+
+        container.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (!dragEl) return;
+            const afterElement = getDragAfterElement(container, e.clientY);
+            if (afterElement == null) {
+                container.appendChild(dragEl);
+            } else {
+                container.insertBefore(dragEl, afterElement);
+            }
+        });
+
+        // --- МОБИЛЬНЫЙ DRAG & DROP ---
+        container.addEventListener('touchstart', (e) => {
+            if (e.target.classList.contains('drag-handle')) {
+                const item = e.target.closest('.search-item');
+                if (item) {
+                    activeTouchEl = item;
+                    item.classList.add('dragging');
+                }
+            }
+        }, { passive: true });
+
+        container.addEventListener('touchmove', (e) => {
+            if (!activeTouchEl) return;
+            e.preventDefault(); 
+            const touch = e.touches[0];
+            const afterElement = getDragAfterElement(container, touch.clientY);
+            if (afterElement == null) {
+                container.appendChild(activeTouchEl);
+            } else {
+                container.insertBefore(activeTouchEl, afterElement);
+            }
+        }, { passive: false });
+
+        container.addEventListener('touchend', () => {
+            if (activeTouchEl) {
+                activeTouchEl.classList.remove('dragging');
+                activeTouchEl = null;
+                saveNewOrder();
+            }
+        });
+    }
+
+    function getDragAfterElement(container, y) {
+        const draggableElements = [...container.querySelectorAll('.search-item:not(.dragging)')];
+        return draggableElements.reduce((closest, child) => {
+            const box = child.getBoundingClientRect();
+            const childCenter = box.top + box.height / 2;
+            
+            if (y < childCenter) {
+                const offset = y - box.top - (box.height * 0.25);
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                }
+            } else {
+                const offset = y - box.top - (box.height * 0.75);
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                }
+            }
+            return closest;
+        }, { offset: Number.NEGATIVE_INFINITY }).element;
+    }
+
+    function saveNewOrder() {
+        const currentOrder = [];
+        document.querySelectorAll('#added-container .search-item').forEach(item => {
+            if (item.dataset.code) {
+                currentOrder.push(item.dataset.code);
             }
         });
         
-        // Сохраняем текущее состояние в кэш
-        localStorage.setItem('converter_state', JSON.stringify(state));
+        const uniqueVisibleOrder = [...new Set(currentOrder)].filter(c => typeof c === 'string' && c.trim() !== '');
+        const visibleSet = new Set(uniqueVisibleOrder);
+        
+        const nonVisibleFavs = state.favorites.filter(code => !visibleSet.has(code));
+        
+        state.favorites = [...uniqueVisibleOrder, ...nonVisibleFavs];
+        saveState();
+        renderMain();
     }
 
-    // Управление списком избранного
-    function removeFavorite(code) {
-        state.favorites = state.favorites.filter(c => c !== code);
-        render();
+    function filterCurrencies() {
+        const query = document.getElementById('search-bar').value.toLowerCase();
+        const addedContainer = document.getElementById('added-container');
+        const availableContainer = document.getElementById('available-container');
+        
+        addedContainer.innerHTML = '';
+        availableContainer.innerHTML = '';
+
+        state.favorites = [...new Set(state.favorites.filter(Boolean))];
+
+        state.favorites.forEach(code => {
+            const dbItem = currencyDb[code];
+            if (!dbItem) return;
+            const nameLocal = getCurrencyName(code);
+
+            if (query && !code.toLowerCase().includes(query) && !nameLocal.toLowerCase().includes(query)) {
+                return;
+            }
+
+            const item = document.createElement('div');
+            item.className = 'search-item';
+            item.dataset.code = code;
+            item.draggable = true; 
+            item.innerHTML = `
+                <div class="search-item-left">
+                    <span class="drag-handle">☰</span>
+                    <div class="currency-meta" style="flex-grow:1;">
+                        <span class="flag">${dbItem.f}</span>
+                        <div class="code-name">
+                            <span class="c-code">${code}</span>
+                            <span class="c-name">${nameLocal}</span>
+                        </div>
+                    </div>
+                </div>
+                <span class="action-icon" style="color:#ff453a; user-select:none;" onclick="event.stopPropagation(); toggleFavorite('${code}', false)">−</span>
+            `;
+            addedContainer.appendChild(item);
+        });
+
+        Object.keys(currencyDb).forEach(code => {
+            if (state.favorites.includes(code)) return; 
+
+            const dbItem = currencyDb[code];
+            const nameLocal = getCurrencyName(code);
+
+            if (query && !code.toLowerCase().includes(query) && !nameLocal.toLowerCase().includes(query)) {
+                return;
+            }
+
+            const item = document.createElement('div');
+            item.className = 'search-item clickable';
+            item.onclick = () => toggleFavorite(code, true);
+            item.innerHTML = `
+                <div class="currency-meta">
+                    <span class="flag">${dbItem.f}</span>
+                    <div class="code-name">
+                        <span class="c-code">${code}</span>
+                        <span class="c-name">${nameLocal}</span>
+                    </div>
+                </div>
+                <span class="action-icon" style="color:var(--accent);">+</span>
+            `;
+            availableContainer.appendChild(item);
+        });
     }
 
-    showSelectBtn.addEventListener('click', () => {
-        picker.style.display = 'block';
-        showSelectBtn.style.display = 'none';
-    });
+    async function updateRates() {
+        const loader = document.getElementById('loader');
+        const status = document.getElementById('sync-status');
+        loader.style.display = 'inline-block';
+        const currentT = i18n[state.lang] || i18n['en'];
+        status.textContent = currentT.sync;
 
-    picker.addEventListener('change', (e) => {
-        const newCode = e.target.value;
-        if (newCode && !state.favorites.includes(newCode)) {
-            state.favorites.push(newCode);
-            render();
-        }
-        picker.style.display = 'none';
-        showSelectBtn.style.display = 'block';
-    });
-
-    // Запрос свежих курсов из сети
-    async function fetchRates() {
         try {
-            const res = await fetch(API_URL);
-            if (!res.ok) throw new Error('Ошибка сети');
-            const data = await res.getRaw || await res.json();
-            
-            state.rates = data.rates;
-            state.lastUpdated = data.time_last_update_utc;
-            statusLabel.textContent = "Обновлено";
-            statusLabel.className = "status online";
-            
-            render();
-        } catch (err) {
-            console.log("Работаем в офлайне, данные из кэша.", err);
-            statusLabel.textContent = "Офлайн (Кэш)";
-            statusLabel.className = "status offline";
-            render(); // Всё равно рендерим из LocalStorage
+            const resFiat = await fetch(API_URL);
+            const dataFiat = await resFiat.json();
+            let newRates = { ...dataFiat.rates };
+
+            const cryptoIds = Object.values(currencyDb).filter(item => item.id).map(item => item.id);
+            const resCrypto = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${cryptoIds.join(',')}&vs_currencies=usd`);
+            const dataCrypto = await resCrypto.json();
+
+            Object.keys(currencyDb).forEach(code => {
+                const apiId = currencyDb[code].id;
+                if (apiId && dataCrypto && dataCrypto[apiId]) {
+                    newRates[code] = 1 / dataCrypto[apiId].usd;
+                }
+            });
+
+            state.rates = newRates;
+            state.lastUpdated = new Date().toLocaleString();
+            status.textContent = currentT.online;
+            saveState();
+        } catch (e) {
+            status.textContent = currentT.offline;
+        } finally {
+            loader.style.display = 'none';
+            renderMain();
         }
     }
 
-    // Отслеживание сети в реальном времени
-    window.addEventListener('online', fetchRates);
+    window.addEventListener('online', updateRates);
     window.addEventListener('offline', () => {
-        statusLabel.textContent = "Офлайн (Кэш)";
-        statusLabel.className = "status offline";
+        const currentT = i18n[state.lang] || i18n['en'];
+        document.getElementById('sync-status').textContent = currentT.offline;
     });
 
-    // Первый запуск
-    fetchRates();
-
-    // -------------------------------------------------------------------------
-    // СЕРВИС-ВОРКЕР (Магия полного Офлайна для работы без интернета вообще)
-    // -------------------------------------------------------------------------
-    const SW_CODE = `
-        const CACHE_NAME = 'currency-v1';
-        const ASSETS = [
-            './',
-            './index.html'
-        ];
-
-        self.addEventListener('install', e => {
-            e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
-        });
-
-        self.addEventListener('fetch', e => {
-            // Стратегия: Сначала сеть, если упала — берем из кэша саму страницу
-            e.respondWith(
-                fetch(e.request).catch(() => caches.match(e.request))
-            );
-        });
-    `;
-
-    // Саморегистрация сервис-воркера «на лету» без создания отдельного файла sw.js
-    if ('serviceWorker' in navigator) {
-        const blob = new Blob([SW_CODE], { type: 'application/javascript' });
-        const swUrl = URL.createObjectURL(blob);
-        navigator.serviceWorker.register(swUrl)
-            .then(() => console.log('Офлайн режим (ServiceWorker) готов!'))
-            .catch(err => console.log('Ошибка SW:', err));
-    }
+    setupDragAndDropHandlers();
+    applyLocalization();
+    updateRates();
 </script>
 
 </body>
