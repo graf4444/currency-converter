@@ -17,8 +17,10 @@ The application is deployed and ready to use:
 👉 **[Open Currency Converter](https://graf4444.github.io/currency-converter/)**
 
 <p align="center">
-  <img src="assets/desktop-screenshot.png" alt="Desktop Version" width="55%" style="vertical-align: middle; margin-right: 10px;">
-  <img src="assets/mobile-screenshot.png" alt="Mobile Version" width="28%" style="vertical-align: middle;">
+  <b>💻 Desktop Version</b><br>
+  <img src="assets/desktop-screenshot.png" alt="Desktop Version" width="80%"><br><br>
+  <b>📱 Mobile Version</b><br>
+  <img src="assets/mobile-screenshot.png" alt="Mobile Version" width="35%">
 </p>
 
 ---
@@ -76,8 +78,10 @@ If you find a bug, have an idea, or want to add a feature:
 👉 **[Открыть Конвертер Валют](https://graf4444.github.io/currency-converter/)**
 
 <p align="center">
-  <img src="assets/desktop-screenshot.png" alt="Версия для ПК" width="55%" style="vertical-align: middle; margin-right: 10px;">
-  <img src="assets/mobile-screenshot.png" alt="Мобильная версия" width="28%" style="vertical-align: middle;">
+  <b>💻 Версия для ПК</b><br>
+  <img src="assets/desktop-screenshot.png" alt="Версия для ПК" width="80%"><br><br>
+  <b>📱 Мобильная версия</b><br>
+  <img src="assets/mobile-screenshot.png" alt="Мобильная версия" width="35%">
 </p>
 
 ---
@@ -113,7 +117,7 @@ If you find a bug, have an idea, or want to add a feature:
 ---
 
 ### 📢 Поделиться проектом
-[![Telegram](https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/share/url?url=https://github.com/graf4444/currency-converter&text=Крутой%20конвертер%20валют%20без%20рекламы%20и%20регистрации!)
+[![Telegram](https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&weight=bold)](https://t.me/share/url?url=https://github.com/graf4444/currency-converter&text=Крутой%20конвертер%20валют%20без%20рекламы%20и%20регистрации!)
 [![VK](https://img.shields.io/badge/ВКонтакте-4C75A3?style=for-the-badge&logo=vk&logoColor=white)](https://vk.com/share.php?url=https://github.com/graf4444/currency-converter)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https://github.com/graf4444/currency-converter)
 [![Reddit](https://img.shields.io/badge/Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https://github.com/graf4444/currency-converter&title=Отличный%20Конвертер%20Валют%20и%20Криптовалют)
