@@ -1,100 +1,19 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Конвертер валют</title>
+    <title>Currency Converter</title>
     
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/13974/13974002.png">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/13974/13974002.png">
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Конвертер">
-    <meta name="application-name" content="Конвертер">
+    <meta name="apple-mobile-web-app-title" content="Converter">
+    <meta name="application-name" content="Converter">
     
-    <style>
-        :root {
-            --bg: #f5f5f7; --card: #ffffff; --text: #1d1d1f; --text-muted: #86868b; --accent: #0071e3; --border: #d2d2d7;
-        }
-        [data-theme="dark"] {
-            --bg: #000000; --card: #1c1c1e; --text: #f5f5f7; --text-muted: #86868b; --accent: #2997ff; --border: #333336;
-        }
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; transition: background 0.2s, color 0.1s; }
-        body { background-color: var(--bg); color: var(--text); padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .container { width: 100%; max-width: 480px; display: flex; flex-direction: column; min-height: 90vh; }
-        
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px 0; }
-        h1 { font-size: 1.5rem; font-weight: 700; }
-        .controls { display: flex; gap: 12px; align-items: center; }
-        .theme-toggle { background: none; border: none; font-size: 1.3rem; cursor: pointer; }
-        .lang-select { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; font-size: 0.85rem; outline: none; cursor: pointer; }
-
-        .currency-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        .currency-card { background: var(--card); padding: 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.01); }
-        .currency-meta { display: flex; align-items: center; gap: 12px; min-width: 40%; user-select: none; }
-        .flag { font-size: 2rem; width: 40px; text-align: center; display: inline-block; }
-        .code-name { display: flex; flex-direction: column; overflow: hidden; }
-        .c-code { font-weight: 700; font-size: 1.1rem; }
-        .c-name { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        .right-block { display: flex; align-items: center; gap: 10px; width: 60%; justify-content: flex-end; overflow: hidden; }
-        .currency-input { background: transparent; border: none; color: var(--text); padding: 5px 0; font-size: 1.4rem; text-align: right; width: 100%; font-variant-numeric: tabular-nums; font-weight: 500; min-width: 0; }
-        .currency-input:focus { outline: none; }
-        .clear-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; opacity: 0.3; padding: 0 4px; display: none; flex-shrink: 0; }
-        .clear-btn.visible { display: inline-block; }
-        .clear-btn:hover { opacity: 0.7; }
-
-        .add-btn { width: 100%; padding: 14px; background: var(--card); border: 1px dashed var(--accent); color: var(--accent); border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; text-align: center; margin-bottom: 20px; }
-        footer { margin-top: auto; text-align: center; font-size: 0.8rem; color: var(--text-muted); padding: 15px 0; }
-        
-        .github-badge { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 6px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; color: var(--text); font-weight: 500; text-decoration: none; font-size: 0.75rem; transition: transform 0.2s, border-color 0.2s; }
-        .github-badge:hover { border-color: var(--accent); transform: translateY(-1px); }
-        .github-badge svg { fill: currentColor; width: 14px; height: 14px; }
-
-        .github-corner { display: none; position: fixed; top: 0; right: 0; border: 0; z-index: 999; text-decoration: none; }
-        .github-corner svg { fill: var(--card); color: var(--text); position: absolute; top: 0; border: 0; right: 0; transition: fill 0.2s; border-bottom-left-radius: 4px; border-left: 1px solid var(--border); border-bottom: 1px solid var(--border); width: 110px; height: 110px; }
-        .github-corner:hover .octo-arm { animation: octocat-wave 560ms ease-in-out; }
-        
-        @keyframes octocat-wave {
-            0%, 100% { transform: rotate(0); }
-            20%, 60% { transform: rotate(-25deg); }
-            40%, 80% { transform: rotate(10deg); }
-        }
-
-        @media (min-width: 601px) {
-            .github-corner { display: block; }
-            .github-badge { display: none; }
-        }
-        
-        @media (min-width: 1440px) {
-            .github-corner svg { width: 140px; height: 140px; }
-        }
-
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); z-index: 100; justify-content: center; align-items: flex-end; }
-        .modal-content { background: var(--card); width: 100%; max-width: 500px; height: 85vh; border-radius: 24px 24px 0 0; display: flex; flex-direction: column; padding: 20px; }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .close-modal { background: none; border: none; font-size: 1rem; color: var(--accent); font-weight: 600; cursor: pointer; }
-        .search-input { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 1rem; margin-bottom: 15px; }
-        .search-input:focus { outline: none; border-color: var(--accent); }
-        
-        .search-results { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
-        .section-title { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .section-block { display: flex; flex-direction: column; gap: 8px; }
-
-        .search-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 12px; background: var(--bg); border: 1px solid transparent; }
-        .search-item.clickable { cursor: pointer; }
-        .search-item.clickable:hover { border-color: var(--accent); }
-        .action-icon { font-size: 1.4rem; font-weight: bold; padding-right: 5px; width: 24px; text-align: center; cursor: pointer; }
-
-        .search-item.dragging { opacity: 0.5; background: var(--border); border: 1px dashed var(--accent); }
-        .drag-handle { cursor: grab; font-size: 1.2rem; color: var(--text-muted); padding: 0 8px; user-select: none; }
-        .drag-handle:active { cursor: grabbing; }
-        .search-item-left { display: flex; align-items: center; gap: 4px; flex-grow: 1; }
-
-        .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--text-muted); border-radius: 50%; border-top-color: transparent; animation: spin 0.8s linear infinite; margin-left: 5px; display: none; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
@@ -108,11 +27,11 @@
 
 <div class="container">
     <header>
-        <h1 id="ui-title">Конвертер валют</h1>
+        <h1 id="ui-title">Currency Converter</h1>
         <div class="controls">
-            <select class="lang-select" id="lang-picker" onchange="changeLang(this.value)">
+            <select class="lang-select" id="lang-picker">
+                <option value="en" selected>🇺🇸 English (EN)</option>
                 <option value="ru">🇷🇺 Русский (RU)</option>
-                <option value="en">🇺🇸 English (EN)</option>
                 <option value="es">🇪🇸 Español (ES)</option>
                 <option value="fr">🇫🇷 Français (FR)</option>
                 <option value="de">🇩🇪 Deutsch (DE)</option>
@@ -125,16 +44,17 @@
                 <option value="hi">🇮🇳 हिन्दी (HI)</option>
                 <option value="ar">🇸🇦 العربية (AR)</option>
             </select>
-            <button class="theme-toggle" id="theme-btn" onclick="toggleTheme()">☀️</button>
+            <button class="theme-toggle" id="theme-btn">☀️</button>
         </div>
     </header>
 
     <div id="favorites-container" class="currency-list"></div>
 
-    <button class="add-btn" id="ui-add-btn" onclick="openModal()">+ Добавить валюту или крипту</button>
+    <button class="add-btn" id="ui-add-btn">+ Manage Currency List</button>
 
     <footer>
-        <span id="sync-status">Синхронизация...</span><div class="spinner" id="loader"></div>
+        <span id="sync-status">Syncing...</span>
+        <div class="spinner" id="loader"></div>
         <div id="last-update" style="margin-top: 4px;"></div>
         
         <a href="https://github.com/graf4444/currency-converter" target="_blank" class="github-badge">
@@ -144,552 +64,30 @@
     </footer>
 </div>
 
-<div class="modal" id="search-modal" onclick="if(event.target===this) closeModal()">
+<div class="modal" id="search-modal">
     <div class="modal-content">
         <div class="modal-header">
-            <h3 id="ui-modal-title">Настройка списка</h3>
-            <button class="close-modal" id="ui-close-btn" onclick="closeModal()">Готово</button>
+            <h3 id="ui-modal-title">Manage List</h3>
+            <button class="close-modal" id="ui-close-btn">Done</button>
         </div>
-        <input type="text" class="search-input" id="search-bar" placeholder="Поиск..." oninput="filterCurrencies()">
+        <input type="text" class="search-input" id="search-bar" placeholder="Search code or name...">
         
         <div class="search-results">
             <div id="added-section">
-                <div class="section-title" id="ui-section-added">Ваши валюты</div>
+                <div class="section-title" id="ui-section-added">Your Currencies</div>
                 <div class="section-block" id="added-container"></div>
             </div>
             <div id="available-section">
-                <div class="section-title" id="ui-section-available">Доступные валюты</div>
+                <div class="section-title" id="ui-section-available">Available to Add</div>
                 <div class="section-block" id="available-container"></div>
             </div>
         </div>
     </div>
 </div>
-<script src="constants.js"></script>
-<script>
-    const API_URL = "https://open.er-api.com/v6/latest/USD";
 
-    let state = {
-        theme: 'dark', lang: 'en',
-        rates: { "USD": 1, "EUR": 0.92, "RUB": 92.5 }, 
-        favorites: ['USD', 'EUR', 'RUB', 'BTC', 'TON'],
-        lastUpdated: ''
-    };
-
-    function initSystemSettings() {
-        const savedState = localStorage.getItem('conv_max_state');
-        if (savedState) {
-            state = JSON.parse(savedState);
-        } else {
-            const sysLang = navigator.language || navigator.userLanguage;
-            const shortLang = sysLang.split('-')[0].toLowerCase();
-            if (i18n[shortLang]) {
-                state.lang = shortLang;
-            } else {
-                state.lang = 'en';
-            }
-
-            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
-                state.theme = 'light';
-            } else {
-                state.theme = 'dark';
-            }
-            saveState();
-        }
-    }
-
-    initSystemSettings();
-    updatePWAManifest();
-
-    function getCurrencyName(code) {
-        const item = currencyDb[code];
-        if (!item) return code;
-        return item.n[state.lang] || item.n['en'] || code;
-    }
-
-    function applyLocalization() {
-        const t = i18n[state.lang] || i18n['en'];
-        document.getElementById('ui-title').textContent = t.title;
-        document.title = t.title; 
-        
-        document.querySelector('meta[name="apple-mobile-web-app-title"]').setAttribute("content", t.title);
-        document.querySelector('meta[name="application-name"]').setAttribute("content", t.title);
-
-        document.getElementById('ui-add-btn').textContent = "+ " + t.add;
-        document.getElementById('ui-modal-title').textContent = t.searchTitle;
-        document.getElementById('ui-close-btn').textContent = t.close;
-        document.getElementById('search-bar').placeholder = t.searchPlaceholder;
-        document.getElementById('lang-picker').value = state.lang;
-        document.getElementById('ui-section-added').textContent = t.secAdded;
-        document.getElementById('ui-section-available').textContent = t.secAvailable;
-    }
-        
-    // Функция генерации и обновления PWA манифеста на лету
-    function updatePWAManifest() {
-        // Берем переводы из твоего объекта i18n, если нет — берем английский
-        const t = i18n[state.lang] || i18n['en'];
-        const appName = t.title; // "Конвертер валют", "Currency Converter" и т.д.
-
-        const manifestObj = {
-            "id": "/currency-converter/",
-            "short_name": appName,
-            "name": appName,
-            "description": appName,
-            "icons": [
-                {
-                    "src": "https://cdn-icons-png.flaticon.com/512/13974/13974002.png",
-                    "sizes": "512x512",
-                    "type": "image/png",
-                    "purpose": "any maskable"
-                }
-            ],
-            "start_url": "./index.html",
-            "display": "standalone",
-            "theme_color": state.theme === 'dark' ? '#1c1c1e' : '#ffffff',
-            "background_color": state.theme === 'dark' ? '#000000' : '#f5f5f7',
-            "orientation": "portrait"
-        };
-
-        // Превращаем объект манифеста в Base64 Data URL
-        const manifestBlob = new Blob([JSON.stringify(manifestObj)], {type: 'application/json'});
-        const manifestURL = URL.createObjectURL(manifestBlob);
-
-        // Ищем старый тег манифеста или создаем новый
-        let manifestLink = document.getElementById('dynamic-manifest');
-        if (!manifestLink) {
-            manifestLink = document.createElement('link');
-            manifestLink.id = 'dynamic-manifest';
-            manifestLink.rel = 'manifest';
-            document.head.appendChild(manifestLink);
-        }
-        manifestLink.href = manifestURL;
-    }
-
-    // Регистрация Service Worker
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js')
-                .then(reg => console.log('Service Worker зарегистрирован', reg))
-                .catch(err => console.error('Ошибка SW', err));
-        });
-    }
-
-    function changeLang(lang) {
-        state.lang = lang;
-        applyLocalization();
-        renderMain();
-        updatePWAManifest();
-        saveState();
-    }
-
-    function toggleTheme() {
-        state.theme = state.theme === 'dark' ? 'light' : 'dark';
-        applyTheme();
-        updatePWAManifest();
-        saveState();
-    }
-
-    function applyTheme() {
-        document.body.setAttribute('data-theme', state.theme);
-        document.getElementById('theme-btn').textContent = state.theme === 'dark' ? '☀️' : '🌙';
-    }
-    
-    applyTheme();
-
-    function saveState() { 
-        state.favorites = [...new Set(state.favorites.filter(c => typeof c === 'string' && c.trim() !== ''))];
-        localStorage.setItem('conv_max_state', JSON.stringify(state)); 
-    }
-
-    function formatNumberString(str) {
-        if (!str) return '';
-        const parts = str.split('.');
-        parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-        return parts.join('.');
-    }
-
-    function parseCleanNumber(str) {
-        return str.replace(/\s/g, '');
-    }
-
-    function adjustFontSize(input) {
-        const len = input.value.length;
-        if (len > 16) {
-            input.style.fontSize = '0.85rem';
-        } else if (len > 11) {
-            input.style.fontSize = '1.1rem';
-        } else {
-            input.style.fontSize = '1.4rem';
-        }
-    }
-
-    function clearInput(code) {
-        state.favorites.forEach(c => {
-            const input = document.getElementById(`input-${c}`);
-            const clearBtn = document.getElementById(`clear-${c}`);
-            if (input) {
-                input.value = '';
-                input.style.fontSize = '1.4rem';
-            }
-            if (clearBtn) {
-                clearBtn.classList.remove('visible');
-            }
-        });
-    }
-
-    function recalculate(activeCode, rawValue) {
-        const cleanValue = parseCleanNumber(rawValue);
-        
-        if (cleanValue === '' || isNaN(cleanValue)) {
-            state.favorites.forEach(code => {
-                if (code !== activeCode) {
-                    const input = document.getElementById(`input-${code}`);
-                    const clearBtn = document.getElementById(`clear-${code}`);
-                    if (input) input.value = '';
-                    if (clearBtn) clearBtn.classList.remove('visible');
-                }
-            });
-            return;
-        }
-        
-        const valueInUSD = parseFloat(cleanValue) / state.rates[activeCode];
-
-        state.favorites.forEach(code => {
-            if (code !== activeCode) {
-                const input = document.getElementById(`input-${code}`);
-                const clearBtn = document.getElementById(`clear-${code}`);
-                if (input) {
-                    const result = valueInUSD * state.rates[code];
-                    let digits = 2;
-                    if (state.rates[code] < 0.001) digits = 6;
-                    else if (state.rates[code] < 0.1) digits = 4;
-                    
-                    const finalVal = parseFloat(cleanValue) === 0 ? '' : Number(result.toFixed(digits));
-                    
-                    if (finalVal === '') {
-                        input.value = '';
-                    } else {
-                        input.value = formatNumberString(finalVal.toString());
-                    }
-                    
-                    adjustFontSize(input);
-                    
-                    if (clearBtn) {
-                        if (input.value !== '') clearBtn.classList.add('visible');
-                        else clearBtn.classList.remove('visible');
-                    }
-                }
-            }
-        });
-    }
-
-    function renderMain() {
-        const container = document.getElementById('favorites-container');
-        container.innerHTML = '';
-
-        state.favorites.forEach(code => {
-            const dbItem = currencyDb[code] || { f: "🏳️" };
-            const nameLocal = getCurrencyName(code);
-            const card = document.createElement('div');
-            card.className = 'currency-card';
-            card.innerHTML = `
-                <div class="currency-meta">
-                    <span class="flag">${dbItem.f}</span>
-                    <div class="code-name">
-                        <span class="c-code">${code}</span>
-                        <span class="c-name">${nameLocal}</span>
-                    </div>
-                </div>
-                <div class="right-block">
-                    <input type="text" inputmode="decimal" class="currency-input" id="input-${code}" placeholder="0" data-code="${code}" autocomplete="off">
-                    <button class="clear-btn" id="clear-${code}" onclick="clearInput('${code}')">×</button>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-
-        document.querySelectorAll('.currency-input').forEach(input => {
-            input.addEventListener('input', (e) => {
-                let val = e.target.value.replace(/,/g, '.');
-                val = val.replace(/[^0-9. ]/g, ''); 
-                
-                let clean = parseCleanNumber(val);
-                clean = clean.replace(/^0+(?=\d)/, '');
-                
-                const parts = clean.split('.');
-                if (parts.length > 2) clean = parts[0] + '.' + parts.slice(1).join('');
-                
-                if (clean !== '') {
-                    e.target.value = formatNumberString(clean);
-                } else {
-                    e.target.value = '';
-                }
-                
-                adjustFontSize(e.target);
-                
-                const clearBtn = document.getElementById(`clear-${e.target.dataset.code}`);
-                if (clearBtn) {
-                    if (e.target.value !== '') clearBtn.classList.add('visible');
-                    else clearBtn.classList.remove('visible');
-                }
-
-                if (clean === '') {
-                    state.favorites.forEach(c => {
-                        if (c !== e.target.dataset.code) {
-                            const otherInput = document.getElementById(`input-${c}`);
-                            const otherClear = document.getElementById(`clear-${c}`);
-                            if (otherInput) { otherInput.value = ''; otherInput.style.fontSize = '1.4rem'; }
-                            if (otherClear) otherClear.classList.remove('visible');
-                        }
-                    });
-                } else {
-                    recalculate(e.target.dataset.code, clean);
-                }
-            });
-        });
-        
-        const currentT = i18n[state.lang] || i18n['en'];
-        document.getElementById('last-update').textContent = `${currentT.updated} ${state.lastUpdated || '-'}`;
-    }
-
-    function openModal() { document.getElementById('search-modal').style.display = 'flex'; filterCurrencies(); }
-    function closeModal() { document.getElementById('search-modal').style.display = 'none'; }
-
-    function toggleFavorite(code, shouldAdd) {
-        if (shouldAdd) {
-            if (!state.favorites.includes(code)) state.favorites.push(code);
-        } else {
-            state.favorites = state.favorites.filter(c => c !== code);
-        }
-        state.favorites = [...new Set(state.favorites.filter(Boolean))];
-        saveState();
-        renderMain();
-        filterCurrencies();
-    }
-
-    function setupDragAndDropHandlers() {
-        const container = document.getElementById('added-container');
-        let dragEl = null;
-        let activeTouchEl = null;
-
-        container.addEventListener('dragstart', (e) => {
-            const item = e.target.closest('.search-item');
-            if (item) {
-                dragEl = item;
-                setTimeout(() => item.classList.add('dragging'), 0);
-            }
-        });
-
-        container.addEventListener('dragend', (e) => {
-            const item = e.target.closest('.search-item');
-            if (item) {
-                item.classList.remove('dragging');
-                saveNewOrder();
-            }
-        });
-
-        container.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            if (!dragEl) return;
-            const afterElement = getDragAfterElement(container, e.clientY);
-            if (afterElement == null) {
-                container.appendChild(dragEl);
-            } else {
-                container.insertBefore(dragEl, afterElement);
-            }
-        });
-
-        container.addEventListener('touchstart', (e) => {
-            if (e.target.classList.contains('drag-handle')) {
-                const item = e.target.closest('.search-item');
-                if (item) {
-                    activeTouchEl = item;
-                    item.classList.add('dragging');
-                }
-            }
-        }, { passive: true });
-
-        container.addEventListener('touchmove', (e) => {
-            if (!activeTouchEl) return;
-            e.preventDefault(); 
-            const touch = e.touches[0];
-            const afterElement = getDragAfterElement(container, touch.clientY);
-            if (afterElement == null) {
-                container.appendChild(activeTouchEl);
-            } else {
-                container.insertBefore(activeTouchEl, afterElement);
-            }
-        }, { passive: false });
-
-        container.addEventListener('touchend', () => {
-            if (activeTouchEl) {
-                activeTouchEl.classList.remove('dragging');
-                activeTouchEl = null;
-                saveNewOrder();
-            }
-        });
-    }
-
-    function getDragAfterElement(container, y) {
-        const draggableElements = [...container.querySelectorAll('.search-item:not(.dragging)')];
-        return draggableElements.reduce((closest, child) => {
-            const box = child.getBoundingClientRect();
-            const childCenter = box.top + box.height / 2;
-            
-            if (y < childCenter) {
-                const offset = y - box.top - (box.height * 0.25);
-                if (offset < 0 && offset > closest.offset) {
-                    return { offset: offset, element: child };
-                }
-            } else {
-                const offset = y - box.top - (box.height * 0.75);
-                if (offset < 0 && offset > closest.offset) {
-                    return { offset: offset, element: child };
-                }
-            }
-            return closest;
-        }, { offset: Number.NEGATIVE_INFINITY }).element;
-    }
-
-    function saveNewOrder() {
-        const currentOrder = [];
-        document.querySelectorAll('#added-container .search-item').forEach(item => {
-            if (item.dataset.code) {
-                currentOrder.push(item.dataset.code);
-            }
-        });
-        
-        const uniqueVisibleOrder = [...new Set(currentOrder)].filter(c => typeof c === 'string' && c.trim() !== '');
-        const visibleSet = new Set(uniqueVisibleOrder);
-        
-        const nonVisibleFavs = state.favorites.filter(code => !visibleSet.has(code));
-        
-        state.favorites = [...uniqueVisibleOrder, ...nonVisibleFavs];
-        saveState();
-        renderMain();
-    }
-
-    // Проверяет, подходит ли валюта под поисковый запрос (ищет по коду и по ВСЕМ языкам из n)
-    function matchesQuery(code, dbItem, query) {
-        if (!query) return true;
-        if (code.toLowerCase().includes(query)) return true;
-        if (dbItem && dbItem.n) {
-            // Перебираем все языковые переводы для этой валюты
-            for (const lang in dbItem.n) {
-                if (dbItem.n[lang].toLowerCase().includes(query)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    function filterCurrencies() {
-        const query = document.getElementById('search-bar').value.toLowerCase().trim();
-        const addedContainer = document.getElementById('added-container');
-        const availableContainer = document.getElementById('available-container');
-        
-        addedContainer.innerHTML = '';
-        availableContainer.innerHTML = '';
-
-        state.favorites = [...new Set(state.favorites.filter(Boolean))];
-
-        state.favorites.forEach(code => {
-            const dbItem = currencyDb[code];
-            if (!dbItem) return;
-            const nameLocal = getCurrencyName(code);
-
-            if (!matchesQuery(code, dbItem, query)) return;
-
-            const item = document.createElement('div');
-            item.className = 'search-item';
-            item.dataset.code = code;
-            item.draggable = true; 
-            item.innerHTML = `
-                <div class="search-item-left">
-                    <span class="drag-handle">☰</span>
-                    <div class="currency-meta" style="flex-grow:1;">
-                        <span class="flag">${dbItem.f}</span>
-                        <div class="code-name">
-                            <span class="c-code">${code}</span>
-                            <span class="c-name">${nameLocal}</span>
-                        </div>
-                    </div>
-                </div>
-                <span class="action-icon" style="color:#ff453a; user-select:none;" onclick="event.stopPropagation(); toggleFavorite('${code}', false)">−</span>
-            `;
-            addedContainer.appendChild(item);
-        });
-
-        Object.keys(currencyDb).forEach(code => {
-            if (state.favorites.includes(code)) return; 
-
-            const dbItem = currencyDb[code];
-            const nameLocal = getCurrencyName(code);
-
-            if (!matchesQuery(code, dbItem, query)) return;
-
-            const item = document.createElement('div');
-            item.className = 'search-item clickable';
-            item.onclick = () => toggleFavorite(code, true);
-            item.innerHTML = `
-                <div class="currency-meta">
-                    <span class="flag">${dbItem.f}</span>
-                    <div class="code-name">
-                        <span class="c-code">${code}</span>
-                        <span class="c-name">${nameLocal}</span>
-                    </div>
-                </div>
-                <span class="action-icon" style="color:var(--accent);">+</span>
-            `;
-            availableContainer.appendChild(item);
-        });
-    }
-
-    async function updateRates() {
-        const loader = document.getElementById('loader');
-        const status = document.getElementById('sync-status');
-        loader.style.display = 'inline-block';
-        const currentT = i18n[state.lang] || i18n['en'];
-        status.textContent = currentT.sync;
-
-        try {
-            const resFiat = await fetch(API_URL);
-            const dataFiat = await resFiat.json();
-            let newRates = { ...dataFiat.rates };
-
-            const cryptoIds = Object.values(currencyDb).filter(item => item.id).map(item => item.id);
-            const resCrypto = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${cryptoIds.join(',')}&vs_currencies=usd`);
-            const dataCrypto = await resCrypto.json();
-
-            Object.keys(currencyDb).forEach(code => {
-                const apiId = currencyDb[code].id;
-                if (apiId && dataCrypto && dataCrypto[apiId]) {
-                    newRates[code] = 1 / dataCrypto[apiId].usd;
-                }
-            });
-
-            state.rates = newRates;
-            state.lastUpdated = new Date().toLocaleString();
-            status.textContent = currentT.online;
-            saveState();
-        } catch (e) {
-            status.textContent = currentT.offline;
-        } finally {
-            loader.style.display = 'none';
-            renderMain();
-        }
-    }
-
-    window.addEventListener('online', updateRates);
-    window.addEventListener('offline', () => {
-        const currentT = i18n[state.lang] || i18n['en'];
-        document.getElementById('sync-status').textContent = currentT.offline;
-    });
-
-    setupDragAndDropHandlers();
-    applyLocalization();
-    updateRates();
-</script>
+<script src="js/constants.js" defer></script>
+<script src="js/pwa-init.js" defer></script>
+<script src="js/app.js" defer></script>
 
 </body>
 </html>
