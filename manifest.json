@@ -1,6 +1,6 @@
 {
   "id": "/currency-converter/",
-  "short_name": "Converter",
+  "short_name": "Currency Converter",
   "name": "Currency Converter",
   "description": "Multi-currency converter with crypto support",
   "start_url": "./index.html",
