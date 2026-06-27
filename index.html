@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мини-Конвертер</title>
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2344/2344132.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-color: #1e1e1e;
+            --text-color: #e0e0e0;
+            --accent-color: #00adb5;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-color); padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 500px; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px 0; }
+        h1 { font-size: 1.5rem; color: var(--accent-color); }
+        
+        .status { font-size: 0.8rem; opacity: 0.6; padding: 4px 8px; border-radius: 4px; }
+        .online { background: #2e7d32; }
+        .offline { background: #c62828; }
+
+        /* Стили списка избранного */
+        .currency-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+        .currency-card { background: var(--card-color); padding: 15px; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; border: 1px solid #333; }
+        .currency-info { display: flex; align-items: center; gap: 10px; }
+        .currency-code { font-weight: bold; font-size: 1.2rem; }
+        .remove-btn { background: none; border: none; color: #ff5252; cursor: pointer; font-size: 1.2rem; padding: 0 5px; }
+        
+        .currency-input { background: #2d2d2d; border: 1px solid #444; color: #fff; padding: 10px; border-radius: 8px; font-size: 1.3rem; text-align: right; width: 60%; font-variant-numeric: tabular-nums; }
+        .currency-input:focus { border-color: var(--accent-color); outline: none; }
+
+        /* Кнопка добавления */
+        .add-selector { width: 100%; padding: 12px; background: var(--card-color); border: 1px dashed var(--accent-color); color: var(--accent-color); border-radius: 12px; font-size: 1rem; cursor: pointer; text-align: center; }
+        select { background: var(--card-color); color: var(--text-color); border: 1px solid #444; padding: 10px; border-radius: 8px; width: 100%; margin-top: 10px; font-size: 1rem; display: none;}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>Валюты</h1>
+        <span id="network-status" class="status online">Онлайн</span>
+    </header>
+
+    <div id="favorites-container" class="currency-list"></div>
+
+    <button class="add-selector" id="show-select-btn">+ Добавить валюту</button>
+    <select id="currency-picker">
+        <option value="" disabled selected>Выберите валюту...</option>
+    </select>
+</div>
+
+<script>
+    // Конфигурация бесплатного API без ключей
+    const API_URL = "https://open.er-api.com/v6/latest/USD";
+    
+    // Дефолтные настройки, если в кэше пусто
+    let state = {
+        rates: { "USD": 1, "EUR": 0.92, "RUB": 92.5, "KZT": 450, "BYN": 3.25, "UAH": 39 }, // Заглушка
+        favorites: ['USD', 'EUR', 'RUB'],
+        lastUpdated: ''
+    };
+
+    // Инициализация данных из LocalStorage (Офлайн-кэш данных)
+    if (localStorage.getItem('converter_state')) {
+        state = JSON.parse(localStorage.getItem('converter_state'));
+    }
+
+    const container = document.getElementById('favorites-container');
+    const picker = document.getElementById('currency-picker');
+    const showSelectBtn = document.getElementById('show-select-btn');
+    const statusLabel = document.getElementById('network-status');
+
+    // Пересчет всех полей на основе измененного
+    function recalculate(activeCode, value) {
+        if (value === '' || isNaN(value)) value = 0;
+        
+        // Переводим введенное значение в базовую валюту (USD)
+        const valueInUSD = parseFloat(value) / state.rates[activeCode];
+
+        // Обновляем все остальные инпуты, кроме активного
+        state.favorites.forEach(code => {
+            if (code !== activeCode) {
+                const input = document.getElementById(`input-${code}`);
+                if (input) {
+                    const result = valueInUSD * state.rates[code];
+                    // Округляем до 2 знаков, если это не целое
+                    input.value = Number(result.toFixed(2));
+                }
+            }
+        });
+    }
+
+    // Рендер карточек на экран
+    function render() {
+        container.innerHTML = '';
+        
+        state.favorites.forEach(code => {
+            const card = document.createElement('div');
+            card.className = 'currency-card';
+            card.innerHTML = `
+                <div class="currency-info">
+                    <button class="remove-btn" onclick="removeFavorite('${code}')">×</button>
+                    <span class="currency-code">${code}</span>
+                </div>
+                <input type="number" inputmode="decimal" class="currency-input" id="input-${code}" placeholder="0" data-code="${code}">
+            `;
+            container.appendChild(card);
+        });
+
+        // Вешаем слушатели ввода
+        document.querySelectorAll('.currency-input').forEach(input => {
+            input.addEventListener('input', (e) => {
+                recalculate(e.target.dataset.code, e.target.value);
+            });
+        });
+
+        // Заполняем селектор добавления всеми доступными валютами из API
+        picker.innerHTML = '<option value="" disabled selected>Выберите валюту...</option>';
+        Object.keys(state.rates).sort().forEach(code => {
+            if (!state.favorites.includes(code)) {
+                const opt = document.createElement('option');
+                opt.value = code;
+                opt.textContent = code;
+                picker.appendChild(opt);
+            }
+        });
+        
+        // Сохраняем текущее состояние в кэш
+        localStorage.setItem('converter_state', JSON.stringify(state));
+    }
+
+    // Управление списком избранного
+    function removeFavorite(code) {
+        state.favorites = state.favorites.filter(c => c !== code);
+        render();
+    }
+
+    showSelectBtn.addEventListener('click', () => {
+        picker.style.display = 'block';
+        showSelectBtn.style.display = 'none';
+    });
+
+    picker.addEventListener('change', (e) => {
+        const newCode = e.target.value;
+        if (newCode && !state.favorites.includes(newCode)) {
+            state.favorites.push(newCode);
+            render();
+        }
+        picker.style.display = 'none';
+        showSelectBtn.style.display = 'block';
+    });
+
+    // Запрос свежих курсов из сети
+    async function fetchRates() {
+        try {
+            const res = await fetch(API_URL);
+            if (!res.ok) throw new Error('Ошибка сети');
+            const data = await res.getRaw || await res.json();
+            
+            state.rates = data.rates;
+            state.lastUpdated = data.time_last_update_utc;
+            statusLabel.textContent = "Обновлено";
+            statusLabel.className = "status online";
+            
+            render();
+        } catch (err) {
+            console.log("Работаем в офлайне, данные из кэша.", err);
+            statusLabel.textContent = "Офлайн (Кэш)";
+            statusLabel.className = "status offline";
+            render(); // Всё равно рендерим из LocalStorage
+        }
+    }
+
+    // Отслеживание сети в реальном времени
+    window.addEventListener('online', fetchRates);
+    window.addEventListener('offline', () => {
+        statusLabel.textContent = "Офлайн (Кэш)";
+        statusLabel.className = "status offline";
+    });
+
+    // Первый запуск
+    fetchRates();
+
+    // -------------------------------------------------------------------------
+    // СЕРВИС-ВОРКЕР (Магия полного Офлайна для работы без интернета вообще)
+    // -------------------------------------------------------------------------
+    const SW_CODE = `
+        const CACHE_NAME = 'currency-v1';
+        const ASSETS = [
+            './',
+            './index.html'
+        ];
+
+        self.addEventListener('install', e => {
+            e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS)));
+        });
+
+        self.addEventListener('fetch', e => {
+            // Стратегия: Сначала сеть, если упала — берем из кэша саму страницу
+            e.respondWith(
+                fetch(e.request).catch(() => caches.match(e.request))
+            );
+        });
+    `;
+
+    // Саморегистрация сервис-воркера «на лету» без создания отдельного файла sw.js
+    if ('serviceWorker' in navigator) {
+        const blob = new Blob([SW_CODE], { type: 'application/javascript' });
+        const swUrl = URL.createObjectURL(blob);
+        navigator.serviceWorker.register(swUrl)
+            .then(() => console.log('Офлайн режим (ServiceWorker) готов!'))
+            .catch(err => console.log('Ошибка SW:', err));
+    }
+</script>
+
+</body>
+</html>
