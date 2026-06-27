@@ -1,20 +1,25 @@
 {
-  "name": "Currency Converter",
+  "id": "/currency-converter/",
   "short_name": "Converter",
-  "description": "A convenient fiat and cryptocurrency converter with offline support.",
-  "lang": "en-US",
+  "name": "Currency Converter",
+  "description": "Multi-currency converter with crypto support",
   "start_url": "./index.html",
-  "scope": "./",
   "display": "standalone",
+  "theme_color": "#1c1c1e",
+  "background_color": "#000000",
   "orientation": "portrait",
-  "background_color": "#f5f5f7",
-  "theme_color": "#0071e3",
   "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/13974/13974002.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "https://cdn-icons-png.flaticon.com/512/13974/13974002.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     }
   ]
 }
