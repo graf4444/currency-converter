@@ -3,7 +3,7 @@ const API_URL = "https://open.er-api.com/v6/latest/USD";
 let state = {
     theme: 'dark', lang: 'en',
     rates: {}, // Изначально пустой объект курсов
-    favorites: ['USD', 'EUR', 'RUB', 'BTC', 'TON'],
+    favorites: ['USD', 'EUR', 'RUB', 'UZS', 'BTC'],
     lastUpdated: ''
 };
 

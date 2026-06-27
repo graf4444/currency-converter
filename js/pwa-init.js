@@ -1,5 +1,5 @@
 // Функция генерации и обновления PWA манифеста на лету
-function updatePWAManifest() {
+function updatePWAManifest(lang = "en") {
     const t = i18n[state.lang] || i18n['en'];
     const appName = t.title;
 
@@ -16,7 +16,7 @@ function updatePWAManifest() {
                 "purpose": "any maskable"
             }
         ],
-        "start_url": "./index.html",
+        "start_url": new URL('./index.html', window.location.href).href,
         "display": "standalone",
         "theme_color": state.theme === 'dark' ? '#1c1c1e' : '#ffffff',
         "background_color": state.theme === 'dark' ? '#000000' : '#f5f5f7',
@@ -35,8 +35,6 @@ function updatePWAManifest() {
     }
     manifestLink.href = manifestURL;
 }
-
-updatePWAManifest();
 
 // Регистрация Service Worker
 if ('serviceWorker' in navigator) {
