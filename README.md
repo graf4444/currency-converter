@@ -1,66 +1,98 @@
-# Universal Currency Converter 💱
+# 💱 Currency Converter
 
-Это легкий, быстрый и адаптивный конвертер валют и криптовалют, разработанный для удобного использования на любых устройствах.
-
-[English Version](#english-version) | [Русская версия](#русская-версия)
+[English](#english) | [Русский](#русский)
 
 ---
 
-## 🇷🇺 Русская версия
+## English
 
-**Universal Currency Converter** — это веб-приложение, которое всегда под рукой. Оно позволяет конвертировать более 100 фиатных валют и популярных криптовалют в режиме реального времени.
+**Live Demo:** [graf4444.github.io/currency-converter](https://graf4444.github.io/currency-converter/)
 
-### Основные возможности:
-* **Мгновенная конвертация:** Вводите сумму в любой валюте, и приложение автоматически пересчитает её для всех выбранных вами позиций.
-* **Поддержка криптовалют:** Актуальные курсы популярных монет (BTC, ETH, TON и др.).
-* **Установка на устройство (PWA):** Вы можете установить приложение на смартфон или компьютер как обычную программу.
-* **Офлайн-режим:** Приложение сохраняет последние полученные курсы, поэтому вы можете пользоваться им даже без доступа к интернету.
-* **Персонализация:** Добавляйте, удаляйте и меняйте порядок валют в списке с помощью удобного интерфейса.
-* **Мультиязычность:** Поддержка 13 языков.
-* **Темная/Светлая тема:** Автоматическая адаптация под ваши предпочтения.
-
-## Установка на устройство
-
-Приложение можно установить на смартфон или компьютер, чтобы оно всегда было доступно в меню ваших программ:
-
-1. Перейдите на сайт: [https://graf4444.github.io/currency-converter/](https://graf4444.github.io/currency-converter/)
-2. **На iOS (Safari):** Нажмите кнопку «Поделиться» и выберите «На экран „Домой“».
-3. **На Android (Chrome):** Нажмите на три точки в меню браузера и выберите «Установить приложение» (или «Добавить на главный экран»).
-4. **На ПК:** В адресной строке браузера (Chrome/Edge) появится иконка установки — просто нажмите на неё.
-
-### 🌟 Поддержите проект
-Если вам нравится приложение, пожалуйста, **поставьте звезду** в [репозитории на GitHub](https://github.com/graf4444/currency-converter) и поделитесь им с друзьями!
-
-[![](https://img.shields.io/badge/GitHub-Star-yellow?style=for-the-badge&logo=github)](https://github.com/graf4444/currency-converter)
-[![](https://img.shields.io/badge/Поделиться-Telegram-blue?style=for-the-badge&logo=telegram)](https://t.me/share/url?url=https://graf4444.github.io/currency-converter/&text=Попробуйте%20этот%20удобный%20конвертер%20валют!)
+A lightweight, modern, and beautiful currency and cryptocurrency converter inspired by Apple's clean design. 
 
 ---
 
-## 🇬🇧 English Version
+### 📱 Install App on Your Device
+You don't need to search for this app in the App Store or Google Play! You can install it directly from your browser onto your smartphone, tablet, or computer. It will look and act just like a regular app — with its own icon on your home screen and a clean window without browser bars.
 
-**Universal Currency Converter** is a lightweight, fast, and responsive currency and cryptocurrency converter designed for seamless use on any device.
+#### How to Install:
+*   **iPhone / iPad (Safari):**
+    1. Open the [Live Link](https://graf4444.github.io/currency-converter/) in **Safari**.
+    2. Tap the **"Share"** button (square with an up arrow) at the bottom.
+    3. Scroll down and select **"Add to Home Screen"**.
+*   **Android (Chrome / Samsung Internet):**
+    1. Open the [Live Link](https://graf4444.github.io/currency-converter/) in your browser.
+    2. Tap the pop-up at the bottom **"Add Currency Converter to Home Screen"** (or tap the three dots in the top right and choose **"Install App"**).
+*   **Computers / PC (Chrome / Edge / Opera):**
+    1. Open the [Live Link](https://graf4444.github.io/currency-converter/).
+    2. Click the **Install Icon** (a small monitor or plus icon) on the right side of the browser's address bar.
 
-### Key Features:
-* **Instant Conversion:** Enter an amount in any currency, and the app automatically calculates it for all your selected currencies.
-* **Crypto Support:** Real-time rates for popular coins (BTC, ETH, TON, etc.).
-* **Installable (PWA):** You can install the app on your smartphone or desktop just like a native application.
-* **Offline Mode:** The app caches the latest rates, allowing you to use it even without an internet connection.
-* **Customization:** Easily add, remove, and reorder your currency list.
-* **Multi-language:** Supports 13 languages.
-* **Dark/Light Mode:** Automatically adapts to your system preferences.
-
-### How to Install?
-The app is built as a Progressive Web App (PWA):
-1. Visit the website: [https://graf4444.github.io/currency-converter/](https://graf4444.github.io/currency-converter/)
-2. **On iOS (Safari):** Tap the "Share" button and select "Add to Home Screen".
-3. **On Android (Chrome):** Tap the three-dot menu and select "Install app" (or "Add to Home screen").
-4. **On Desktop:** A small install icon will appear in the address bar (Chrome/Edge) — just click it.
+---
 
 ### 🌟 Support the Project
-If you like the app, please **star the repo** on [GitHub](https://github.com/graf4444/currency-converter) and share it with your friends!
 
-[![](https://img.shields.io/badge/GitHub-Star-yellow?style=for-the-badge&logo=github)](https://github.com/graf4444/currency-converter)
-[![](https://img.shields.io/badge/Share-Telegram-blue?style=for-the-badge&logo=telegram)](https://t.me/share/url?url=https://graf4444.github.io/currency-converter/&text=Check%20out%20this%20awesome%20currency%20converter!)
+If you like this app, please give it a **Star** on GitHub! It helps more people discover it.
+
+[![GitHub stars](https://img.shields.io/github/stars/graf4444/currency-converter?style=social)](https://github.com/graf4444/currency-converter)
+
+📢 **Share with friends:**
+*   [Share on Telegram](https://t.me/share/url?url=https://graf4444.github.io/currency-converter/&text=Check%20out%20this%20awesome%20and%20clean%20Currency%20Converter%20app!)
+*   [Share on X (Twitter)](https://twitter.com/intent/tweet?url=https://graf4444.github.io/currency-converter/&text=Check%20out%20this%20awesome%20and%20clean%20Currency%20Converter%20app!)
+*   [Share on WhatsApp](https://api.whatsapp.com/send?text=Check%20out%20this%20awesome%20and%20clean%20Currency%20Converter%20app!%20https://graf4444.github.io/currency-converter/)
 
 ---
-*Built with ❤️ for speed and convenience.*
+
+### ✨ Features
+*   **Works Offline:** Once installed, the app saves your currency list and the latest rates. You can convert prices on the go, even with no internet connection.
+*   **Smart Multi-Language:** Automatically translates currency names into 13 languages based on your preference (e.g., USD instantly changes to "미국 달러" in Korean or "Доллар США" in Russian).
+*   **Responsive Desktop View:** The interactive GitHub corner ribbon automatically sizes up on large 2K/4K monitors so it's always easy to see, and hides into a clean badge on mobiles.
+*   **Crypto & Fiat Support:** Live exchange rates for traditional world currencies and top cryptocurrencies (Bitcoin, TON, Ethereum, etc.) in one screen.
+*   **Easy Drag & Drop:** Easily reorder currencies by dragging the "☰" icon up or down to make your favorites first.
+
+---
+
+## Русский
+
+**Ссылка на приложение:** [graf4444.github.io/currency-converter](https://graf4444.github.io/currency-converter/)
+
+Легкий, современный и красивый конвертер мировых валют и криптовалют, созданный в минималистичном стиле Apple.
+
+---
+
+### 📱 Установите приложение на экран телефона или ПК
+Вам не нужно искать это приложение в App Store или Google Play! Его можно установить на смартфон, планшет или компьютер прямо из браузера. Оно будет работать как обычная программа: появится собственная иконка на рабочем столе, исчезнут лишние рамки браузера, а открываться оно будет мгновенно.
+
+#### Как установить приложение:
+*   **На iPhone / iPad (через Safari):**
+    1. Откройте [ссылку на сайт](https://graf4444.github.io/currency-converter/) в браузере **Safari**.
+    2. Нажмите кнопку **«Поделиться»** (квадрат со стрелкой вверх) в панели управления.
+    3. Прокрутите меню вниз и выберите **«На экран "Домой"»**.
+*   **На Android (Chrome / Яндекс / Samsung Internet):**
+    1. Откройте [ссылку на сайт](https://graf4444.github.io/currency-converter/) в вашем мобильном браузере.
+    2. Нажмите на всплывающее уведомление внизу **«Добавить на главный экран»** (или нажмите на три точки в углу браузера и выберите **«Установить приложение»**).
+*   **На компьютер / ПК (Chrome / Edge / Яндекс / Opera):**
+    1. Откройте [ссылку на сайт](https://graf4444.github.io/currency-converter/).
+    2. В правой части адресной строки нажмите на **иконку установки** (в виде монитора со стрелочкой или плюсика) и подтвердите действие.
+
+---
+
+### 🌟 Поддержите проект
+
+Если вам понравился этот конвертер, пожалуйста, поставьте **Звезду (Star)** репозиторию на GitHub! Это очень помогает развитию проекта.
+
+[![GitHub stars](https://img.shields.io/github/stars/graf4444/currency-converter?style=social)](https://github.com/graf4444/currency-converter)
+
+📢 **Поделиться с друзьями:**
+*   [Поделиться в Telegram](https://t.me/share/url?url=https://graf4444.github.io/currency-converter/&text=Посмотри%20какой%20удобный%20и%20красивый%20конвертер%20валют!%20Можно%20установить%20как%20приложение%20на%20телефон.)
+*   [Поделиться ВКонтакте](https://vk.com/share.php?url=https://graf4444.github.io/currency-converter/&title=Удобный%20конвертер%20валют%20и%20крипты)
+*   [Поделиться в X (Twitter)](https://twitter.com/intent/tweet?url=https://graf4444.github.io/currency-converter/&text=Удобный%20конвертер%20валют%20и%20крипты)
+*   [Поделиться в WhatsApp](https://api.whatsapp.com/send?text=Посмотри%20какой%20крутой%20конвертер%20валют!%20https://graf4444.github.io/currency-converter/)
+
+---
+
+### ✨ Особенности
+*   **Работает без интернета:** После установки приложение сохраняет выбранный вами список валют и последние курсы. Считать конвертацию можно в самолете или в дороге, даже если нет сети.
+*   **Умный перевод названий:** Автоматически переводит названия валют на 13 языков в зависимости от ваших настроек (например, корейские рубли или американские доллары будут подписаны на родном языке пользователя, без английских слов в корейском интерфейсе).
+*   **Адаптивный дизайн:** Специальный интерактивный уголок GitHub автоматически увеличивается на больших 2K/4K мониторах, чтобы его было хорошо видно, а на телефонах аккуратно переносится вниз экрана.
+*   **Фиат и Крипта в одном списке:** Актуальные курсы традиционных денег (рубли, доллары, евро) и популярных криптовалют (Bitcoin, TON, Ethereum и др.) обновляются в реальном времени.
+*   **Удобная сортировка:** Меняйте валюты местами простым перетаскиванием за иконку «☰», чтобы самые нужные всегда были сверху.
