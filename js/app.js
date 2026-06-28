@@ -1,10 +1,20 @@
-const API_URL = "https://open.er-api.com/v6/latest/USD";
+// Массив приоритетных API для фиатных валют (без ключей)
+const FIAT_API_URLS = [
+    "https://api.exchangerate.fun/latest?base=USD",
+    "https://api.frankfurter.app/latest?from=USD",
+    "https://open.er-api.com/v6/latest/USD"
+];
+
+// Время жизни кэша в миллисекундах (1 час = 60 минут * 60 секунд * 1000 мс)
+const CACHE_DURATION = 60 * 60 * 1000;
 
 let state = {
-    theme: 'dark', lang: 'en',
-    rates: {}, // Изначально пустой объект курсов
+    theme: 'dark', 
+    lang: 'en',
+    rates: {}, 
     favorites: ['USD', 'EUR', 'RUB', 'UZS', 'BTC'],
-    lastUpdated: ''
+    lastUpdated: '',
+    lastUpdatedTimestamp: 0 // Добавляем метку времени для проверки кэша
 };
 
 // Хранилище активного ввода пользователя для предотвращения сброса данных при добавлении валют
@@ -19,19 +29,18 @@ function initSystemSettings() {
         try {
             loaded = JSON.parse(savedState);
         } catch (_) {
-            // Corrupted storage — drop it and fall back to defaults.
             localStorage.removeItem('conv_max_state');
             loaded = null;
         }
     }
 
     if (loaded && typeof loaded === 'object') {
-        // Merge defensively so missing fields from older versions don't crash render.
         state = Object.assign({}, state, loaded);
         if (!i18n[state.lang]) state.lang = 'en';
         if (state.theme !== 'dark' && state.theme !== 'light') state.theme = 'dark';
         if (!Array.isArray(state.favorites)) state.favorites = ['USD', 'EUR', 'RUB', 'UZS', 'BTC'];
         if (!state.rates || typeof state.rates !== 'object') state.rates = {};
+        if (typeof state.lastUpdatedTimestamp !== 'number') state.lastUpdatedTimestamp = 0;
     } else {
         const sysLang = navigator.language || navigator.userLanguage || 'en';
         const shortLang = sysLang.split('-')[0].toLowerCase();
@@ -67,8 +76,8 @@ function applyLocalization() {
     const status = document.getElementById('sync-status');
     const loader = document.getElementById('loader');
     
-    if (loader.style.display === 'inline-block') {
-        status.textContent = t.sync; // Если сейчас идет загрузка
+    if (loader && loader.style.display === 'inline-block') {
+        status.textContent = t.sync;
     } else {
         status.textContent = navigator.onLine ? t.online : t.offline;
     }
@@ -119,7 +128,6 @@ function clearAllInputs() {
 function recalculate(activeCode, rawValue) {
     const cleanValue = parseCleanNumber(rawValue);
     
-    // Если у активной валюты нет курса, расчет невозможен
     if (!state.rates[activeCode]) return;
 
     if (cleanValue === '' || isNaN(cleanValue)) {
@@ -141,7 +149,6 @@ function recalculate(activeCode, rawValue) {
             const input = document.getElementById(`input-${code}`);
             const clearBtn = document.getElementById(`clear-${code}`);
             if (input) {
-                // Если для какой-то из выбранных валют нет курса, помечаем её вводом "No rate"
                 if (!state.rates[code]) {
                     input.value = state.lang === 'ru' ? 'Нет курса' : 'No rate';
                     input.style.fontSize = '1rem';
@@ -169,8 +176,8 @@ function recalculate(activeCode, rawValue) {
 
 function renderMain() {
     const container = document.getElementById('favorites-container');
+    if (!container) return;
     
-    // Используем DocumentFragment, чтобы избежать мерцания при построении главного списка
     const fragment = document.createDocumentFragment();
 
     state.favorites.forEach(code => {
@@ -179,7 +186,6 @@ function renderMain() {
         const card = document.createElement('div');
         card.className = 'currency-card';
         
-        // Проверяем наличие курса, если его нет — кастомизируем плейсхолдер
         const hasRate = !!state.rates[code];
         const placeholderText = hasRate ? '0' : (state.lang === 'ru' ? 'Нет курса' : 'No rate');
 
@@ -203,7 +209,6 @@ function renderMain() {
     container.innerHTML = '';
     container.appendChild(fragment);
 
-    // Вешаем обработчики заново на новые элементы
     document.querySelectorAll('.currency-input').forEach(input => {
         input.addEventListener('input', (e) => {
             let val = e.target.value.replace(/,/g, '.').replace(/[^0-9. ]/g, ''); 
@@ -293,13 +298,13 @@ function matchesQuery(code, dbItem, query) {
     return false;
 }
 
-// Прокачанная функция фильтрации без эффекта мерцания (используем фрагменты памяти)
 function filterCurrencies() {
     const query = document.getElementById('search-bar').value.toLowerCase().trim();
     const addedContainer = document.getElementById('added-container');
     const availableContainer = document.getElementById('available-container');
     
-    // Создаем фрагменты для сборки структуры в памяти процессора
+    if (!addedContainer || !availableContainer) return;
+
     const addedFragment = document.createDocumentFragment();
     const availableFragment = document.createDocumentFragment();
 
@@ -343,7 +348,6 @@ function filterCurrencies() {
 
         const item = document.createElement('div');
         
-        // Помечаем визуально валюты, для которых нет курса в текущей сессии
         const hasRate = !!state.rates[code];
         item.className = `search-item clickable ${!hasRate ? 'no-rate-available' : ''}`;
         
@@ -366,7 +370,6 @@ function filterCurrencies() {
         availableFragment.appendChild(item);
     });
 
-    // Мгновенная атомарная замена в DOM — старый список исчезает, новый появляется без моргания
     addedContainer.innerHTML = '';
     addedContainer.appendChild(addedFragment);
 
@@ -376,6 +379,8 @@ function filterCurrencies() {
 
 function setupDragAndDropHandlers() {
     const container = document.getElementById('added-container');
+    if (!container) return;
+    
     let dragEl = null;
     let activeTouchEl = null;
 
@@ -457,45 +462,90 @@ function saveNewOrder() {
     }
 }
 
-async function updateRates() {
+async function fetchFiatRates() {
+    let lastError = null;
+    
+    for (const url of FIAT_API_URLS) {
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            const data = await res.json();
+            
+            if (data && data.rates) {
+                let rates = { ...data.rates };
+                if (!rates['USD']) {
+                    rates['USD'] = 1;
+                }
+                return rates;
+            }
+        } catch (e) {
+            console.warn(`Не удалось загрузить данные из источника ${url}:`, e);
+            lastError = e;
+        }
+    }
+    throw lastError || new Error("Все источники фиатных валют недоступны");
+}
+
+async function updateRates(forceUpdate = false) {
+    const now = Date.now();
+    
+    // ПРОВЕРКА КЭША: Если принудительного обновления нет, данные есть и они свежее 1 часа — отменяем сетевой запрос
+    if (!forceUpdate && Object.keys(state.rates).length > 0 && (now - state.lastUpdatedTimestamp < CACHE_DURATION)) {
+        console.log("Используются актуальные курсы из локального кэша (период 1 час не истек)");
+        return;
+    }
+
     const loader = document.getElementById('loader');
     const status = document.getElementById('sync-status');
-    loader.style.display = 'inline-block';
+    if (loader) loader.style.display = 'inline-block';
+    
     const currentT = i18n[state.lang] || i18n['en'];
-    status.textContent = currentT.sync;
+    if (status) status.textContent = currentT.sync;
 
     try {
-        const resFiat = await fetch(API_URL);
-        const dataFiat = await resFiat.json();
-        let newRates = { ...dataFiat.rates };
+        let newRates = await fetchFiatRates();
 
         const cryptoIds = Object.values(currencyDb).filter(item => item.id).map(item => item.id);
         if (cryptoIds.length > 0) {
-            const resCrypto = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${cryptoIds.join(',')}&vs_currencies=usd`);
-            const dataCrypto = await resCrypto.json();
-            Object.keys(currencyDb).forEach(code => {
-                const apiId = currencyDb[code].id;
-                if (apiId && dataCrypto && dataCrypto[apiId]) {
-                    newRates[code] = 1 / dataCrypto[apiId].usd;
+            try {
+                const resCrypto = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${cryptoIds.join(',')}&vs_currencies=usd`);
+                if (resCrypto.ok) {
+                    const dataCrypto = await resCrypto.json();
+                    Object.keys(currencyDb).forEach(code => {
+                        const apiId = currencyDb[code].id;
+                        if (apiId && dataCrypto && dataCrypto[apiId] && dataCrypto[apiId].usd) {
+                            newRates[code] = 1 / dataCrypto[apiId].usd;
+                        }
+                    });
                 }
-            });
+            } catch (cryptoErr) {
+                console.warn("Не удалось обновить криптовалюты, используются старые или пустые значения:", cryptoErr);
+            }
         }
 
         state.rates = newRates;
+        state.lastUpdatedTimestamp = now; // Сохраняем таймстамп успешного запроса
         state.lastUpdated = new Date().toLocaleString();
-        status.textContent = currentT.online;
+        if (status) status.textContent = currentT.online;
         saveState();
     } catch (e) {
-        status.textContent = currentT.offline;
+        if (status) status.textContent = currentT.offline;
+        console.error("Критическая ошибка обновления курсов:", e);
     } finally {
-        loader.style.display = 'none';
+        if (loader) loader.style.display = 'none';
         
-        // Перерисовываем главный список, теперь с настоящими курсами валют
         renderMain();
         
         if (currentInputCode && currentInputValue !== '') {
             recalculate(currentInputCode, currentInputValue);
         }
+    }
+}
+
+function updatePWAManifest() {
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
+    if (metaTheme) {
+        metaTheme.setAttribute('content', state.theme === 'dark' ? '#1c1c1e' : '#f2f2f7');
     }
 }
 
@@ -525,21 +575,23 @@ window.addEventListener('click', (e) => {
     if (e.target === document.getElementById('search-modal')) closeModal();
 });
 
-window.addEventListener('online', updateRates);
+// Если пользователь вернулся в сеть — имеет смысл обновить принудительно
+window.addEventListener('online', () => updateRates(true));
 window.addEventListener('offline', () => {
     const currentT = i18n[state.lang] || i18n['en'];
-    document.getElementById('sync-status').textContent = currentT.offline;
+    const status = document.getElementById('sync-status');
+    if (status) status.textContent = currentT.offline;
 });
 
-// ИНИЦИАЛИЗАЦИЯ: Очередность изменена для исключения моргания
+// ИНИЦИАЛИЗАЦИЯ
 initSystemSettings();
 applyLocalization();
 applyTheme();
 updatePWAManifest();
 setupDragAndDropHandlers();
 
-// Сначала рендерим пустой статичный список из локальных констант (мгновенно)
+// Мгновенный рендер из сохраненного локального состояния (пользователь сразу видит калькулятор)
 renderMain();
 
-// И только потом асинхронно идем в сеть обновлять курсы валют
-updateRates();
+// Вызов обновления с флагом по умолчанию (сработает только если кэш устарел)
+updateRates(false);

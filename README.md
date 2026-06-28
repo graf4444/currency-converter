@@ -2,11 +2,17 @@
 
 [🇬🇧 English Version](#-english) | [🇷🇺 Русская версия](#-русская-версия)
 
+<p align="center">
+  <img src="https://img.shields.io/badge/Open%20Source-%E2%9D%A4-FF4500?style=for-the-badge" alt="Open Source">
+  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License MIT">
+  <img src="https://img.shields.io/badge/PWA-Ready-blue?style=for-the-badge" alt="PWA Ready">
+</p>
+
 ---
 
 ## 🇬🇧 English
 
-A simple, fast, and responsive web converter for world currencies and popular cryptocurrencies, featuring 13 languages and dark mode support.
+A modern, fast, and lightweight **Open Source** web tool for converting world currencies and popular cryptocurrencies. It works instantly as a regular website in any browser, but can also be installed as a full-featured application on any device (iOS, Android, Windows, macOS) — with no app stores required.
 
 ⭐ **If you like this project, please support it by giving it a star! It motivates me to add new features.**
 
@@ -26,17 +32,44 @@ The application is deployed and ready to use:
 ---
 
 ### ✨ Key Features
-* **Completely Free:** No hidden subscriptions, in-app purchases, or paywalls.
-* **No Ads & No Registration:** Open and use instantly without annoying banners or creating an account.
-* **PWA Support (Installable):** You can install the app directly onto your smartphone, tablet, or PC home screen as a standalone application.
-* **Offline Mode:** Works flawlessly without an internet connection using cached exchange rates.
-* **Smart Storage:** Automatically remembers your last selected currencies and theme preferences.
+* **🎯 True Multi-Platform:** Use it as a website or install it directly onto your smartphone, tablet, or PC home screen as a standalone app (PWA).
+* **🔓 100% Open Source & Free:** The source code is completely open, transparent, and free under the MIT license. No hidden tracks or paywalls.
+* **🛡️ Privacy Focused:** No analytics, no cookies, and zero trackers. Your input and financial data never leave your device.
+* **💸 No Ads & No Registration:** Start using it instantly without creating accounts or sharing your personal data.
+* **📶 Full Offline Mode:** Lost your internet connection? The app keeps working seamlessly using cached exchange rates.
+* **🧠 Smart Memory:** Automatically saves your favorite currency layout, custom order, and preferred theme (Light/Dark).
 
-<details>
-<summary><b>🌐 Supported Languages (13) — Click to expand</b></summary>
+---
 
-* English, Русский, Deutsch, Français, Español, Italiano, Português, Türkçe, 简体中文, 日本語, 한국어, العربية, हिन्दी
-</details>
+### 🌐 Supported Languages
+The interface is professionally localized into **13 global languages**:
+
+| | | | |
+| :--- | :--- | :--- | :--- |
+| 🇺🇸 **English** | 🇷🇺 **Русский** | 🇩🇪 **Deutsch** | 🇫🇷 **Français** |
+| 🇪🇸 **Español** | 🇮🇹 **Italiano** | 🇵🇹 **Português** | 🇹🇷 **Türkçe** |
+| 🇨🇳 **简体中文** | 🇯🇵 **日本語** | 🇰🇷 **한국어** | 🇮🇳 **हिन्दी** |
+| 🇦🇪 **العربية** | | | |
+
+---
+
+### ⚙️ How it Works (Application Logic)
+To ensure the app starts instantly and saves your internet traffic and battery, it uses smart automation:
+* **Instant Start (Caching):** When opened, the app doesn't make you wait. It instantly loads the last known exchange rates from your device's local memory.
+* **Smart Updates (Hourly):** The app values your mobile data. It only requests new data from servers if more than **1 hour** has passed since the last successful update.
+* **Offline Independence:** If you lose connection or put your phone in airplane mode, the app continues to work perfectly using the cached rates. 
+* **Fallback Stability:** If one data provider goes down, the app won't crash. It automatically loops through backup sources to fetch the latest data.
+
+---
+
+### 📊 Data Sources
+The app fetches mid-market interbank exchange rates from official open-source financial providers:
+* **Fiat Currencies:**
+  1. **`exchangerate.fun` (Primary):** Collects current interbank quotes. Updated **every hour** for maximum precision.
+  2. **`api.frankfurter.app` (Backup 1):** A reliable node displaying official European Central Bank (ECB) data. Updated daily.
+  3. **`open.er-api.com` (Backup 2):** A stable global exchange rate provider. Updated once a day.
+* **Cryptocurrencies:**
+  * **`CoinGecko API`:** The world's largest independent crypto data aggregator, used to fetch accurate real-time prices for BTC and other digital assets.
 
 ---
 
@@ -67,7 +100,7 @@ If you find a bug, have an idea, or want to add a feature:
 
 ## 🇷🇺 Русская версия
 
-Простой, быстрый и адаптивный веб-конвертер валют и популярных криптовалют с поддержкой 13 языков и темной темы.
+Современный, быстрый и легкий веб-инструмент с **открытым исходным кодом (Open Source)** для конвертации мировых валют и популярных криптовалют. Он мгновенно работает как обычный сайт в любом браузере, а также может быть установлен как полноценное приложение на любое устройство (iOS, Android, Windows, macOS) — без скачивания из магазинов приложений.
 
 ⭐ **Если вам понравился проект, пожалуйста, поддержите его звездой! Это мотивирует меня добавлять новые фичи.**
 
@@ -87,17 +120,44 @@ If you find a bug, have an idea, or want to add a feature:
 ---
 
 ### ✨ Преимущества
-* **Полностью бесплатно** — никаких скрытых подписок или платных функций.
-* **Без рекламы и регистрации** — открыл и сразу пользуешься, без баннеров и создания аккаунтов.
-* **Поддержка PWA (Установка на устройство)** — приложение можно установить на главный экран смартфона, планшета или ПК как обычную программу.
-* **Оффлайн-режим** — полноценно работает без интернета на основе закэшированных курсов валют.
-* **Умное сохранение** — приложение запоминает выбранные вами валюты и настройки темы при следующем открытии.
+* **🎯 Настоящая кроссплатформенность:** Используйте как сайт или установите на главный экран смартфона, планшета или рабочий стол ПК как независимое приложение (PWA).
+* **🔓 100% Open Source и бесплатно:** Прозрачный открытый код под лицензией MIT. Никаких скрытых подписок, встроенных покупок или платных функций.
+* **🛡️ Полная конфиденциальность:** Никаких счетчиков аналитики, трекеров или куки. Все ваши расчеты происходят строго на вашем устройстве.
+* **💸 Без рекламы и регистрации:** Только чистая конвертация и удобный интерфейс без назойливых баннеров или необходимости создавать аккаунт.
+* **📶 Оффлайн-режим:** Если пропал интернет или вы находитесь в полете, приложение продолжит полноценно работать на основе закэшированных курсов.
+* **🧠 Умное сохранение:** Автоматически запоминает выбранные вами валюты, их порядок на экране и настройки темы (Светлая/Тёмная).
 
-<details>
-<summary><b>🌐 Поддерживаемые языки (13) — Нажмите, чтобы открыть</b></summary>
+---
 
-* Английский, Русский, Немецкий, Французский, Испанский, Итальянский, Португальский, Турецкий, Китайский, Японский, Корейский, Арабский, Хинди
-</details>
+### 🌐 Поддерживаемые языки
+Интерфейс полностью переведен и готов к работе на **13 языках**:
+
+| | | | |
+| :--- | :--- | :--- | :--- |
+| 🇷🇺 **Русский** | 🇺🇸 **English** | 🇩🇪 **Deutsch** | 🇫🇷 **Français** |
+| 🇪🇸 **Español** | 🇮🇹 **Italiano** | 🇵🇹 **Português** | 🇹🇷 **Türkçe** |
+| 🇨🇳 **简体中文** | 🇯🇵 **日本語** | 🇰🇷 **한국어** | 🇮🇳 **हिन्दी** |
+| 🇦🇪 **العربية** | | | |
+
+---
+
+### ⚙️ Как это работает (Логика приложения)
+Чтобы приложение работало мгновенно, не тратило мобильный трафик и заряд батареи, в него заложена автоматическая логика:
+* **Мгновенный запуск (Кэширование):** Приложение не заставляет вас ждать загрузки. Оно сразу берет последние известные курсы из локальной памяти устройства.
+* **Умное обновление (Раз в час):** Сетевой запрос к серверам происходит только в том случае, если с момента последнего успешного обновления прошло **более 1 часа**.
+* **Автономность (Офлайн-режим):** Если у вас пропал интернет, приложение продолжит полноценно работать на основе сохраненного кэша.
+* **Защита от сбоев (Каскадность):** Если один из финансовых серверов временно недоступен, приложение автоматически и незаметно для вас переключится на резервные источники.
+
+---
+
+### 📊 Источники данных
+Приложение запрашивает официальные мировые котировки (среднерыночные межбанковские курсы) из открытых источников высокой точности:
+* **Фиатные (обычные) валюты:**
+  1. **`exchangerate.fun` (Основной):** собирает актуальные данные межбанковского рынка. Обновляется **каждый час**, обеспечивая высокую актуальность.
+  2. **`api.frankfurter.app` (Резервный 1):** надёжный источник, предоставляющий официальные данные Европейского центрального банка (ЕЦБ). Обновляется раз в сутки.
+  3. **`open.er-api.com` (Резервный 2):** стабильный международный провайдер валютных курсов. Обновляется раз в день.
+* **Криптовалюты:**
+  * **`CoinGecko API`:** крупнейший мировой независимый агрегатор данных о криптовалютах. Используется для получения точных цен биткоина и других монет в реальном времени.
 
 ---
 
