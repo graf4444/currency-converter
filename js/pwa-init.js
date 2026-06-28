@@ -54,19 +54,21 @@ function updatePWAManifest(opts) {
         theme_color: themeColor,
         background_color: bgColor,
         icons: [
-            // Two separate entries: "any" must be a full-bleed icon,
-            // "maskable" needs safe zone — most platforms expect them split.
-            {
-                src: 'https://cdn-icons-png.flaticon.com/512/13974/13974002.png',
-                sizes: '512x512',
-                type: 'image/png',
-                purpose: 'any'
+{
+                src: "./icons/android-chrome-192x192.png",
+                sizes: "192x192",
+                type: "image/png"
             },
             {
-                src: 'https://cdn-icons-png.flaticon.com/512/13974/13974002.png',
-                sizes: '512x512',
-                type: 'image/png',
-                purpose: 'maskable'
+                src: "./icons/android-chrome-512x512.png",
+                sizes: "512x512",
+                type: "image/png"
+            },
+            {
+                src: "./icons/android-chrome-512x512.png",
+                sizes: "512x512",
+                type: "image/png",
+                purpose: "maskable"
             }
         ]
     };

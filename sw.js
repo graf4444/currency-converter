@@ -1,6 +1,6 @@
 // Bump CACHE_NAME on every release that changes any file in ASSETS,
 // otherwise returning users keep the old shell until they manually clear.
-const CACHE_NAME = 'currency-converter-v2';
+const CACHE_NAME = 'currency-converter-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -8,7 +8,12 @@ const ASSETS = [
   './js/constants.js',
   './js/pwa-init.js',
   './js/app.js',
-  'https://cdn-icons-png.flaticon.com/512/13974/13974002.png'
+  './icons/favicon.ico',
+  './icons/favicon-16x16.png',
+  './icons/favicon-32x32.png',
+  './icons/apple-touch-icon.png',
+  './icons/android-chrome-192x192.png',
+  './icons/android-chrome-512x512.png'
 ];
 
 self.addEventListener('install', (e) => {
