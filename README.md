@@ -1,5 +1,9 @@
 # 💱 Currency & Cryptocurrency Converter / Конвертер валют и криптовалют
 
+<p align="center">
+  <img src="assets/banner.svg" alt="Project Banner" width="100%">
+</p>
+
 [🇬🇧 English Version](#-english) | [🇷🇺 Русская версия](#-русская-версия)
 
 <p align="center">
