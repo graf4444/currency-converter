@@ -4,17 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Currency Converter</title>
-    
-    <link rel="manifest" href="./manifest.json">
+
+    <!-- Static manifest removed on purpose. pwa-init.js generates a localized
+         manifest from the saved language BEFORE the browser fires the install
+         prompt, so the install dialog appears in the user's chosen language. -->
+
     <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/13974/13974002.png">
     <link rel="icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/13974/13974002.png">
-    
+
+    <meta name="theme-color" content="#1c1c1e" id="meta-theme-color">
     <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Converter">
     <meta name="application-name" content="Converter">
-    
+
     <link rel="stylesheet" href="css/style.css">
+
+    <!-- constants.js + pwa-init.js are loaded SYNC (no defer) so the manifest
+         is injected before parser-blocking app.js runs and before any
+         beforeinstallprompt fires. -->
+    <script src="js/constants.js"></script>
+    <script src="js/pwa-init.js"></script>
 </head>
 <body>
 
@@ -57,7 +68,7 @@
         <span id="sync-status">Syncing...</span>
         <div class="spinner" id="loader"></div>
         <div id="last-update" style="margin-top: 4px;"></div>
-        
+
         <a href="https://github.com/graf4444/currency-converter" target="_blank" class="github-badge">
             <svg viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
             GitHub
@@ -72,7 +83,7 @@
             <button class="close-modal" id="ui-close-btn">Done</button>
         </div>
         <input type="text" class="search-input" id="search-bar" placeholder="Search code or name...">
-        
+
         <div class="search-results">
             <div id="added-section">
                 <div class="section-title" id="ui-section-added">Your Currencies</div>
@@ -86,8 +97,6 @@
     </div>
 </div>
 
-<script src="js/constants.js" defer></script>
-<script src="js/pwa-init.js" defer></script>
 <script src="js/app.js" defer></script>
 
 </body>

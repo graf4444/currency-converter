@@ -13,13 +13,29 @@ let currentInputValue = '';
 
 function initSystemSettings() {
     const savedState = localStorage.getItem('conv_max_state');
-    
+    let loaded = null;
+
     if (savedState) {
-        state = JSON.parse(savedState);
+        try {
+            loaded = JSON.parse(savedState);
+        } catch (_) {
+            // Corrupted storage — drop it and fall back to defaults.
+            localStorage.removeItem('conv_max_state');
+            loaded = null;
+        }
+    }
+
+    if (loaded && typeof loaded === 'object') {
+        // Merge defensively so missing fields from older versions don't crash render.
+        state = Object.assign({}, state, loaded);
+        if (!i18n[state.lang]) state.lang = 'en';
+        if (state.theme !== 'dark' && state.theme !== 'light') state.theme = 'dark';
+        if (!Array.isArray(state.favorites)) state.favorites = ['USD', 'EUR', 'RUB', 'UZS', 'BTC'];
+        if (!state.rates || typeof state.rates !== 'object') state.rates = {};
     } else {
         const sysLang = navigator.language || navigator.userLanguage || 'en';
         const shortLang = sysLang.split('-')[0].toLowerCase();
-        
+
         state.lang = i18n[shortLang] ? shortLang : 'en';
         state.theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
         saveState();
