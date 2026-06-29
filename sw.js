@@ -1,6 +1,6 @@
 // Bump CACHE_NAME on every release that changes any file in ASSETS,
 // otherwise returning users keep the old shell until they manually clear.
-const CACHE_NAME = 'currency-converter-v4';
+const CACHE_NAME = 'currency-converter-v5';
 const ASSETS = [
   './',
   './index.html',
