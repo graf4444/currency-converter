@@ -1,6 +1,5 @@
-// Bump CACHE_NAME on every release that changes any file in ASSETS,
-// otherwise returning users keep the old shell until they manually clear.
-const CACHE_NAME = 'currency-converter-v6';
+// Bump CACHE_NAME on every release that changes any file in ASSETS
+const CACHE_NAME = 'currency-converter-v7';
 const ASSETS = [
   './',
   './index.html',
@@ -17,8 +16,6 @@ const ASSETS = [
 ];
 
 self.addEventListener('install', (e) => {
-  // Activate the new SW immediately on next load instead of waiting
-  // for all tabs to close.
   self.skipWaiting();
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
@@ -33,18 +30,19 @@ self.addEventListener('activate', (e) => {
   })());
 });
 
-// Strategy:
-//   - API calls (rates): network-first, fall back to cache when offline.
-//   - Navigations / static assets: network-first with cache update on success,
-//     fall back to cache. This keeps the app fresh after each deploy.
 self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
 
-  // Live data — never cache aggressively; only fall back to last response if offline.
-  if (url.hostname.includes('api.coingecko.com') || url.hostname.includes('open.er-api.com')) {
+  // 1. API курсов валют — пробуем сеть, если нет интернета — берём из кэша
+  const isApiRequest = url.hostname.includes('api.') || 
+                       url.hostname.includes('coingecko.com') || 
+                       url.hostname.includes('open.er-api.com') ||
+                       url.hostname.includes('frankfurter.app');
+
+  if (isApiRequest) {
     e.respondWith(
       fetch(req)
         .then((res) => {
@@ -59,26 +57,41 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // App shell + everything else.
+  // 2. Статика и оболочка приложения (App Shell) — CACHE FIRST (Мгновенный запуск)
   e.respondWith((async () => {
+    // Пробуем взять из кэша
+    const cachedResponse = await caches.match(req);
+    
+    if (cachedResponse) {
+      // Фоновое обновление кэша (Stale-While-Revalidate), чтобы при следующем запуске были свежие скрипты
+      e.waitUntil(
+        fetch(req).then(async (networkResponse) => {
+          if (networkResponse && networkResponse.ok && url.origin === self.location.origin) {
+            const cache = await caches.open(CACHE_NAME);
+            await cache.put(req, networkResponse);
+          }
+        }).catch(() => {/* Игнорируем ошибки сети в фоновом режиме */})
+      );
+      
+      return cachedResponse;
+    }
+
+    // Если в кэше нет (например, новый ресурс) — идём в сеть
     try {
-      const res = await fetch(req);
-      if (res && res.ok && (url.origin === self.location.origin || req.mode === 'cors')) {
-        const clone = res.clone();
+      const netRes = await fetch(req);
+      if (netRes && netRes.ok && url.origin === self.location.origin) {
+        const clone = netRes.clone();
         const cache = await caches.open(CACHE_NAME);
-        // Use waitUntil-equivalent semantics: don't block response on put.
         cache.put(req, clone).catch(() => {});
       }
-      return res;
-    } catch (_) {
-      const cached = await caches.match(req);
-      if (cached) return cached;
-      // Final fallback for navigations: serve the cached shell.
+      return netRes;
+    } catch (err) {
+      // Запасной фоллбек для навигации
       if (req.mode === 'navigate') {
         const shell = await caches.match('./index.html');
         if (shell) return shell;
       }
-      throw _;
+      throw err;
     }
   })());
 });

@@ -1,3 +1,7 @@
+// ============================================================
+// КОНФИГУРАЦИЯ И СОСТОЯНИЕ
+// ============================================================
+
 // Массив приоритетных API для фиатных валют (без ключей)
 const FIAT_API_URLS = [
     "https://api.exchangerate.fun/latest?base=USD",
@@ -5,7 +9,7 @@ const FIAT_API_URLS = [
     "https://open.er-api.com/v6/latest/USD"
 ];
 
-// Время жизни кэша в миллисекундах (1 час = 60 минут * 60 секунд * 1000 мс)
+// Время жизни кэша в миллисекундах (1 час)
 const CACHE_DURATION = 60 * 60 * 1000;
 
 let state = {
@@ -14,12 +18,97 @@ let state = {
     rates: {}, 
     favorites: ['USD', 'EUR', 'RUB', 'UZS', 'BTC'],
     lastUpdated: '',
-    lastUpdatedTimestamp: 0 // Добавляем метку времени для проверки кэша
+    lastUpdatedTimestamp: 0
 };
 
-// Хранилище активного ввода пользователя для предотвращения сброса данных при добавлении валют
+// Хранилище активного ввода пользователя
 let currentInputCode = null;
 let currentInputValue = '';
+
+// ============================================================
+// ПРОВЕРКА СЕТИ, ВСПРАВЛЕНИЕ ОФЛАЙН-СТАТУСА И КАЛЬКУЛЯТОР
+// ============================================================
+
+// Реальная проверка наличия интернета (не верит "слепому" navigator.onLine)
+async function checkRealOnlineStatus() {
+    if (!navigator.onLine) return false;
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 сек тайм-аут
+
+        await fetch(`https://1.1.1.1/cdn-cgi/trace?_=${Date.now()}`, {
+            method: 'HEAD',
+            mode: 'no-cors',
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+        return true;
+    } catch (_) {
+        return false;
+    }
+}
+
+// Управление статусом в шапке (Online / Offline / Syncing)
+async function updateOnlineStatusUI(isSyncing = false) {
+    const status = document.getElementById('sync-status');
+    const loader = document.getElementById('loader');
+    if (!status) return;
+
+    const t = (typeof i18n !== 'undefined' && i18n[state.lang]) 
+        ? i18n[state.lang] 
+        : { sync: 'Syncing...', online: 'Online', offline: 'Offline' };
+
+    if (isSyncing) {
+        status.textContent = t.sync;
+        if (loader) loader.style.display = 'inline-block';
+        return;
+    }
+
+    if (loader) loader.style.display = 'none';
+
+    const isOnline = await checkRealOnlineStatus();
+    status.textContent = isOnline ? t.online : t.offline;
+}
+
+// Безопасный парсер математических выражений (без eval)
+function evaluateMathExpression(expr) {
+    if (!expr) return null;
+    
+    let clean = expr.replace(/\s+/g, '').replace(/,/g, '.');
+    if (!/^[0-9.+\-*/()]+$/.test(clean)) return null;
+
+    try {
+        const result = new Function(`'use strict'; return (${clean})`)();
+        if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
+            return result;
+        }
+    } catch (_) {
+        return null; 
+    }
+    return null;
+}
+
+// Применяет итоговый результат математического вычисления к инпуту (по Enter или Blur)
+function applyMathResult(input) {
+    if (!input) return;
+    
+    const code = input.dataset.code;
+    const rawValue = input.value;
+    
+    const calculated = evaluateMathExpression(rawValue);
+    
+    if (calculated !== null) {
+        const formatted = formatNumberString(calculated.toString());
+        input.value = formatted;
+        
+        currentInputCode = code;
+        currentInputValue = calculated.toString();
+        
+        adjustFontSize(input);
+        recalculate(code, calculated.toString());
+    }
+}
 
 function initSystemSettings() {
     const savedState = localStorage.getItem('conv_max_state');
@@ -36,7 +125,7 @@ function initSystemSettings() {
 
     if (loaded && typeof loaded === 'object') {
         state = Object.assign({}, state, loaded);
-        if (!i18n[state.lang]) state.lang = 'en';
+        if (typeof i18n !== 'undefined' && !i18n[state.lang]) state.lang = 'en';
         if (state.theme !== 'dark' && state.theme !== 'light') state.theme = 'dark';
         if (!Array.isArray(state.favorites)) state.favorites = ['USD', 'EUR', 'RUB', 'UZS', 'BTC'];
         if (!state.rates || typeof state.rates !== 'object') state.rates = {};
@@ -45,47 +134,62 @@ function initSystemSettings() {
         const sysLang = navigator.language || navigator.userLanguage || 'en';
         const shortLang = sysLang.split('-')[0].toLowerCase();
 
-        state.lang = i18n[shortLang] ? shortLang : 'en';
+        state.lang = (typeof i18n !== 'undefined' && i18n[shortLang]) ? shortLang : 'en';
         state.theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
         saveState();
     }
 }
 
 function getCurrencyName(code) {
+    if (typeof currencyDb === 'undefined' || !currencyDb[code]) return code;
     const item = currencyDb[code];
-    if (!item) return code;
     return item.n[state.lang] || item.n['en'] || code;
 }
 
 function applyLocalization() {
+    if (typeof i18n === 'undefined') return;
     const t = i18n[state.lang] || i18n['en'];
-    document.getElementById('ui-title').textContent = t.title;
+    
+    const uiTitle = document.getElementById('ui-title');
+    if (uiTitle) uiTitle.textContent = t.title;
     document.title = t.title; 
     
-    document.querySelector('meta[name="apple-mobile-web-app-title"]').setAttribute("content", t.title);
-    document.querySelector('meta[name="application-name"]').setAttribute("content", t.title);
-
-    document.getElementById('ui-add-btn').textContent = "+ " + t.add;
-    document.getElementById('ui-modal-title').textContent = t.searchTitle;
-    document.getElementById('ui-close-btn').textContent = t.close;
-    document.getElementById('search-bar').placeholder = t.searchPlaceholder;
-    document.getElementById('lang-picker').value = state.lang;
-    document.getElementById('ui-section-added').textContent = t.secAdded;
-    document.getElementById('ui-section-available').textContent = t.secAvailable;
-
-    const status = document.getElementById('sync-status');
-    const loader = document.getElementById('loader');
+    const metaApple = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+    if (metaApple) metaApple.setAttribute("content", t.title);
     
-    if (loader && loader.style.display === 'inline-block') {
-        status.textContent = t.sync;
-    } else {
-        status.textContent = navigator.onLine ? t.online : t.offline;
-    }
+    const metaAppName = document.querySelector('meta[name="application-name"]');
+    if (metaAppName) metaAppName.setAttribute("content", t.title);
+
+    const btnAdd = document.getElementById('ui-add-btn');
+    if (btnAdd) btnAdd.textContent = "+ " + t.add;
+    
+    const modalTitle = document.getElementById('ui-modal-title');
+    if (modalTitle) modalTitle.textContent = t.searchTitle;
+    
+    const btnClose = document.getElementById('ui-close-btn');
+    if (btnClose) btnClose.textContent = t.close;
+    
+    const searchBar = document.getElementById('search-bar');
+    if (searchBar) searchBar.placeholder = t.searchPlaceholder;
+    
+    const langPicker = document.getElementById('lang-picker');
+    if (langPicker) langPicker.value = state.lang;
+    
+    const secAdded = document.getElementById('ui-section-added');
+    if (secAdded) secAdded.textContent = t.secAdded;
+    
+    const secAvail = document.getElementById('ui-section-available');
+    if (secAvail) secAvail.textContent = t.secAvailable;
+
+    updateOnlineStatusUI(false);
 }
 
 function applyTheme() {
     document.body.setAttribute('data-theme', state.theme);
-    document.getElementById('theme-btn').textContent = state.theme === 'dark' ? '☀️' : '🌙';
+    const themeBtn = document.getElementById('theme-btn');
+    if (themeBtn) {
+        themeBtn.textContent = state.theme === 'dark' ? '☀️' : '🌙';
+    }
 }
 
 function saveState() { 
@@ -125,12 +229,21 @@ function clearAllInputs() {
     });
 }
 
+// ============================================================
+// РАСЧЕТ И КОНВЕРТАЦИЯ
+// ============================================================
+
 function recalculate(activeCode, rawValue) {
-    const cleanValue = parseCleanNumber(rawValue);
-    
     if (!state.rates[activeCode]) return;
 
-    if (cleanValue === '' || isNaN(cleanValue)) {
+    let parsedVal = evaluateMathExpression(rawValue);
+    
+    if (parsedVal === null) {
+        const cleanValue = parseCleanNumber(rawValue);
+        parsedVal = parseFloat(cleanValue);
+    }
+
+    if (isNaN(parsedVal) || rawValue.trim() === '') {
         state.favorites.forEach(code => {
             if (code !== activeCode) {
                 const input = document.getElementById(`input-${code}`);
@@ -142,7 +255,7 @@ function recalculate(activeCode, rawValue) {
         return;
     }
     
-    const valueInUSD = parseFloat(cleanValue) / state.rates[activeCode];
+    const valueInUSD = parsedVal / state.rates[activeCode];
 
     state.favorites.forEach(code => {
         if (code !== activeCode) {
@@ -160,7 +273,7 @@ function recalculate(activeCode, rawValue) {
                 if (state.rates[code] < 0.001) digits = 6;
                 else if (state.rates[code] < 0.1) digits = 4;
                 
-                const finalVal = parseFloat(cleanValue) === 0 ? '' : Number(result.toFixed(digits));
+                const finalVal = parsedVal === 0 ? '' : Number(result.toFixed(digits));
                 input.value = finalVal === '' ? '' : formatNumberString(finalVal.toString());
                 
                 adjustFontSize(input);
@@ -174,6 +287,10 @@ function recalculate(activeCode, rawValue) {
     });
 }
 
+// ============================================================
+// РЕНДЕРИНГ И СОБЫТИЯ ИНТЕРФЕЙСА
+// ============================================================
+
 function renderMain() {
     const container = document.getElementById('favorites-container');
     if (!container) return;
@@ -181,7 +298,7 @@ function renderMain() {
     const fragment = document.createDocumentFragment();
 
     state.favorites.forEach(code => {
-        const dbItem = currencyDb[code] || { f: "🏳️" };
+        const dbItem = (typeof currencyDb !== 'undefined' && currencyDb[code]) ? currencyDb[code] : { f: "🏳️" };
         const nameLocal = getCurrencyName(code);
         const card = document.createElement('div');
         card.className = 'currency-card';
@@ -198,7 +315,7 @@ function renderMain() {
                 </div>
             </div>
             <div class="right-block">
-                <input type="text" inputmode="decimal" class="currency-input" id="input-${code}" placeholder="${placeholderText}" data-code="${code}" autocomplete="off" ${!hasRate ? 'disabled' : ''}>
+                <input type="text" inputmode="text" enterkeyhint="done" class="currency-input" id="input-${code}" placeholder="${placeholderText}" data-code="${code}" autocomplete="off" ${!hasRate ? 'disabled' : ''}>
                 <button class="clear-btn" id="clear-${code}">×</button>
             </div>
         `;
@@ -210,18 +327,15 @@ function renderMain() {
     container.appendChild(fragment);
 
     document.querySelectorAll('.currency-input').forEach(input => {
+        // 1. Ввод
         input.addEventListener('input', (e) => {
-            let val = e.target.value.replace(/,/g, '.').replace(/[^0-9. ]/g, ''); 
-            let clean = parseCleanNumber(val).replace(/^0+(?=\d)/, '');
+            let val = e.target.value.replace(/,/g, '.').replace(/[^0-9. \+\-\*\/\(\)]/g, ''); 
             
-            const parts = clean.split('.');
-            if (parts.length > 2) clean = parts[0] + '.' + parts.slice(1).join('');
-            
-            e.target.value = clean !== '' ? formatNumberString(clean) : '';
+            e.target.value = val;
             adjustFontSize(e.target);
             
             currentInputCode = e.target.dataset.code;
-            currentInputValue = clean;
+            currentInputValue = val;
             
             const clearBtn = document.getElementById(`clear-${e.target.dataset.code}`);
             if (clearBtn) {
@@ -229,7 +343,7 @@ function renderMain() {
                 else clearBtn.classList.remove('visible');
             }
 
-            if (clean === '') {
+            if (val.trim() === '') {
                 currentInputCode = null;
                 currentInputValue = '';
                 state.favorites.forEach(c => {
@@ -241,22 +355,43 @@ function renderMain() {
                     }
                 });
             } else {
-                recalculate(e.target.dataset.code, clean);
+                recalculate(e.target.dataset.code, val);
             }
+        });
+
+        // 2. Enter или кнопка "Готово" на клаве
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                applyMathResult(e.target);
+                e.target.blur();
+            }
+        });
+
+        // 3. Потеря фокуса
+        input.addEventListener('blur', (e) => {
+            applyMathResult(e.target);
         });
     });
     
-    const currentT = i18n[state.lang] || i18n['en'];
-    document.getElementById('last-update').textContent = `${currentT.updated} ${state.lastUpdated || '-'}`;
+    if (typeof i18n !== 'undefined') {
+        const currentT = i18n[state.lang] || i18n['en'];
+        const lastUpdateEl = document.getElementById('last-update');
+        if (lastUpdateEl) {
+            lastUpdateEl.textContent = `${currentT.updated} ${state.lastUpdated || '-'}`;
+        }
+    }
 }
 
 function openModal() { 
-    document.getElementById('search-modal').style.display = 'flex'; 
+    const modal = document.getElementById('search-modal');
+    if (modal) modal.style.display = 'flex'; 
     filterCurrencies(); 
 }
 
 function closeModal() { 
-    document.getElementById('search-modal').style.display = 'none'; 
+    const modal = document.getElementById('search-modal');
+    if (modal) modal.style.display = 'none'; 
 }
 
 function toggleFavorite(code, shouldAdd) {
@@ -276,7 +411,7 @@ function toggleFavorite(code, shouldAdd) {
     if (currentInputCode && currentInputValue !== '') {
         const activeInput = document.getElementById(`input-${currentInputCode}`);
         if (activeInput) {
-            activeInput.value = formatNumberString(currentInputValue);
+            activeInput.value = currentInputValue;
             adjustFontSize(activeInput);
             const clearBtn = document.getElementById(`clear-${currentInputCode}`);
             if (clearBtn) clearBtn.classList.add('visible');
@@ -299,7 +434,10 @@ function matchesQuery(code, dbItem, query) {
 }
 
 function filterCurrencies() {
-    const query = document.getElementById('search-bar').value.toLowerCase().trim();
+    const searchBar = document.getElementById('search-bar');
+    if (!searchBar || typeof currencyDb === 'undefined') return;
+    
+    const query = searchBar.value.toLowerCase().trim();
     const addedContainer = document.getElementById('added-container');
     const availableContainer = document.getElementById('available-container');
     
@@ -347,7 +485,6 @@ function filterCurrencies() {
         if (!matchesQuery(code, dbItem, query)) return;
 
         const item = document.createElement('div');
-        
         const hasRate = !!state.rates[code];
         item.className = `search-item clickable ${!hasRate ? 'no-rate-available' : ''}`;
         
@@ -376,6 +513,10 @@ function filterCurrencies() {
     availableContainer.innerHTML = '';
     availableContainer.appendChild(availableFragment);
 }
+
+// ============================================================
+// DRAG & DROP
+// ============================================================
 
 function setupDragAndDropHandlers() {
     const container = document.getElementById('added-container');
@@ -455,12 +596,16 @@ function saveNewOrder() {
     if (currentInputCode && currentInputValue !== '') {
         const activeInput = document.getElementById(`input-${currentInputCode}`);
         if (activeInput) {
-            activeInput.value = formatNumberString(currentInputValue);
+            activeInput.value = currentInputValue;
             adjustFontSize(activeInput);
             recalculate(currentInputCode, currentInputValue);
         }
     }
 }
+
+// ============================================================
+// ЗАГРУЗКА И ОБНОВЛЕНИЕ КУРСОВ
+// ============================================================
 
 async function fetchFiatRates() {
     let lastError = null;
@@ -489,58 +634,68 @@ async function fetchFiatRates() {
 async function updateRates(forceUpdate = false) {
     const now = Date.now();
     
-    // ПРОВЕРКА КЭША: Если принудительного обновления нет, данные есть и они свежее 1 часа — отменяем сетевой запрос
+    // Сначала проверяем соединение
+    await updateOnlineStatusUI(false);
+
+    // Проверка кэша
     if (!forceUpdate && Object.keys(state.rates).length > 0 && (now - state.lastUpdatedTimestamp < CACHE_DURATION)) {
-        console.log("Используются актуальные курсы из локального кэша (период 1 час не истек)");
+        console.log("Используются актуальные курсы из локального кэша");
         return;
     }
 
-    const loader = document.getElementById('loader');
-    const status = document.getElementById('sync-status');
-    if (loader) loader.style.display = 'inline-block';
-    
-    const currentT = i18n[state.lang] || i18n['en'];
-    if (status) status.textContent = currentT.sync;
+    // Включаем индикатор "Синхронизация..."
+    await updateOnlineStatusUI(true);
 
     try {
         let newRates = await fetchFiatRates();
 
-        const cryptoIds = Object.values(currencyDb).filter(item => item.id).map(item => item.id);
-        if (cryptoIds.length > 0) {
-            try {
-                const resCrypto = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${cryptoIds.join(',')}&vs_currencies=usd`);
-                if (resCrypto.ok) {
-                    const dataCrypto = await resCrypto.json();
-                    Object.keys(currencyDb).forEach(code => {
-                        const apiId = currencyDb[code].id;
-                        if (apiId && dataCrypto && dataCrypto[apiId] && dataCrypto[apiId].usd) {
-                            newRates[code] = 1 / dataCrypto[apiId].usd;
-                        }
-                    });
+        if (typeof currencyDb !== 'undefined') {
+            const cryptoIds = Object.values(currencyDb).filter(item => item.id).map(item => item.id);
+            if (cryptoIds.length > 0) {
+                try {
+                    const resCrypto = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${cryptoIds.join(',')}&vs_currencies=usd`);
+                    if (resCrypto.ok) {
+                        const dataCrypto = await resCrypto.json();
+                        Object.keys(currencyDb).forEach(code => {
+                            const apiId = currencyDb[code].id;
+                            if (apiId && dataCrypto && dataCrypto[apiId] && dataCrypto[apiId].usd) {
+                                newRates[code] = 1 / dataCrypto[apiId].usd;
+                            }
+                        });
+                    }
+                } catch (cryptoErr) {
+                    console.warn("Криптовалюты не обновлены:", cryptoErr);
                 }
-            } catch (cryptoErr) {
-                console.warn("Не удалось обновить криптовалюты, используются старые или пустые значения:", cryptoErr);
             }
         }
 
         state.rates = newRates;
-        state.lastUpdatedTimestamp = now; // Сохраняем таймстамп успешного запроса
+        state.lastUpdatedTimestamp = now;
         state.lastUpdated = new Date().toLocaleString();
-        if (status) status.textContent = currentT.online;
-        saveState();
-    } catch (e) {
-        if (status) status.textContent = currentT.offline;
-        console.error("Критическая ошибка обновления курсов:", e);
-    } finally {
-        if (loader) loader.style.display = 'none';
         
-        renderMain();
+        saveState();
+        await updateOnlineStatusUI(false);
+    } catch (e) {
+        console.error("Ошибка обновления курсов:", e);
+        await updateOnlineStatusUI(false);
+    } finally {
+        // Перерисовываем DOM только если нет фокуса на инпуте
+        const activeEl = document.activeElement;
+        const isInputFocused = activeEl && activeEl.classList.contains('currency-input');
+
+        if (!isInputFocused) {
+            renderMain();
+        }
         
         if (currentInputCode && currentInputValue !== '') {
             recalculate(currentInputCode, currentInputValue);
         }
     }
 }
+
+// ============================================================
+// PWA И СИСТЕМНЫЕ НАСТРОЙКИ
+// ============================================================
 
 function updatePWAManifest() {
     const metaTheme = document.querySelector('meta[name="theme-color"]');
@@ -549,49 +704,59 @@ function updatePWAManifest() {
     }
 }
 
-document.getElementById('lang-picker').addEventListener('change', (e) => {
-    state.lang = e.target.value;
-    applyLocalization();
-    renderMain();
-    if (currentInputCode && currentInputValue !== '') {
-        recalculate(currentInputCode, currentInputValue);
-    }
-    updatePWAManifest();
-    saveState();
-});
+// СЛУШАТЕЛИ СОБЫТИЙ СТРАНИЦЫ
+const langPicker = document.getElementById('lang-picker');
+if (langPicker) {
+    langPicker.addEventListener('change', (e) => {
+        state.lang = e.target.value;
+        applyLocalization();
+        renderMain();
+        if (currentInputCode && currentInputValue !== '') {
+            recalculate(currentInputCode, currentInputValue);
+        }
+        updatePWAManifest();
+        saveState();
+    });
+}
 
-document.getElementById('theme-btn').addEventListener('click', () => {
-    state.theme = state.theme === 'dark' ? 'light' : 'dark';
-    applyTheme();
-    updatePWAManifest();
-    saveState();
-});
+const themeBtn = document.getElementById('theme-btn');
+if (themeBtn) {
+    themeBtn.addEventListener('click', () => {
+        state.theme = state.theme === 'dark' ? 'light' : 'dark';
+        applyTheme();
+        updatePWAManifest();
+        saveState();
+    });
+}
 
-document.getElementById('ui-add-btn').addEventListener('click', openModal);
-document.getElementById('ui-close-btn').addEventListener('click', closeModal);
-document.getElementById('search-bar').addEventListener('input', filterCurrencies);
+const addBtn = document.getElementById('ui-add-btn');
+if (addBtn) addBtn.addEventListener('click', openModal);
+
+const closeBtn = document.getElementById('ui-close-btn');
+if (closeBtn) closeBtn.addEventListener('click', closeModal);
+
+const searchBar = document.getElementById('search-bar');
+if (searchBar) searchBar.addEventListener('input', filterCurrencies);
 
 window.addEventListener('click', (e) => {
     if (e.target === document.getElementById('search-modal')) closeModal();
 });
 
-// Если пользователь вернулся в сеть — имеет смысл обновить принудительно
 window.addEventListener('online', () => updateRates(true));
-window.addEventListener('offline', () => {
-    const currentT = i18n[state.lang] || i18n['en'];
-    const status = document.getElementById('sync-status');
-    if (status) status.textContent = currentT.offline;
-});
+window.addEventListener('offline', () => updateOnlineStatusUI(false));
 
-// ИНИЦИАЛИЗАЦИЯ
+// ============================================================
+// ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
+// ============================================================
+
 initSystemSettings();
 applyLocalization();
 applyTheme();
 updatePWAManifest();
 setupDragAndDropHandlers();
 
-// Мгновенный рендер из сохраненного локального состояния (пользователь сразу видит калькулятор)
+// Быстрый рендер из кэша
 renderMain();
 
-// Вызов обновления с флагом по умолчанию (сработает только если кэш устарел)
+// Запрос обновлений (сработает при необходимости)
 updateRates(false);
