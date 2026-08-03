@@ -24,6 +24,9 @@ let state = {
 // Active user input state storage
 let currentInputCode = null;
 let currentInputValue = '';
+let activeInputEl = null;
+let useCustomKeypad = true;
+
 
 // ============================================================
 // NETWORK STATUS & CALCULATOR EVALUATION
@@ -208,6 +211,93 @@ function applyMathResult(input) {
         recalculate(code, calculated.toString());
     }
 }
+
+// ============================================================
+// VIRTUAL CALCULATOR KEYPAD CONTROLLER
+// ============================================================
+
+function openVirtualKeypad(input) {
+    if (!input || input.disabled) return;
+    
+    activeInputEl = input;
+    const code = input.dataset.code;
+    const keypad = document.getElementById('virtual-keypad');
+    const titleEl = document.getElementById('keypad-active-code');
+    
+    if (keypad) {
+        if (titleEl) {
+            const name = getCurrencyName(code);
+            titleEl.textContent = `${code} - ${name}`;
+        }
+        
+        // Highlight active card
+        document.querySelectorAll('.currency-card').forEach(card => card.classList.remove('active-input-card'));
+        const parentCard = input.closest('.currency-card');
+        if (parentCard) parentCard.classList.add('active-input-card');
+        
+        if (useCustomKeypad) {
+            input.setAttribute('inputmode', 'none');
+            keypad.removeAttribute('hidden');
+            document.body.classList.add('has-keypad-open');
+        } else {
+            input.setAttribute('inputmode', 'decimal');
+            keypad.setAttribute('hidden', '');
+            document.body.classList.remove('has-keypad-open');
+        }
+    }
+}
+
+function closeVirtualKeypad() {
+    const keypad = document.getElementById('virtual-keypad');
+    if (keypad) {
+        keypad.setAttribute('hidden', '');
+        document.body.classList.remove('has-keypad-open');
+    }
+    document.querySelectorAll('.currency-card').forEach(card => card.classList.remove('active-input-card'));
+    activeInputEl = null;
+}
+
+function handleKeypadPress(key) {
+    if (!activeInputEl) return;
+
+    if (key === 'C') {
+        activeInputEl.value = '';
+        activeInputEl.dispatchEvent(new Event('input', { bubbles: true }));
+    } else if (key === 'BACKSPACE') {
+        activeInputEl.value = activeInputEl.value.slice(0, -1);
+        activeInputEl.dispatchEvent(new Event('input', { bubbles: true }));
+    } else if (key === '=') {
+        applyMathResult(activeInputEl);
+        closeVirtualKeypad();
+    } else {
+        // Digits and operators
+        activeInputEl.value += key;
+        activeInputEl.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+}
+
+function toggleKeypadMode() {
+    useCustomKeypad = !useCustomKeypad;
+    const toggleBtn = document.getElementById('keypad-toggle-mode');
+    if (toggleBtn) {
+        toggleBtn.textContent = useCustomKeypad ? '⌨️' : '🔢';
+        toggleBtn.title = useCustomKeypad ? 'Switch to native keyboard' : 'Switch to built-in keypad';
+    }
+    
+    if (activeInputEl) {
+        if (useCustomKeypad) {
+            activeInputEl.setAttribute('inputmode', 'none');
+            const keypad = document.getElementById('virtual-keypad');
+            if (keypad) keypad.removeAttribute('hidden');
+            document.body.classList.add('has-keypad-open');
+        } else {
+            activeInputEl.setAttribute('inputmode', 'decimal');
+            closeVirtualKeypad();
+            activeInputEl.focus();
+        }
+    }
+}
+
 
 function initSystemSettings() {
     const savedState = localStorage.getItem('conv_max_state');
@@ -414,7 +504,7 @@ function renderMain() {
                 </div>
             </div>
             <div class="right-block">
-                <input type="text" inputmode="text" enterkeyhint="done" class="currency-input" id="input-${code}" placeholder="${placeholderText}" data-code="${code}" autocomplete="off" ${!hasRate ? 'disabled' : ''}>
+                <input type="text" inputmode="decimal" enterkeyhint="done" class="currency-input" id="input-${code}" placeholder="${placeholderText}" data-code="${code}" autocomplete="off" ${!hasRate ? 'disabled' : ''}>
                 <button class="clear-btn" id="clear-${code}">×</button>
             </div>
         `;
@@ -426,6 +516,15 @@ function renderMain() {
     container.appendChild(fragment);
 
     document.querySelectorAll('.currency-input').forEach(input => {
+        // Show virtual keypad on focus or click
+        input.addEventListener('focus', (e) => {
+            openVirtualKeypad(e.target);
+        });
+
+        input.addEventListener('click', (e) => {
+            openVirtualKeypad(e.target);
+        });
+
         // 1. User input handler
         input.addEventListener('input', (e) => {
             let val = e.target.value.replace(/,/g, '.').replace(/[^0-9. \+\-\*\/\(\)]/g, ''); 
@@ -463,15 +562,22 @@ function renderMain() {
             if (e.key === 'Enter') {
                 e.preventDefault();
                 applyMathResult(e.target);
+                closeVirtualKeypad();
                 e.target.blur();
             }
         });
 
         // 3. Blur event handler
         input.addEventListener('blur', (e) => {
-            applyMathResult(e.target);
+            // Delay check to prevent closing when clicking keypad buttons
+            setTimeout(() => {
+                if (!document.activeElement || !document.activeElement.closest('#virtual-keypad')) {
+                    applyMathResult(e.target);
+                }
+            }, 100);
         });
     });
+
     
     if (typeof i18n !== 'undefined') {
         const currentT = i18n[state.lang] || i18n['en'];
@@ -864,8 +970,52 @@ window.addEventListener('online', () => updateRates(true));
 window.addEventListener('offline', () => updateOnlineStatusUI(false));
 
 // ============================================================
+// KEYPAD EVENT LISTENERS
+// ============================================================
+
+document.querySelectorAll('.key-btn').forEach(btn => {
+    btn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        const key = btn.dataset.key;
+        handleKeypadPress(key);
+    });
+});
+
+const keypadCloseBtn = document.getElementById('keypad-close');
+if (keypadCloseBtn) {
+    keypadCloseBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeVirtualKeypad();
+    });
+}
+
+const keypadToggleBtn = document.getElementById('keypad-toggle-mode');
+if (keypadToggleBtn) {
+    keypadToggleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        toggleKeypadMode();
+    });
+}
+
+// Close keypad when clicking outside input fields, cards, or keypad
+document.addEventListener('pointerdown', (e) => {
+    if (!document.body.classList.contains('has-keypad-open')) return;
+    
+    const target = e.target;
+    if (
+        !target.closest('#virtual-keypad') &&
+        !target.closest('.currency-card') &&
+        !target.closest('#search-modal') &&
+        !target.closest('header')
+    ) {
+        closeVirtualKeypad();
+    }
+});
+
+// ============================================================
 // APPLICATION INITIALIZATION
 // ============================================================
+
 
 initSystemSettings();
 applyLocalization();

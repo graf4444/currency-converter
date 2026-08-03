@@ -101,7 +101,44 @@
     </div>
 </div>
 
+<div class="keypad-container" id="virtual-keypad" aria-label="Calculator Keypad" hidden>
+    <div class="keypad-header">
+        <span class="keypad-title" id="keypad-active-code"></span>
+        <div class="keypad-actions">
+            <button class="keypad-toggle-mode-btn" id="keypad-toggle-mode" title="Toggle Keyboard Mode">⌨️</button>
+            <button class="keypad-close-btn" id="keypad-close" title="Close Keypad">✕</button>
+        </div>
+    </div>
+    <div class="keypad-grid">
+        <button class="key-btn key-action" data-key="C">C</button>
+        <button class="key-btn key-operator" data-key="(">(</button>
+        <button class="key-btn key-operator" data-key=")">)</button>
+        <button class="key-btn key-operator" data-key="/">÷</button>
+        
+        <button class="key-btn key-num" data-key="7">7</button>
+        <button class="key-btn key-num" data-key="8">8</button>
+        <button class="key-btn key-num" data-key="9">9</button>
+        <button class="key-btn key-operator" data-key="*">×</button>
+        
+        <button class="key-btn key-num" data-key="4">4</button>
+        <button class="key-btn key-num" data-key="5">5</button>
+        <button class="key-btn key-num" data-key="6">6</button>
+        <button class="key-btn key-operator" data-key="-">−</button>
+        
+        <button class="key-btn key-num" data-key="1">1</button>
+        <button class="key-btn key-num" data-key="2">2</button>
+        <button class="key-btn key-num" data-key="3">3</button>
+        <button class="key-btn key-operator" data-key="+">+</button>
+        
+        <button class="key-btn key-num" data-key="0">0</button>
+        <button class="key-btn key-num" data-key=".">.</button>
+        <button class="key-btn key-action" data-key="BACKSPACE">⌫</button>
+        <button class="key-btn key-equals" data-key="=">=</button>
+    </div>
+</div>
+
 <script src="js/app.js" defer></script>
 
 </body>
 </html>
+

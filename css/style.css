@@ -90,3 +90,133 @@ footer { margin-top: auto; text-align: center; font-size: 0.8rem; color: var(--t
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .search-item.no-rate-available { opacity: 0.6; }
+
+/* ============================================================
+   VIRTUAL CALCULATOR KEYPAD STYLES
+   ============================================================ */
+.keypad-container {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 480px;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.2);
+    padding: 12px 14px 20px 14px;
+    z-index: 90;
+    transition: transform 0.25s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.2s ease;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.keypad-container[hidden] {
+    display: none !important;
+}
+
+.keypad-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 0 4px;
+}
+
+.keypad-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.5px;
+}
+
+.keypad-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.keypad-toggle-mode-btn,
+.keypad-close-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.keypad-toggle-mode-btn:hover,
+.keypad-close-btn:hover {
+    border-color: var(--accent);
+}
+
+.keypad-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.key-btn {
+    appearance: none;
+    -webkit-appearance: none;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 1.35rem;
+    font-weight: 600;
+    padding: 12px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.08s ease, background-color 0.15s ease;
+    touch-action: manipulation;
+}
+
+.key-btn:active {
+    transform: scale(0.94);
+    background-color: var(--border);
+}
+
+.key-operator {
+    background: rgba(0, 113, 227, 0.1);
+    color: var(--accent);
+    border-color: rgba(0, 113, 227, 0.2);
+    font-weight: 700;
+}
+
+[data-theme="dark"] .key-operator {
+    background: rgba(41, 151, 255, 0.15);
+    border-color: rgba(41, 151, 255, 0.3);
+}
+
+.key-action {
+    background: var(--bg);
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.key-equals {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+    font-weight: 700;
+}
+
+.key-equals:active {
+    opacity: 0.9;
+}
+
+.currency-card.active-input-card {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.25);
+}
+
+body.has-keypad-open .container {
+    padding-bottom: 270px;
+}
