@@ -1,5 +1,5 @@
 // Bump CACHE_NAME on every release that changes any file in ASSETS
-const CACHE_NAME = 'currency-converter-v7';
+const CACHE_NAME = 'currency-converter-v8';
 const ASSETS = [
   './',
   './index.html',
@@ -36,7 +36,7 @@ self.addEventListener('fetch', (e) => {
 
   const url = new URL(req.url);
 
-  // 1. API курсов валют — пробуем сеть, если нет интернета — берём из кэша
+  // 1. Currency exchange rates API: Network-first with cache fallback
   const isApiRequest = url.hostname.includes('api.') || 
                        url.hostname.includes('coingecko.com') || 
                        url.hostname.includes('open.er-api.com') ||
@@ -57,26 +57,26 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // 2. Статика и оболочка приложения (App Shell) — CACHE FIRST (Мгновенный запуск)
+  // 2. Static Assets & App Shell: Cache-First strategy for instant launch
   e.respondWith((async () => {
-    // Пробуем взять из кэша
+    // Try to get resource from cache
     const cachedResponse = await caches.match(req);
     
     if (cachedResponse) {
-      // Фоновое обновление кэша (Stale-While-Revalidate), чтобы при следующем запуске были свежие скрипты
+      // Stale-While-Revalidate background cache update for fresh assets on next boot
       e.waitUntil(
         fetch(req).then(async (networkResponse) => {
           if (networkResponse && networkResponse.ok && url.origin === self.location.origin) {
             const cache = await caches.open(CACHE_NAME);
             await cache.put(req, networkResponse);
           }
-        }).catch(() => {/* Игнорируем ошибки сети в фоновом режиме */})
+        }).catch(() => {/* Ignore background network failures */})
       );
       
       return cachedResponse;
     }
 
-    // Если в кэше нет (например, новый ресурс) — идём в сеть
+    // Network fallback for new/uncached static resources
     try {
       const netRes = await fetch(req);
       if (netRes && netRes.ok && url.origin === self.location.origin) {
@@ -86,7 +86,7 @@ self.addEventListener('fetch', (e) => {
       }
       return netRes;
     } catch (err) {
-      // Запасной фоллбек для навигации
+      // Navigation fallback to app shell
       if (req.mode === 'navigate') {
         const shell = await caches.match('./index.html');
         if (shell) return shell;

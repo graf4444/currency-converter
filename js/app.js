@@ -1,15 +1,15 @@
 // ============================================================
-// КОНФИГУРАЦИЯ И СОСТОЯНИЕ
+// CONFIGURATION & APPLICATION STATE
 // ============================================================
 
-// Массив приоритетных API для фиатных валют (без ключей)
+// Priority API endpoints for fiat currency rates (no keys required)
 const FIAT_API_URLS = [
     "https://api.exchangerate.fun/latest?base=USD",
     "https://api.frankfurter.app/latest?from=USD",
     "https://open.er-api.com/v6/latest/USD"
 ];
 
-// Время жизни кэша в миллисекундах (1 час)
+// Cache duration in milliseconds (1 hour)
 const CACHE_DURATION = 60 * 60 * 1000;
 
 let state = {
@@ -21,21 +21,21 @@ let state = {
     lastUpdatedTimestamp: 0
 };
 
-// Хранилище активного ввода пользователя
+// Active user input state storage
 let currentInputCode = null;
 let currentInputValue = '';
 
 // ============================================================
-// ПРОВЕРКА СЕТИ, ВСПРАВЛЕНИЕ ОФЛАЙН-СТАТУСА И КАЛЬКУЛЯТОР
+// NETWORK STATUS & CALCULATOR EVALUATION
 // ============================================================
 
-// Реальная проверка наличия интернета (не верит "слепому" navigator.onLine)
+// Active network status check (pings endpoint to confirm real connectivity)
 async function checkRealOnlineStatus() {
     if (!navigator.onLine) return false;
 
     try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 сек тайм-аут
+        const timeoutId = setTimeout(() => controller.abort(), 3000); // 3-second timeout
 
         await fetch(`https://1.1.1.1/cdn-cgi/trace?_=${Date.now()}`, {
             method: 'HEAD',
@@ -49,7 +49,7 @@ async function checkRealOnlineStatus() {
     }
 }
 
-// Управление статусом в шапке (Online / Offline / Syncing)
+// UI status updates (Online / Offline / Syncing)
 async function updateOnlineStatusUI(isSyncing = false) {
     const status = document.getElementById('sync-status');
     const loader = document.getElementById('loader');
@@ -71,25 +71,124 @@ async function updateOnlineStatusUI(isSyncing = false) {
     status.textContent = isOnline ? t.online : t.offline;
 }
 
-// Безопасный парсер математических выражений (без eval)
+/**
+ * Safely evaluates a mathematical expression string containing basic arithmetic
+ * (+, -, *, /) and parentheses without using eval() or new Function().
+ * 
+ * @param {string} expr - Expression string to evaluate.
+ * @returns {number|null} The numeric result, or null if invalid or divide-by-zero.
+ */
 function evaluateMathExpression(expr) {
-    if (!expr) return null;
-    
+    if (!expr || typeof expr !== 'string') return null;
+
     let clean = expr.replace(/\s+/g, '').replace(/,/g, '.');
-    if (!/^[0-9.+\-*/()]+$/.test(clean)) return null;
+    if (!clean || !/^[0-9.+\-*/()]+$/.test(clean)) return null;
+
+    // Tokenizer
+    const tokens = [];
+    let i = 0;
+    while (i < clean.length) {
+        const char = clean[i];
+        if ('+-*/()'.includes(char)) {
+            tokens.push(char);
+            i++;
+        } else if (/[0-9.]/.test(char)) {
+            let numStr = '';
+            while (i < clean.length && /[0-9.]/.test(clean[i])) {
+                numStr += clean[i];
+                i++;
+            }
+            if ((numStr.match(/\./g) || []).length > 1) return null;
+            tokens.push(parseFloat(numStr));
+        } else {
+            return null;
+        }
+    }
+
+    let tokenIndex = 0;
+
+    function peek() {
+        return tokens[tokenIndex];
+    }
+
+    function get() {
+        return tokens[tokenIndex++];
+    }
+
+    function parseExpression() {
+        let left = parseTerm();
+        if (left === null) return null;
+
+        while (peek() === '+' || peek() === '-') {
+            const op = get();
+            const right = parseTerm();
+            if (right === null) return null;
+            left = op === '+' ? left + right : left - right;
+        }
+        return left;
+    }
+
+    function parseTerm() {
+        let left = parseFactor();
+        if (left === null) return null;
+
+        while (peek() === '*' || peek() === '/') {
+            const op = get();
+            const right = parseFactor();
+            if (right === null) return null;
+            if (op === '/') {
+                if (right === 0) return null;
+                left = left / right;
+            } else {
+                left = left * right;
+            }
+        }
+        return left;
+    }
+
+    function parseFactor() {
+        const next = peek();
+
+        if (next === '+') {
+            get();
+            return parseFactor();
+        }
+        if (next === '-') {
+            get();
+            const factor = parseFactor();
+            return factor !== null ? -factor : null;
+        }
+        if (next === '(') {
+            get();
+            const val = parseExpression();
+            if (peek() !== ')') return null;
+            get();
+            return val;
+        }
+        if (typeof next === 'number' && !isNaN(next)) {
+            return get();
+        }
+
+        return null;
+    }
 
     try {
-        const result = new Function(`'use strict'; return (${clean})`)();
-        if (typeof result === 'number' && !isNaN(result) && isFinite(result)) {
+        const result = parseExpression();
+        if (tokenIndex === tokens.length && typeof result === 'number' && isFinite(result)) {
             return result;
         }
     } catch (_) {
-        return null; 
+        return null;
     }
+
     return null;
 }
 
-// Применяет итоговый результат математического вычисления к инпуту (по Enter или Blur)
+/**
+ * Applies evaluated math result to the specified input element.
+ * 
+ * @param {HTMLInputElement} input - Target input element.
+ */
 function applyMathResult(input) {
     if (!input) return;
     
@@ -230,7 +329,7 @@ function clearAllInputs() {
 }
 
 // ============================================================
-// РАСЧЕТ И КОНВЕРТАЦИЯ
+// CALCULATIONS & CONVERSION LOGIC
 // ============================================================
 
 function recalculate(activeCode, rawValue) {
@@ -288,7 +387,7 @@ function recalculate(activeCode, rawValue) {
 }
 
 // ============================================================
-// РЕНДЕРИНГ И СОБЫТИЯ ИНТЕРФЕЙСА
+// RENDERING & INTERFACE EVENTS
 // ============================================================
 
 function renderMain() {
@@ -327,7 +426,7 @@ function renderMain() {
     container.appendChild(fragment);
 
     document.querySelectorAll('.currency-input').forEach(input => {
-        // 1. Ввод
+        // 1. User input handler
         input.addEventListener('input', (e) => {
             let val = e.target.value.replace(/,/g, '.').replace(/[^0-9. \+\-\*\/\(\)]/g, ''); 
             
@@ -359,7 +458,7 @@ function renderMain() {
             }
         });
 
-        // 2. Enter или кнопка "Готово" на клаве
+        // 2. Enter key handler
         input.addEventListener('keydown', (e) => {
             if (e.key === 'Enter') {
                 e.preventDefault();
@@ -368,7 +467,7 @@ function renderMain() {
             }
         });
 
-        // 3. Потеря фокуса
+        // 3. Blur event handler
         input.addEventListener('blur', (e) => {
             applyMathResult(e.target);
         });
@@ -385,13 +484,23 @@ function renderMain() {
 
 function openModal() { 
     const modal = document.getElementById('search-modal');
-    if (modal) modal.style.display = 'flex'; 
+    if (modal) {
+        modal.style.display = 'flex';
+        modal.setAttribute('aria-hidden', 'false');
+        const searchInput = document.getElementById('search-bar');
+        if (searchInput) searchInput.focus();
+    }
     filterCurrencies(); 
 }
 
 function closeModal() { 
     const modal = document.getElementById('search-modal');
-    if (modal) modal.style.display = 'none'; 
+    if (modal) {
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+        const addBtn = document.getElementById('ui-add-btn');
+        if (addBtn) addBtn.focus();
+    }
 }
 
 function toggleFavorite(code, shouldAdd) {
@@ -604,7 +713,7 @@ function saveNewOrder() {
 }
 
 // ============================================================
-// ЗАГРУЗКА И ОБНОВЛЕНИЕ КУРСОВ
+// EXCHANGE RATES FETCHING & UPDATES
 // ============================================================
 
 async function fetchFiatRates() {
@@ -628,22 +737,22 @@ async function fetchFiatRates() {
             lastError = e;
         }
     }
-    throw lastError || new Error("Все источники фиатных валют недоступны");
+    throw lastError || new Error("All fiat currency rate sources are unavailable");
 }
 
 async function updateRates(forceUpdate = false) {
     const now = Date.now();
     
-    // Сначала проверяем соединение
+    // Check connectivity first
     await updateOnlineStatusUI(false);
 
-    // Проверка кэша
+    // Check cache freshness
     if (!forceUpdate && Object.keys(state.rates).length > 0 && (now - state.lastUpdatedTimestamp < CACHE_DURATION)) {
-        console.log("Используются актуальные курсы из локального кэша");
+        console.log("Using cached exchange rates");
         return;
     }
 
-    // Включаем индикатор "Синхронизация..."
+    // Show syncing indicator
     await updateOnlineStatusUI(true);
 
     try {
@@ -664,7 +773,7 @@ async function updateRates(forceUpdate = false) {
                         });
                     }
                 } catch (cryptoErr) {
-                    console.warn("Криптовалюты не обновлены:", cryptoErr);
+                    console.warn("Cryptocurrency rates update failed:", cryptoErr);
                 }
             }
         }
@@ -676,10 +785,10 @@ async function updateRates(forceUpdate = false) {
         saveState();
         await updateOnlineStatusUI(false);
     } catch (e) {
-        console.error("Ошибка обновления курсов:", e);
+        console.error("Exchange rates update error:", e);
         await updateOnlineStatusUI(false);
     } finally {
-        // Перерисовываем DOM только если нет фокуса на инпуте
+        // Re-render DOM only if input is not focused
         const activeEl = document.activeElement;
         const isInputFocused = activeEl && activeEl.classList.contains('currency-input');
 
@@ -694,7 +803,7 @@ async function updateRates(forceUpdate = false) {
 }
 
 // ============================================================
-// PWA И СИСТЕМНЫЕ НАСТРОЙКИ
+// PWA & SYSTEM SETTINGS
 // ============================================================
 
 function updatePWAManifest() {
@@ -704,7 +813,7 @@ function updatePWAManifest() {
     }
 }
 
-// СЛУШАТЕЛИ СОБЫТИЙ СТРАНИЦЫ
+// PAGE EVENT LISTENERS
 const langPicker = document.getElementById('lang-picker');
 if (langPicker) {
     langPicker.addEventListener('change', (e) => {
@@ -742,11 +851,20 @@ window.addEventListener('click', (e) => {
     if (e.target === document.getElementById('search-modal')) closeModal();
 });
 
+window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+        const modal = document.getElementById('search-modal');
+        if (modal && modal.style.display === 'flex') {
+            closeModal();
+        }
+    }
+});
+
 window.addEventListener('online', () => updateRates(true));
 window.addEventListener('offline', () => updateOnlineStatusUI(false));
 
 // ============================================================
-// ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ
+// APPLICATION INITIALIZATION
 // ============================================================
 
 initSystemSettings();
@@ -755,8 +873,8 @@ applyTheme();
 updatePWAManifest();
 setupDragAndDropHandlers();
 
-// Быстрый рендер из кэша
+// Instant initial render from cache
 renderMain();
 
-// Запрос обновлений (сработает при необходимости)
+// Fetch live rates update if cache is expired
 updateRates(false);

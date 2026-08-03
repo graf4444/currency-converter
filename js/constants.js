@@ -1,4 +1,4 @@
-// Константы локализации
+// UI localization constants for all supported languages
 const i18n = {
     ru: { title: "Конвертер валют", add: "Настройка списка валют", searchTitle: "Управление списком", close: "Готово", searchPlaceholder: "Поиск по коду или названию...", sync: "Обновление...", online: "Данные актуальны (Сеть)", offline: "Автономный режим (Кэш)", updated: "Обновлено: ", secAdded: "Ваши валюты", secAvailable: "Доступно для добавления" },
     en: { title: "Currency Converter", add: "Manage Currency List", searchTitle: "Manage List", close: "Done", searchPlaceholder: "Search code or name...", sync: "Syncing...", online: "Rates are live (Network)", offline: "Offline Mode (Cache)", updated: "Updated: ", secAdded: "Your Currencies", secAvailable: "Available to Add" },
@@ -15,8 +15,7 @@ const i18n = {
     ar: { title: "محول العملات", add: "إدارة القائمة", searchTitle: "إدارة القائمة", close: "تم", searchPlaceholder: "بحث...", sync: "جاري المزامنة...", online: "البيانات مباشرة", offline: "وضع آفلاین", updated: "آخر تحديث: ", secAdded: "عملاتك", secAvailable: "متاح للإضافة" }
 };
 
-// Полная локализованная база валют для всех 13 языков. 
-// Для спорных названий (напр. WBTC, STETH) оставлен понятный оригинальный англ. вариант там, где перевод звучит некорректно.
+// Comprehensive localized currency & cryptocurrency database across all supported languages.
 const currencyDb = {
     "USD": { f: "🇺🇸", n: { ru: "Доллар США", en: "US Dollar", es: "Dólar estadounidense", fr: "Dollar américain", de: "US-Dollar", it: "Dollaro statunitense", pt: "Dólar americano", tr: "ABD Doları", zh: "美元", ja: "米ドル", ko: "미국 달러", hi: "अमेरिकी डॉलर", ar: "دولار أمريكي" } },
     "EUR": { f: "🇪🇺", n: { ru: "Евро", en: "Euro", es: "Euro", fr: "Euro", de: "Euro", it: "Euro", pt: "Euro", tr: "Euro", zh: "欧元", ja: "ユーロ", ko: "유로", hi: "यूरो", ar: "يورو" } },

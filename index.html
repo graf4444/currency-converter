@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Currency Converter</title>
+    <meta name="description" content="Fast, lightweight, ad-free multi-currency and cryptocurrency converter PWA with offline support.">
 
     <!-- Static manifest removed on purpose. pwa-init.js generates a localized
          manifest from the saved language BEFORE the browser fires the install
@@ -44,7 +45,7 @@
     <header>
         <h1 id="ui-title">Currency Converter</h1>
         <div class="controls">
-            <select class="lang-select" id="lang-picker">
+            <select class="lang-select" id="lang-picker" aria-label="Select Language">
                 <option value="en" selected>🇺🇸 English (EN)</option>
                 <option value="ru">🇷🇺 Русский (RU)</option>
                 <option value="es">🇪🇸 Español (ES)</option>
@@ -59,17 +60,17 @@
                 <option value="hi">🇮🇳 हिन्दी (HI)</option>
                 <option value="ar">🇸🇦 العربية (AR)</option>
             </select>
-            <button class="theme-toggle" id="theme-btn">☀️</button>
+            <button class="theme-toggle" id="theme-btn" aria-label="Toggle theme">☀️</button>
         </div>
     </header>
 
     <div id="favorites-container" class="currency-list"></div>
 
-    <button class="add-btn" id="ui-add-btn">+ Manage Currency List</button>
+    <button class="add-btn" id="ui-add-btn" aria-haspopup="dialog" aria-controls="search-modal">+ Manage Currency List</button>
 
     <footer>
-        <span id="sync-status">Syncing...</span>
-        <div class="spinner" id="loader"></div>
+        <span id="sync-status" aria-live="polite">Syncing...</span>
+        <div class="spinner" id="loader" aria-hidden="true"></div>
         <div id="last-update" style="margin-top: 4px;"></div>
 
         <a href="https://github.com/graf4444/currency-converter" target="_blank" class="github-badge">
@@ -79,13 +80,13 @@
     </footer>
 </div>
 
-<div class="modal" id="search-modal">
+<div class="modal" id="search-modal" role="dialog" aria-modal="true" aria-labelledby="ui-modal-title" aria-hidden="true">
     <div class="modal-content">
         <div class="modal-header">
             <h3 id="ui-modal-title">Manage List</h3>
-            <button class="close-modal" id="ui-close-btn">Done</button>
+            <button class="close-modal" id="ui-close-btn" aria-label="Close modal">Done</button>
         </div>
-        <input type="text" class="search-input" id="search-bar" placeholder="Search code or name...">
+        <input type="text" class="search-input" id="search-bar" placeholder="Search code or name..." aria-label="Search currency by code or name">
 
         <div class="search-results">
             <div id="added-section">
