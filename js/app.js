@@ -318,7 +318,7 @@ function toggleKeypadMode() {
 let chartActiveCode = 'EUR';
 let chartActivePeriod = '7d';
 
-function getTrendBadgeHTML(code) {
+function getTrendHTML(code) {
     const rate = state.rates[code];
     if (!rate) return '';
     
@@ -714,7 +714,7 @@ function renderMain() {
         
         const hasRate = !!state.rates[code];
         const placeholderText = hasRate ? '0' : (state.lang === 'ru' ? 'Нет курса' : 'No rate');
-        const trendBadgeHTML = hasRate ? getTrendBadgeHTML(code) : '';
+        const trendBadgeHTML = '';
 
         card.innerHTML = `
             <div class="currency-meta">
@@ -735,6 +735,7 @@ function renderMain() {
         `;
         fragment.appendChild(card);
         card.querySelector('.clear-btn').addEventListener('click', clearAllInputs);
+        
         const chartBtn = card.querySelector('.chart-btn');
         if (chartBtn) {
             chartBtn.addEventListener('click', (e) => {
