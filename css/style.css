@@ -212,13 +212,44 @@ footer { margin-top: auto; text-align: center; font-size: 0.8rem; color: var(--t
     opacity: 0.9;
 }
 
+.keypad-footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.keypad-hide-btn {
+    appearance: none;
+    -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+    touch-action: manipulation;
+}
+
+.keypad-hide-btn:hover,
+.keypad-hide-btn:active {
+    border-color: var(--accent);
+    color: var(--text);
+    background: var(--card);
+}
+
 .currency-card.active-input-card {
     border-color: var(--accent);
     box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.25);
 }
 
 body.has-keypad-open .container {
-    padding-bottom: 270px;
+    padding-bottom: 310px;
 }
 
 /* ============================================================

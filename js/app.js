@@ -590,6 +590,9 @@ function applyLocalization() {
     const secAvail = document.getElementById('ui-section-available');
     if (secAvail) secAvail.textContent = t.secAvailable;
 
+    const hideLabel = document.getElementById('ui-keypad-hide-label');
+    if (hideLabel) hideLabel.textContent = t.hideKeypad || 'Скрыть';
+
     updateOnlineStatusUI(false);
 }
 
@@ -606,11 +609,16 @@ function saveState() {
     localStorage.setItem('conv_max_state', JSON.stringify(state)); 
 }
 
-function formatNumberString(str) {
+function formatExpression(str) {
     if (!str) return '';
-    const parts = str.split('.');
-    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-    return parts.join('.');
+    return str.replace(/(\d+)(\.\d*)?/g, (match, intPart, decPart) => {
+        const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        return formattedInt + (decPart !== undefined ? decPart : '');
+    });
+}
+
+function formatNumberString(str) {
+    return formatExpression(str);
 }
 
 function parseCleanNumber(str) {
@@ -726,7 +734,6 @@ function renderMain() {
                     </div>
                     <span class="c-name">${nameLocal}</span>
                 </div>
-                ${hasRate ? `<button class="chart-btn" data-code="${code}" title="View Chart">📈</button>` : ''}
             </div>
             <div class="right-block">
                 <input type="text" inputmode="decimal" enterkeyhint="done" class="currency-input" id="input-${code}" placeholder="${placeholderText}" data-code="${code}" autocomplete="off" ${!hasRate ? 'disabled' : ''}>
@@ -735,14 +742,6 @@ function renderMain() {
         `;
         fragment.appendChild(card);
         card.querySelector('.clear-btn').addEventListener('click', clearAllInputs);
-        
-        const chartBtn = card.querySelector('.chart-btn');
-        if (chartBtn) {
-            chartBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                openChartModal(code);
-            });
-        }
     });
 
 
@@ -761,21 +760,24 @@ function renderMain() {
 
         // 1. User input handler
         input.addEventListener('input', (e) => {
-            let val = e.target.value.replace(/,/g, '.').replace(/[^0-9. \+\-\*\/\(\)]/g, ''); 
+            let raw = e.target.value.replace(/,/g, '.').replace(/\s/g, '');
+            let cleanVal = raw.replace(/[^0-9.\+\-\*\/\(\)]/g, ''); 
             
-            e.target.value = val;
+            let formatted = formatExpression(cleanVal);
+            e.target.value = formatted;
+            
             adjustFontSize(e.target);
             
             currentInputCode = e.target.dataset.code;
-            currentInputValue = val;
+            currentInputValue = cleanVal;
             
             const clearBtn = document.getElementById(`clear-${e.target.dataset.code}`);
             if (clearBtn) {
-                if (e.target.value !== '') clearBtn.classList.add('visible');
+                if (cleanVal !== '') clearBtn.classList.add('visible');
                 else clearBtn.classList.remove('visible');
             }
 
-            if (val.trim() === '') {
+            if (cleanVal.trim() === '') {
                 currentInputCode = null;
                 currentInputValue = '';
                 state.favorites.forEach(c => {
@@ -787,7 +789,7 @@ function renderMain() {
                     }
                 });
             } else {
-                recalculate(e.target.dataset.code, val);
+                recalculate(e.target.dataset.code, cleanVal);
             }
         });
 
@@ -1128,11 +1130,12 @@ async function updateRates(forceUpdate = false) {
         console.error("Exchange rates update error:", e);
         await updateOnlineStatusUI(false);
     } finally {
-        // Re-render DOM only if input is not focused
+        // Re-render DOM only if input is not focused and virtual keypad is not active
         const activeEl = document.activeElement;
         const isInputFocused = activeEl && activeEl.classList.contains('currency-input');
+        const isKeypadOpen = document.body.classList.contains('has-keypad-open') || activeInputEl !== null || currentInputCode !== null;
 
-        if (!isInputFocused) {
+        if (!isInputFocused && !isKeypadOpen) {
             renderMain();
         }
         
@@ -1238,6 +1241,14 @@ document.querySelectorAll('.key-btn').forEach(btn => {
 const keypadCloseBtn = document.getElementById('keypad-close');
 if (keypadCloseBtn) {
     keypadCloseBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeVirtualKeypad();
+    });
+}
+
+const keypadHideBtn = document.getElementById('keypad-hide-btn');
+if (keypadHideBtn) {
+    keypadHideBtn.addEventListener('click', (e) => {
         e.preventDefault();
         closeVirtualKeypad();
     });
