@@ -26,6 +26,7 @@ let currentInputCode = null;
 let currentInputValue = '';
 let activeInputEl = null;
 let useCustomKeypad = true;
+let lastKeypadInteractionTime = 0;
 
 
 // ============================================================
@@ -196,12 +197,12 @@ function applyMathResult(input) {
     if (!input) return;
     
     const code = input.dataset.code;
-    const rawValue = input.value;
+    const rawValue = input.value.replace(/\s/g, '');
     
     const calculated = evaluateMathExpression(rawValue);
     
     if (calculated !== null) {
-        const formatted = formatNumberString(calculated.toString());
+        const formatted = formatExpression(calculated.toString());
         input.value = formatted;
         
         currentInputCode = code;
@@ -257,6 +258,7 @@ function triggerHaptic(duration = 10) {
 }
 
 function closeVirtualKeypad() {
+    lastKeypadInteractionTime = Date.now();
     triggerHaptic(8);
     const keypad = document.getElementById('virtual-keypad');
     if (keypad) {
@@ -268,6 +270,7 @@ function closeVirtualKeypad() {
 }
 
 function handleKeypadPress(key) {
+    lastKeypadInteractionTime = Date.now();
     if (!activeInputEl) return;
     
     triggerHaptic(key === '=' || key === 'C' ? 16 : 10);
@@ -632,7 +635,12 @@ function adjustFontSize(input) {
     else input.style.fontSize = '1.4rem';
 }
 
-function clearAllInputs() {
+function clearAllInputs(e) {
+    if (e && (Date.now() - lastKeypadInteractionTime < 450)) {
+        if (e.preventDefault) e.preventDefault();
+        if (e.stopPropagation) e.stopPropagation();
+        return;
+    }
     currentInputCode = null;
     currentInputValue = '';
     state.favorites.forEach(c => {
@@ -1231,26 +1239,45 @@ window.addEventListener('offline', () => updateOnlineStatusUI(false));
 // ============================================================
 
 document.querySelectorAll('.key-btn').forEach(btn => {
-    btn.addEventListener('pointerdown', (e) => {
+    const handlePress = (e) => {
         e.preventDefault();
+        e.stopPropagation();
         const key = btn.dataset.key;
         handleKeypadPress(key);
+    };
+
+    btn.addEventListener('pointerdown', handlePress);
+    btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
     });
 });
 
 const keypadCloseBtn = document.getElementById('keypad-close');
 if (keypadCloseBtn) {
+    const handleClose = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeVirtualKeypad();
+    };
+    keypadCloseBtn.addEventListener('pointerdown', handleClose);
     keypadCloseBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        closeVirtualKeypad();
+        e.stopPropagation();
     });
 }
 
 const keypadHideBtn = document.getElementById('keypad-hide-btn');
 if (keypadHideBtn) {
+    const handleHide = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeVirtualKeypad();
+    };
+    keypadHideBtn.addEventListener('pointerdown', handleHide);
     keypadHideBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        closeVirtualKeypad();
+        e.stopPropagation();
     });
 }
 
