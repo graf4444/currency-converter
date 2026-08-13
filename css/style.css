@@ -41,6 +41,7 @@ h1 { font-size: 1.5rem; font-weight: 700; }
 
 .add-btn { width: 100%; padding: 14px; background: var(--card); border: 1px dashed var(--accent); color: var(--accent); border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; text-align: center; margin-bottom: 20px; }
 footer { margin-top: auto; text-align: center; font-size: 0.8rem; color: var(--text-muted); padding: 15px 0; }
+.app-version { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; opacity: 0.85; }
 
 .github-badge { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 6px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; color: var(--text); font-weight: 500; text-decoration: none; font-size: 0.75rem; transition: transform 0.2s, border-color 0.2s; }
 .github-badge:hover { border-color: var(--accent); transform: translateY(-1px); }

@@ -27,6 +27,8 @@ let currentInputValue = '';
 let activeInputEl = null;
 let useCustomKeypad = true;
 let lastKeypadInteractionTime = 0;
+let isClosingKeypad = false;
+let keypadCloseTimeout = null;
 
 
 // ============================================================
@@ -218,10 +220,11 @@ function applyMathResult(input) {
 // ============================================================
 
 function openVirtualKeypad(input) {
-    if (!input || input.disabled) return;
+    if (!input || input.disabled || isClosingKeypad) return;
     
     activeInputEl = input;
-    const code = input.dataset.code;
+    currentInputCode = input.dataset.code;
+    const code = currentInputCode;
     const keypad = document.getElementById('virtual-keypad');
     const titleEl = document.getElementById('keypad-active-code');
     
@@ -258,36 +261,61 @@ function triggerHaptic(duration = 10) {
 }
 
 function closeVirtualKeypad() {
+    isClosingKeypad = true;
     lastKeypadInteractionTime = Date.now();
     triggerHaptic(8);
+    
     const keypad = document.getElementById('virtual-keypad');
     if (keypad) {
         keypad.setAttribute('hidden', '');
         document.body.classList.remove('has-keypad-open');
     }
     document.querySelectorAll('.currency-card').forEach(card => card.classList.remove('active-input-card'));
+    
+    if (activeInputEl) {
+        try { activeInputEl.blur(); } catch (_) {}
+    }
     activeInputEl = null;
+
+    clearTimeout(keypadCloseTimeout);
+    keypadCloseTimeout = setTimeout(() => {
+        isClosingKeypad = false;
+    }, 350);
 }
 
 function handleKeypadPress(key) {
     lastKeypadInteractionTime = Date.now();
-    if (!activeInputEl) return;
+    
+    let input = activeInputEl;
+    if (!input && currentInputCode) {
+        input = document.getElementById(`input-${currentInputCode}`);
+    }
+    if (!input) return;
+    activeInputEl = input;
     
     triggerHaptic(key === '=' || key === 'C' ? 16 : 10);
 
     if (key === 'C') {
-        activeInputEl.value = '';
-        activeInputEl.dispatchEvent(new Event('input', { bubbles: true }));
+        input.value = '';
+        currentInputValue = '';
+        input.dispatchEvent(new Event('input', { bubbles: true }));
     } else if (key === 'BACKSPACE') {
-        activeInputEl.value = activeInputEl.value.slice(0, -1);
-        activeInputEl.dispatchEvent(new Event('input', { bubbles: true }));
+        let raw = input.value.replace(/\s/g, '');
+        raw = raw.slice(0, -1);
+        let cleanVal = raw.replace(/,/g, '.').replace(/[^0-9.\+\-\*\/\(\)]/g, '');
+        input.value = formatExpression(cleanVal);
+        currentInputValue = cleanVal;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
     } else if (key === '=') {
-        applyMathResult(activeInputEl);
+        applyMathResult(input);
         closeVirtualKeypad();
     } else {
-        // Digits and operators
-        activeInputEl.value += key;
-        activeInputEl.dispatchEvent(new Event('input', { bubbles: true }));
+        let raw = input.value.replace(/\s/g, '');
+        raw += key;
+        let cleanVal = raw.replace(/,/g, '.').replace(/[^0-9.\+\-\*\/\(\)]/g, '');
+        input.value = formatExpression(cleanVal);
+        currentInputValue = cleanVal;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
     }
 }
 
@@ -759,11 +787,11 @@ function renderMain() {
     document.querySelectorAll('.currency-input').forEach(input => {
         // Show virtual keypad on focus or click
         input.addEventListener('focus', (e) => {
-            openVirtualKeypad(e.target);
+            if (!isClosingKeypad) openVirtualKeypad(e.target);
         });
 
         input.addEventListener('click', (e) => {
-            openVirtualKeypad(e.target);
+            if (!isClosingKeypad) openVirtualKeypad(e.target);
         });
 
         // 1. User input handler
@@ -811,14 +839,11 @@ function renderMain() {
             }
         });
 
-        // 3. Blur event handler
+        // 3. Blur event handler (only when native keyboard is active)
         input.addEventListener('blur', (e) => {
-            // Delay check to prevent closing when clicking keypad buttons
-            setTimeout(() => {
-                if (!document.activeElement || !document.activeElement.closest('#virtual-keypad')) {
-                    applyMathResult(e.target);
-                }
-            }, 100);
+            if (!useCustomKeypad || !document.body.classList.contains('has-keypad-open')) {
+                applyMathResult(e.target);
+            }
         });
     });
 
@@ -1291,7 +1316,7 @@ if (keypadToggleBtn) {
 
 // Close keypad when clicking outside input fields, cards, or keypad
 document.addEventListener('pointerdown', (e) => {
-    if (!document.body.classList.contains('has-keypad-open')) return;
+    if (!document.body.classList.contains('has-keypad-open') || isClosingKeypad) return;
     
     const target = e.target;
     if (
