@@ -328,6 +328,10 @@ function toggleKeypadMode() {
         toggleBtn.title = useCustomKeypad ? 'Switch to native keyboard' : 'Switch to built-in keypad';
     }
     
+    document.querySelectorAll('.currency-input').forEach(input => {
+        input.setAttribute('inputmode', useCustomKeypad ? 'none' : 'decimal');
+    });
+
     if (activeInputEl) {
         if (useCustomKeypad) {
             activeInputEl.setAttribute('inputmode', 'none');
@@ -772,12 +776,20 @@ function renderMain() {
                 </div>
             </div>
             <div class="right-block">
-                <input type="text" inputmode="decimal" enterkeyhint="done" class="currency-input" id="input-${code}" placeholder="${placeholderText}" data-code="${code}" autocomplete="off" ${!hasRate ? 'disabled' : ''}>
+                <input type="text" inputmode="${useCustomKeypad ? 'none' : 'decimal'}" enterkeyhint="done" class="currency-input" id="input-${code}" placeholder="${placeholderText}" data-code="${code}" autocomplete="off" ${!hasRate ? 'disabled' : ''}>
                 <button class="clear-btn" id="clear-${code}">×</button>
             </div>
         `;
         fragment.appendChild(card);
         card.querySelector('.clear-btn').addEventListener('click', clearAllInputs);
+
+        card.addEventListener('click', (e) => {
+            if (e.target.closest('.clear-btn')) return;
+            const input = card.querySelector('.currency-input');
+            if (input && !input.disabled && !isClosingKeypad) {
+                openVirtualKeypad(input);
+            }
+        });
     });
 
 
