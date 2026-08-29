@@ -9,8 +9,11 @@ const FIAT_API_URLS = [
     "https://open.er-api.com/v6/latest/USD"
 ];
 
-// Anti-DDoS throttle interval between network rate requests (15 seconds)
-const MIN_REFRESH_INTERVAL = 15 * 1000;
+// Rate caching interval: 1 hour (3 600 000 ms)
+const RATES_CACHE_TTL = 60 * 60 * 1000;
+
+// Anti-DDoS throttle interval between manual/forced rate requests (5 seconds)
+const MIN_FORCE_REFRESH_INTERVAL = 5 * 1000;
 
 let state = {
     theme: 'dark', 
@@ -1205,9 +1208,16 @@ async function updateRates(forceUpdate = false) {
     const timeSinceLastUpdate = now - (state.lastUpdatedTimestamp || 0);
     const hasExistingRates = state.rates && Object.keys(state.rates).length > 0;
 
-    // Cooldown check: prevent DDoS / spamming API endpoints if updated recently (within 15s)
-    if (!forceUpdate && hasExistingRates && timeSinceLastUpdate < MIN_REFRESH_INTERVAL) {
+    // Cache check: if not forced and cached rates are less than 1 hour old, use cache
+    if (!forceUpdate && hasExistingRates && timeSinceLastUpdate < RATES_CACHE_TTL) {
         console.log(`Using cached exchange rates (${Math.round(timeSinceLastUpdate / 1000)}s ago)`);
+        await updateOnlineStatusUI(false);
+        return;
+    }
+
+    // Anti-spam guard for forced refresh (protect APIs if reloaded repeatedly within 5 seconds)
+    if (forceUpdate && hasExistingRates && timeSinceLastUpdate < MIN_FORCE_REFRESH_INTERVAL) {
+        console.log(`Forced refresh throttled (${Math.round(timeSinceLastUpdate / 1000)}s ago)`);
         await updateOnlineStatusUI(false);
         return;
     }
@@ -1342,7 +1352,20 @@ document.querySelectorAll('.period-btn').forEach(btn => {
     });
 });
 
-window.addEventListener('online', () => updateRates(true));
+function isPageReload() {
+    try {
+        const navEntries = performance.getEntriesByType('navigation');
+        if (navEntries && navEntries.length > 0) {
+            return navEntries[0].type === 'reload';
+        }
+        if (window.performance && window.performance.navigation) {
+            return window.performance.navigation.type === 1; // PerformanceNavigation.TYPE_RELOAD
+        }
+    } catch (_) {}
+    return false;
+}
+
+window.addEventListener('online', () => updateRates(false));
 window.addEventListener('offline', () => updateOnlineStatusUI(false));
 window.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
@@ -1435,5 +1458,17 @@ setupDragAndDropHandlers();
 // Instant initial render from cache
 renderMain();
 
-// Fetch live rates update if cache is expired
-updateRates(false);
+// Check if page was explicitly reloaded by user (Cmd+R / F5 / browser reload / pull-to-refresh)
+const isReload = isPageReload();
+
+// Fetch live rates update:
+// - If user manually reloaded the page (isReload === true): force update from network
+// - If normal app open / cold start (isReload === false): use 1-hour cache and only fetch if expired
+updateRates(isReload);
+
+// Periodic background check every minute to refresh rates if 1-hour cache TTL expires while app is open
+setInterval(() => {
+    if (document.visibilityState === 'visible') {
+        updateRates(false);
+    }
+}, 60 * 1000);
