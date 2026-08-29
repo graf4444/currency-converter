@@ -219,6 +219,22 @@ function applyMathResult(input) {
 // VIRTUAL CALCULATOR KEYPAD CONTROLLER
 // ============================================================
 
+let savedScrollY = null;
+
+function scrollCardAboveKeypad(card, keypad) {
+    if (!card) return;
+    const cardRect = card.getBoundingClientRect();
+    const keypadHeight = keypad ? keypad.offsetHeight : 340;
+    const visibleHeight = window.innerHeight - keypadHeight;
+    const safeBottom = visibleHeight - 12;
+
+    if (cardRect.bottom > safeBottom || cardRect.top < 12) {
+        const desiredTop = Math.max(12, (visibleHeight - cardRect.height) / 2);
+        const targetY = window.scrollY + (cardRect.top - desiredTop);
+        window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+    }
+}
+
 function openVirtualKeypad(input) {
     if (!input || input.disabled || isClosingKeypad) return;
     
@@ -240,13 +256,25 @@ function openVirtualKeypad(input) {
         if (parentCard) parentCard.classList.add('active-input-card');
         
         if (useCustomKeypad) {
+            if (!document.body.classList.contains('has-keypad-open')) {
+                savedScrollY = window.scrollY;
+            }
+
             input.setAttribute('inputmode', 'none');
             keypad.removeAttribute('hidden');
             document.body.classList.add('has-keypad-open');
+
+            if (parentCard) {
+                // Defer slightly so DOM styles and padding are active
+                requestAnimationFrame(() => {
+                    scrollCardAboveKeypad(parentCard, keypad);
+                });
+            }
         } else {
             input.setAttribute('inputmode', 'decimal');
             keypad.setAttribute('hidden', '');
             document.body.classList.remove('has-keypad-open');
+            savedScrollY = null;
         }
     }
 }
@@ -272,6 +300,12 @@ function closeVirtualKeypad() {
     }
     document.querySelectorAll('.currency-card').forEach(card => card.classList.remove('active-input-card'));
     
+    if (savedScrollY !== null) {
+        const targetY = savedScrollY;
+        savedScrollY = null;
+        window.scrollTo({ top: targetY, behavior: 'smooth' });
+    }
+
     if (activeInputEl) {
         try { activeInputEl.blur(); } catch (_) {}
     }
@@ -628,7 +662,17 @@ function applyLocalization() {
     const hideLabel = document.getElementById('ui-keypad-hide-label');
     if (hideLabel) hideLabel.textContent = t.hideKeypad || 'Скрыть';
 
+    renderAppVersion();
     updateOnlineStatusUI(false);
+}
+
+function renderAppVersion() {
+    const versionEl = document.getElementById('app-version');
+    if (!versionEl) return;
+    if (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.version) {
+        const buildInfo = APP_CONFIG.buildTime ? ` (${APP_CONFIG.buildTime})` : '';
+        versionEl.textContent = `v${APP_CONFIG.version}${buildInfo}`;
+    }
 }
 
 function applyTheme() {
@@ -870,6 +914,7 @@ function renderMain() {
 }
 
 function openModal() { 
+    closeVirtualKeypad();
     const modal = document.getElementById('search-modal');
     if (modal) {
         modal.style.display = 'flex';

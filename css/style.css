@@ -250,7 +250,7 @@ footer { margin-top: auto; text-align: center; font-size: 0.8rem; color: var(--t
 }
 
 body.has-keypad-open .container {
-    padding-bottom: 310px;
+    padding-bottom: 350px;
 }
 
 /* ============================================================
