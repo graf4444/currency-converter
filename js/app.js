@@ -9,8 +9,8 @@ const FIAT_API_URLS = [
     "https://open.er-api.com/v6/latest/USD"
 ];
 
-// Cache duration in milliseconds (1 hour)
-const CACHE_DURATION = 60 * 60 * 1000;
+// Anti-DDoS throttle interval between network rate requests (15 seconds)
+const MIN_REFRESH_INTERVAL = 15 * 1000;
 
 let state = {
     theme: 'dark', 
@@ -18,7 +18,9 @@ let state = {
     rates: {}, 
     favorites: ['USD', 'EUR', 'RUB', 'UZS', 'BTC'],
     lastUpdated: '',
-    lastUpdatedTimestamp: 0
+    lastUpdatedTimestamp: 0,
+    lastInputCode: null,
+    lastInputValue: ''
 };
 
 // Active user input state storage
@@ -209,6 +211,7 @@ function applyMathResult(input) {
         
         currentInputCode = code;
         currentInputValue = calculated.toString();
+        saveState();
         
         adjustFontSize(input);
         recalculate(code, calculated.toString());
@@ -608,6 +611,15 @@ function initSystemSettings() {
         if (!Array.isArray(state.favorites)) state.favorites = ['USD', 'EUR', 'RUB', 'UZS', 'BTC'];
         if (!state.rates || typeof state.rates !== 'object') state.rates = {};
         if (typeof state.lastUpdatedTimestamp !== 'number') state.lastUpdatedTimestamp = 0;
+        if (state.lastInputCode && state.favorites.includes(state.lastInputCode) && typeof state.lastInputValue === 'string' && state.lastInputValue.trim() !== '') {
+            currentInputCode = state.lastInputCode;
+            currentInputValue = state.lastInputValue;
+        } else {
+            state.lastInputCode = null;
+            state.lastInputValue = '';
+            currentInputCode = null;
+            currentInputValue = '';
+        }
     } else {
         const sysLang = navigator.language || navigator.userLanguage || 'en';
         const shortLang = sysLang.split('-')[0].toLowerCase();
@@ -622,6 +634,13 @@ function getCurrencyName(code) {
     if (typeof currencyDb === 'undefined' || !currencyDb[code]) return code;
     const item = currencyDb[code];
     return item.n[state.lang] || item.n['en'] || code;
+}
+
+function updateLastUpdateUI() {
+    const lastUpdateEl = document.getElementById('last-update');
+    if (!lastUpdateEl) return;
+    const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : { updated: 'Updated: ' };
+    lastUpdateEl.textContent = state.lastUpdated ? `${t.updated} ${state.lastUpdated}` : '';
 }
 
 function applyLocalization() {
@@ -663,6 +682,7 @@ function applyLocalization() {
     if (hideLabel) hideLabel.textContent = t.hideKeypad || 'Скрыть';
 
     renderAppVersion();
+    updateLastUpdateUI();
     updateOnlineStatusUI(false);
 }
 
@@ -685,6 +705,8 @@ function applyTheme() {
 
 function saveState() { 
     state.favorites = [...new Set(state.favorites.filter(c => typeof c === 'string' && c.trim() !== ''))];
+    state.lastInputCode = currentInputCode;
+    state.lastInputValue = currentInputValue;
     localStorage.setItem('conv_max_state', JSON.stringify(state)); 
 }
 
@@ -719,6 +741,7 @@ function clearAllInputs(e) {
     }
     currentInputCode = null;
     currentInputValue = '';
+    saveState();
     state.favorites.forEach(c => {
         const input = document.getElementById(`input-${c}`);
         const clearBtn = document.getElementById(`clear-${c}`);
@@ -872,6 +895,7 @@ function renderMain() {
             if (cleanVal.trim() === '') {
                 currentInputCode = null;
                 currentInputValue = '';
+                saveState();
                 state.favorites.forEach(c => {
                     if (c !== e.target.dataset.code) {
                         const otherInput = document.getElementById(`input-${c}`);
@@ -881,6 +905,7 @@ function renderMain() {
                     }
                 });
             } else {
+                saveState();
                 recalculate(e.target.dataset.code, cleanVal);
             }
         });
@@ -903,14 +928,19 @@ function renderMain() {
         });
     });
 
-    
-    if (typeof i18n !== 'undefined') {
-        const currentT = i18n[state.lang] || i18n['en'];
-        const lastUpdateEl = document.getElementById('last-update');
-        if (lastUpdateEl) {
-            lastUpdateEl.textContent = `${currentT.updated} ${state.lastUpdated || '-'}`;
+    // Restore active input and recalculate values if saved
+    if (currentInputCode && currentInputValue && state.favorites.includes(currentInputCode)) {
+        const activeInput = document.getElementById(`input-${currentInputCode}`);
+        if (activeInput) {
+            activeInput.value = formatExpression(currentInputValue);
+            adjustFontSize(activeInput);
+            const clearBtn = document.getElementById(`clear-${currentInputCode}`);
+            if (clearBtn) clearBtn.classList.add('visible');
         }
+        recalculate(currentInputCode, currentInputValue);
     }
+    
+    updateLastUpdateUI();
 }
 
 function openModal() { 
@@ -948,18 +978,6 @@ function toggleFavorite(code, shouldAdd) {
     state.favorites = [...new Set(state.favorites.filter(Boolean))];
     saveState();
     renderMain();
-    
-    if (currentInputCode && currentInputValue !== '') {
-        const activeInput = document.getElementById(`input-${currentInputCode}`);
-        if (activeInput) {
-            activeInput.value = currentInputValue;
-            adjustFontSize(activeInput);
-            const clearBtn = document.getElementById(`clear-${currentInputCode}`);
-            if (clearBtn) clearBtn.classList.add('visible');
-            recalculate(currentInputCode, currentInputValue);
-        }
-    }
-    
     filterCurrencies();
 }
 
@@ -1133,31 +1151,37 @@ function saveNewOrder() {
     state.favorites = [...uniqueVisibleOrder, ...nonVisibleFavs];
     saveState();
     renderMain();
-
-    if (currentInputCode && currentInputValue !== '') {
-        const activeInput = document.getElementById(`input-${currentInputCode}`);
-        if (activeInput) {
-            activeInput.value = currentInputValue;
-            adjustFontSize(activeInput);
-            recalculate(currentInputCode, currentInputValue);
-        }
-    }
 }
 
 // ============================================================
+// ============================================================
 // EXCHANGE RATES FETCHING & UPDATES
 // ============================================================
+
+// Helper for network fetch with strict abort timeout
+async function fetchWithTimeout(url, timeoutMs = 6000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const res = await fetch(url, { signal: controller.signal });
+        clearTimeout(timeoutId);
+        return res;
+    } catch (err) {
+        clearTimeout(timeoutId);
+        throw err;
+    }
+}
 
 async function fetchFiatRates() {
     let lastError = null;
     
     for (const url of FIAT_API_URLS) {
         try {
-            const res = await fetch(url);
+            const res = await fetchWithTimeout(url, 6000);
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
             const data = await res.json();
             
-            if (data && data.rates) {
+            if (data && data.rates && typeof data.rates === 'object' && Object.keys(data.rates).length > 0) {
                 let rates = { ...data.rates };
                 if (!rates['USD']) {
                     rates['USD'] = 1;
@@ -1172,29 +1196,36 @@ async function fetchFiatRates() {
     throw lastError || new Error("All fiat currency rate sources are unavailable");
 }
 
-async function updateRates(forceUpdate = false) {
-    const now = Date.now();
-    
-    // Check connectivity first
-    await updateOnlineStatusUI(false);
+let isUpdatingRates = false;
 
-    // Check cache freshness
-    if (!forceUpdate && Object.keys(state.rates).length > 0 && (now - state.lastUpdatedTimestamp < CACHE_DURATION)) {
-        console.log("Using cached exchange rates");
+async function updateRates(forceUpdate = false) {
+    if (isUpdatingRates) return;
+
+    const now = Date.now();
+    const timeSinceLastUpdate = now - (state.lastUpdatedTimestamp || 0);
+    const hasExistingRates = state.rates && Object.keys(state.rates).length > 0;
+
+    // Cooldown check: prevent DDoS / spamming API endpoints if updated recently (within 15s)
+    if (!forceUpdate && hasExistingRates && timeSinceLastUpdate < MIN_REFRESH_INTERVAL) {
+        console.log(`Using cached exchange rates (${Math.round(timeSinceLastUpdate / 1000)}s ago)`);
+        await updateOnlineStatusUI(false);
         return;
     }
+
+    isUpdatingRates = true;
 
     // Show syncing indicator
     await updateOnlineStatusUI(true);
 
     try {
-        let newRates = await fetchFiatRates();
+        const fiatRates = await fetchFiatRates();
+        const newRates = { ...state.rates, ...fiatRates };
 
         if (typeof currencyDb !== 'undefined') {
             const cryptoIds = Object.values(currencyDb).filter(item => item.id).map(item => item.id);
             if (cryptoIds.length > 0) {
                 try {
-                    const resCrypto = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${cryptoIds.join(',')}&vs_currencies=usd`);
+                    const resCrypto = await fetchWithTimeout(`https://api.coingecko.com/api/v3/simple/price?ids=${cryptoIds.join(',')}&vs_currencies=usd`, 5000);
                     if (resCrypto.ok) {
                         const dataCrypto = await resCrypto.json();
                         Object.keys(currencyDb).forEach(code => {
@@ -1210,26 +1241,28 @@ async function updateRates(forceUpdate = false) {
             }
         }
 
+        // ONLY update timestamp & rates when actual network fetch succeeds
         state.rates = newRates;
-        state.lastUpdatedTimestamp = now;
+        state.lastUpdatedTimestamp = Date.now();
         state.lastUpdated = new Date().toLocaleString();
         
         saveState();
-        await updateOnlineStatusUI(false);
+        updateLastUpdateUI();
     } catch (e) {
-        console.error("Exchange rates update error:", e);
-        await updateOnlineStatusUI(false);
+        console.error("Exchange rates update failed, preserving previous cache:", e);
+        // Previous cache & timestamp remain intact
     } finally {
+        isUpdatingRates = false;
+        await updateOnlineStatusUI(false);
+
         // Re-render DOM only if input is not focused and virtual keypad is not active
         const activeEl = document.activeElement;
         const isInputFocused = activeEl && activeEl.classList.contains('currency-input');
-        const isKeypadOpen = document.body.classList.contains('has-keypad-open') || activeInputEl !== null || currentInputCode !== null;
+        const isKeypadOpen = document.body.classList.contains('has-keypad-open') || activeInputEl !== null;
 
         if (!isInputFocused && !isKeypadOpen) {
             renderMain();
-        }
-        
-        if (currentInputCode && currentInputValue !== '') {
+        } else if (currentInputCode && currentInputValue !== '') {
             recalculate(currentInputCode, currentInputValue);
         }
     }
@@ -1253,9 +1286,6 @@ if (langPicker) {
         state.lang = e.target.value;
         applyLocalization();
         renderMain();
-        if (currentInputCode && currentInputValue !== '') {
-            recalculate(currentInputCode, currentInputValue);
-        }
         updatePWAManifest();
         saveState();
     });
@@ -1314,6 +1344,11 @@ document.querySelectorAll('.period-btn').forEach(btn => {
 
 window.addEventListener('online', () => updateRates(true));
 window.addEventListener('offline', () => updateOnlineStatusUI(false));
+window.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        updateRates(false);
+    }
+});
 
 
 // ============================================================

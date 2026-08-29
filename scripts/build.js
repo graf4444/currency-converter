@@ -35,45 +35,37 @@ function getFormattedTimestamp() {
 
 // 2. Read existing version from constants.js
 function getCurrentVersion() {
-    if (!fs.existsSync(CONSTANTS_PATH)) return '1.0.0';
+    if (!fs.existsSync(CONSTANTS_PATH)) return '1.0';
     const content = fs.readFileSync(CONSTANTS_PATH, 'utf8');
     const match = content.match(/version:\s*['"]([^'"]+)['"]/);
-    return match ? match[1] : '1.0.0';
+    return match ? match[1] : '1.0';
 }
 
-// 3. Compute next version
+// 3. Compute next version (Format: X.Y)
 function computeNextVersion(current, mode) {
-    const semMatch = current.match(/^(\d+)\.(\d+)\.(\d+)(.*)$/);
+    const match = current.match(/^(\d+)\.(\d+)(.*)$/);
     
-    if (!semMatch) {
+    if (!match) {
         return current;
     }
 
-    let major = parseInt(semMatch[1], 10);
-    let minor = parseInt(semMatch[2], 10);
-    let patch = parseInt(semMatch[3], 10);
-    const extra = semMatch[4] || '';
+    let major = parseInt(match[1], 10);
+    let minor = parseInt(match[2], 10);
+    const extra = match[3] || '';
 
     if (mode === 'major') {
         major += 1;
         minor = 0;
-        patch = 0;
-    } else if (mode === 'patch') {
-        patch += 1;
-    } else if (mode === 'minor') {
-        minor += 1;
-        patch = 0;
     } else if (mode === 'time-only') {
         return current;
-    } else if (mode && /^\d+\.\d+\.\d+/.test(mode)) {
+    } else if (mode && /^\d+\.\d+/.test(mode)) {
         return mode;
     } else {
-        // default bump is minor
+        // default bump is minor (e.g., 1.0 -> 1.1)
         minor += 1;
-        patch = 0;
     }
 
-    return `${major}.${minor}.${patch}${extra}`;
+    return `${major}.${minor}${extra}`;
 }
 
 function run() {
@@ -81,7 +73,7 @@ function run() {
     let mode = 'minor';
 
     if (args.includes('--minor')) mode = 'minor';
-    else if (args.includes('--patch')) mode = 'patch';
+    else if (args.includes('--patch')) mode = 'minor';
     else if (args.includes('--major')) mode = 'major';
     else if (args.includes('--time-only')) mode = 'time-only';
     else if (args[0] && !args[0].startsWith('--')) mode = args[0];

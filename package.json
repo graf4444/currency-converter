@@ -1,11 +1,10 @@
 {
   "name": "currency-converter",
-  "version": "1.3.0",
+  "version": "1.0",
   "description": "Multi-currency and cryptocurrency converter PWA with offline support",
   "scripts": {
     "build": "node scripts/build.js --minor",
     "bump:minor": "node scripts/build.js --minor",
-    "bump:patch": "node scripts/build.js --patch",
     "bump:major": "node scripts/build.js --major",
     "bump:time": "node scripts/build.js --time-only"
   },
