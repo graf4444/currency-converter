@@ -958,8 +958,6 @@ function openModal(e) {
     if (modal) {
         modal.style.display = 'flex';
         modal.setAttribute('aria-hidden', 'false');
-        const searchInput = document.getElementById('search-bar');
-        if (searchInput) searchInput.focus();
     }
     filterCurrencies(); 
 }
