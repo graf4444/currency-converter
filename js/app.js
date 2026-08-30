@@ -1346,6 +1346,7 @@ window.addEventListener('keydown', (e) => {
         if (modal && modal.style.display === 'flex') closeModal();
         const chartModal = document.getElementById('chart-modal');
         if (chartModal && chartModal.style.display === 'flex') closeChartModal();
+        if (document.body.classList.contains('has-keypad-open')) closeVirtualKeypad();
     }
 });
 
@@ -1462,15 +1463,94 @@ document.addEventListener('pointerdown', (e) => {
 });
 
 // ============================================================
-// APPLICATION INITIALIZATION
+// BACK NAVIGATION GESTURE & TOAST CONTROLLER
 // ============================================================
 
+let toastTimeout = null;
+function showToast(message) {
+    let toast = document.getElementById('toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast';
+        toast.className = 'toast';
+        toast.setAttribute('aria-live', 'polite');
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toastTimeout);
+    toastTimeout = setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2000);
+}
+
+let lastBackPressTime = 0;
+
+function setupNavigationHistory() {
+    try {
+        if (!window.history.state || window.history.state.page !== 'app') {
+            window.history.replaceState({ page: 'root' }, '');
+            window.history.pushState({ page: 'app' }, '');
+        }
+    } catch (_) {}
+
+    window.addEventListener('popstate', () => {
+        const searchModal = document.getElementById('search-modal');
+        const chartModal = document.getElementById('chart-modal');
+        const isSearchModalOpen = searchModal && (searchModal.style.display === 'flex' || searchModal.getAttribute('aria-hidden') === 'false');
+        const isChartModalOpen = chartModal && (chartModal.style.display === 'flex' || chartModal.getAttribute('aria-hidden') === 'false');
+        const isKeypadOpen = document.body.classList.contains('has-keypad-open');
+        const isInputActive = document.activeElement && document.activeElement.classList.contains('currency-input');
+
+        // Priority 1: If search modal is open, close it
+        if (isSearchModalOpen) {
+            closeModal();
+            try { window.history.pushState({ page: 'app' }, ''); } catch (_) {}
+            return;
+        }
+
+        // Priority 2: If chart modal is open, close it
+        if (isChartModalOpen) {
+            closeChartModal();
+            try { window.history.pushState({ page: 'app' }, ''); } catch (_) {}
+            return;
+        }
+
+        // Priority 3: If virtual keypad or input focus is active, close/blur it
+        if (isKeypadOpen || isInputActive) {
+            closeVirtualKeypad();
+            if (isInputActive) {
+                try { document.activeElement.blur(); } catch (_) {}
+            }
+            try { window.history.pushState({ page: 'app' }, ''); } catch (_) {}
+            return;
+        }
+
+        // Priority 4: Double back to exit from main app screen
+        const now = Date.now();
+        if (now - lastBackPressTime < 2000) {
+            // Second back gesture within 2 seconds: let it close/navigate back
+            window.history.back();
+        } else {
+            lastBackPressTime = now;
+            const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : i18n['ru'];
+            showToast(t.backToExit || 'Проведите назад ещё раз для выхода');
+            triggerHaptic(10);
+            try { window.history.pushState({ page: 'app' }, ''); } catch (_) {}
+        }
+    });
+}
+
+// ============================================================
+// APPLICATION INITIALIZATION
+// ============================================================
 
 initSystemSettings();
 applyLocalization();
 applyTheme();
 updatePWAManifest();
 setupDragAndDropHandlers();
+setupNavigationHistory();
 
 // Instant initial render from cache
 renderMain();
