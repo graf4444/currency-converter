@@ -1527,14 +1527,18 @@ function setupNavigationHistory() {
         // Priority 4: Double back to exit from main app screen
         const now = Date.now();
         if (now - lastBackPressTime < 2000) {
-            // Second back gesture within 2 seconds: let it close/navigate back
-            window.history.back();
+            // Second back gesture within 2 seconds: actually exit.
+            // We are already inside a popstate handler (browser already went back),
+            // so do NOT call history.back() again — just reset the timer and let the
+            // browser handle the navigation naturally (close PWA / go to home screen).
+            lastBackPressTime = 0;
         } else {
             lastBackPressTime = now;
             const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : i18n['ru'];
             showToast(t.backToExit || 'Проведите назад ещё раз для выхода');
             triggerHaptic(10);
-            try { window.history.pushState({ page: 'app' }, ''); } catch (_) {}
+            // Re-push 'app' state so there is always a forward entry to intercept the next back gesture
+            window.history.pushState({ page: 'app' }, '');
         }
     });
 }
