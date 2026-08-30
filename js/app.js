@@ -1486,10 +1486,12 @@ let lastBackPressTime = 0;
 
 function setupNavigationHistory() {
     try {
-        if (!window.history.state || window.history.state.page !== 'app') {
-            window.history.replaceState({ page: 'root' }, '');
-            window.history.pushState({ page: 'app' }, '');
-        }
+        // Always set up [root → app] stack unconditionally.
+        // If we skip this on session restore (state already 'app'), the history has
+        // only one entry — swipe-back gets handled by OS before popstate fires, so
+        // the app closes immediately without showing the "swipe again" toast.
+        window.history.replaceState({ page: 'root' }, '');
+        window.history.pushState({ page: 'app' }, '');
     } catch (_) {}
 
     window.addEventListener('popstate', () => {
