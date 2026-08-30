@@ -242,7 +242,7 @@ function scrollCardAboveKeypad(card, keypad) {
 }
 
 function openVirtualKeypad(input) {
-    if (!input || input.disabled || isClosingKeypad) return;
+    if (!input || input.disabled || isClosingKeypad || (Date.now() - lastKeypadInteractionTime < 450)) return;
     
     activeInputEl = input;
     currentInputCode = input.dataset.code;
@@ -320,7 +320,7 @@ function closeVirtualKeypad() {
     clearTimeout(keypadCloseTimeout);
     keypadCloseTimeout = setTimeout(() => {
         isClosingKeypad = false;
-    }, 350);
+    }, 450);
 }
 
 function handleKeypadPress(key) {
@@ -855,8 +855,9 @@ function renderMain() {
 
         card.addEventListener('click', (e) => {
             if (e.target.closest('.clear-btn')) return;
+            if (isClosingKeypad || (Date.now() - lastKeypadInteractionTime < 450)) return;
             const input = card.querySelector('.currency-input');
-            if (input && !input.disabled && !isClosingKeypad) {
+            if (input && !input.disabled) {
                 openVirtualKeypad(input);
             }
         });
@@ -869,11 +870,11 @@ function renderMain() {
     document.querySelectorAll('.currency-input').forEach(input => {
         // Show virtual keypad on focus or click
         input.addEventListener('focus', (e) => {
-            if (!isClosingKeypad) openVirtualKeypad(e.target);
+            if (!isClosingKeypad && (Date.now() - lastKeypadInteractionTime >= 450)) openVirtualKeypad(e.target);
         });
 
         input.addEventListener('click', (e) => {
-            if (!isClosingKeypad) openVirtualKeypad(e.target);
+            if (!isClosingKeypad && (Date.now() - lastKeypadInteractionTime >= 450)) openVirtualKeypad(e.target);
         });
 
         // 1. User input handler
@@ -946,7 +947,12 @@ function renderMain() {
     updateLastUpdateUI();
 }
 
-function openModal() { 
+function openModal(e) { 
+    if (isClosingKeypad || (Date.now() - lastKeypadInteractionTime < 450)) {
+        if (e && e.preventDefault) e.preventDefault();
+        if (e && e.stopPropagation) e.stopPropagation();
+        return;
+    }
     closeVirtualKeypad();
     const modal = document.getElementById('search-modal');
     if (modal) {
@@ -1312,7 +1318,16 @@ if (themeBtn) {
 }
 
 const addBtn = document.getElementById('ui-add-btn');
-if (addBtn) addBtn.addEventListener('click', openModal);
+if (addBtn) {
+    addBtn.addEventListener('click', (e) => {
+        if (isClosingKeypad || (Date.now() - lastKeypadInteractionTime < 450)) {
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+        }
+        openModal(e);
+    });
+}
 
 const closeBtn = document.getElementById('ui-close-btn');
 if (closeBtn) closeBtn.addEventListener('click', closeModal);
@@ -1396,29 +1411,31 @@ document.querySelectorAll('.key-btn').forEach(btn => {
 const keypadCloseBtn = document.getElementById('keypad-close');
 if (keypadCloseBtn) {
     const handleClose = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         closeVirtualKeypad();
     };
-    keypadCloseBtn.addEventListener('pointerdown', handleClose);
-    keypadCloseBtn.addEventListener('click', (e) => {
-        e.preventDefault();
+    keypadCloseBtn.addEventListener('pointerdown', (e) => {
         e.stopPropagation();
     });
+    keypadCloseBtn.addEventListener('click', handleClose);
 }
 
 const keypadHideBtn = document.getElementById('keypad-hide-btn');
 if (keypadHideBtn) {
     const handleHide = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
         closeVirtualKeypad();
     };
-    keypadHideBtn.addEventListener('pointerdown', handleHide);
-    keypadHideBtn.addEventListener('click', (e) => {
-        e.preventDefault();
+    keypadHideBtn.addEventListener('pointerdown', (e) => {
         e.stopPropagation();
     });
+    keypadHideBtn.addEventListener('click', handleHide);
 }
 
 const keypadToggleBtn = document.getElementById('keypad-toggle-mode');
