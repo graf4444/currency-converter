@@ -3,6 +3,7 @@
   "version": "1.4",
   "description": "Multi-currency and cryptocurrency converter PWA with offline support",
   "scripts": {
+    "start": "npx serve .",
     "build": "node scripts/build.js --minor",
     "bump:minor": "node scripts/build.js --minor",
     "bump:major": "node scripts/build.js --major",

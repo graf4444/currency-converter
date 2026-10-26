@@ -4,17 +4,34 @@
   <img src="assets/banner.svg" alt="Project Banner" width="100%">
 </p>
 
-[🇬🇧 English Version](#-english) | [🇷🇺 Русская версия](#-русская-версия)
+<div align="center">
+
+### 🌐 Select Language / Выберите язык документации:
+[![English Documentation](https://img.shields.io/badge/Language-English-blue?style=for-the-badge&logo=readme&logoColor=white)](#-english)
+[![Русская документация](https://img.shields.io/badge/Язык-Русский-red?style=for-the-badge&logo=readme&logoColor=white)](#-русская-версия)
+
+---
+
+### 🚀 **Приложение уже запущено и готово к использованию! / Web App is Live!**
+**Вам не нужно ничего устанавливать или компилировать — это работающее бесплатное приложение.**  
+*You don't need to build or install anything — it is already deployed and ready to use in your browser.*
+
+[![Launch Web App](https://img.shields.io/badge/👉_LAUNCH_APP_/_ОТКРЫТЬ_ПРИЛОЖЕНИЕ-graf4444.github.io/currency--converter-success?style=for-the-badge&logo=googlechrome&logoColor=white)](https://graf4444.github.io/currency-converter/)
 
 <p align="center">
+  <a href="https://graf4444.github.io/currency-converter/"><img src="https://img.shields.io/badge/Status-Online%20%26%20Ready-success?style=for-the-badge" alt="Status"></a>
   <img src="https://img.shields.io/badge/Open%20Source-%E2%9D%A4-FF4500?style=for-the-badge" alt="Open Source">
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License MIT">
   <img src="https://img.shields.io/badge/PWA-Ready-blue?style=for-the-badge" alt="PWA Ready">
 </p>
 
+</div>
+
 ---
 
 ## 🇬🇧 English
+
+> 🇷🇺 **Ищете описание на русском языке?** [Перейти к русской версии](#-русская-версия)
 
 A modern, fast, and lightweight **Open Source** web tool for converting world currencies and popular cryptocurrencies. It works instantly as a regular website in any browser, but can also be installed as a full-featured application on any device (iOS, Android, Windows, macOS) — with no app stores required.
 
@@ -22,9 +39,12 @@ A modern, fast, and lightweight **Open Source** web tool for converting world cu
 
 ---
 
-### 🌍 Live Demo
-The application is deployed and ready to use:
-👉 **[Open Currency Converter](https://graf4444.github.io/currency-converter/)**
+### 🚀 Live Web Application (Use It Right Now!)
+
+> 💡 **For users:** This is **not just a repository with code**, but a **fully functional, live web application** running online! You don't need to download anything to use it.
+>
+> Simply open the application directly in your browser:  
+> 👉 **[https://graf4444.github.io/currency-converter/](https://graf4444.github.io/currency-converter/)**
 
 <p align="center">
   <b>💻 Desktop Version</b><br>
@@ -79,9 +99,40 @@ The app fetches mid-market interbank exchange rates from official open-source fi
 
 ### 📲 How to Install on Your Device
 You don't need to download anything from app stores. Just follow these simple steps:
-1. Open the [Live Demo Link](https://graf4444.github.io/currency-converter/) in your browser.
+1. Open the [Live Application](https://graf4444.github.io/currency-converter/) in your browser.
 2. **On Mobile (iOS/Android):** Tap the **"Share"** or **"Menu"** button and select **"Add to Home Screen"**.
 3. **On PC (Chrome/Edge):** Click the **install icon** in the address bar (on the right side).
+
+---
+
+### 💻 How to Run Locally
+
+If you want to run the project locally on your machine for development, testing, or offline personal use:
+
+> ⚠️ **Note:** Because this app uses Service Workers and PWA capabilities, browsers require it to be served via an HTTP server (`http://localhost`). Opening `index.html` directly via the file protocol (`file:///...`) will restrict Service Worker registration.
+
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/graf4444/currency-converter.git
+   cd currency-converter
+   ```
+
+2. **Start a local web server (choose any convenient method):**
+   * **Using npm / npx (Node.js):**
+     ```bash
+     npm start
+     ```
+     *(or `npx serve .`)*
+   * **Using Python 3:**
+     ```bash
+     python3 -m http.server 8000
+     ```
+   * **Using VS Code Live Server:**
+     Install the [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension, right-click `index.html` and choose **"Open with Live Server"**.
+
+3. **Open in your browser:**
+   * For Node.js / serve: `http://localhost:3000` (or the port displayed in your terminal)
+   * For Python: `http://localhost:8000`
 
 ---
 
@@ -104,15 +155,20 @@ If you find a bug, have an idea, or want to add a feature:
 
 ## 🇷🇺 Русская версия
 
+> 🇬🇧 **Looking for English documentation?** [Switch to English version](#-english)
+
 Современный, быстрый и легкий веб-инструмент с **открытым исходным кодом (Open Source)** для конвертации мировых валют и популярных криптовалют. Он мгновенно работает как обычный сайт в любом браузере, а также может быть установлен как полноценное приложение на любое устройство (iOS, Android, Windows, macOS) — без скачивания из магазинов приложений.
 
 ⭐ **Если вам понравился проект, пожалуйста, поддержите его звездой! Это мотивирует меня добавлять новые фичи.**
 
 ---
 
-### 🌍 Онлайн демо
-Проект уже развернут и доступен для использования:
-👉 **[Открыть Конвертер Валют](https://graf4444.github.io/currency-converter/)**
+### 🚀 Готовое онлайн-приложение (Пользуйтесь прямо сейчас!)
+
+> 💡 **Для обычных пользователей:** Это **не просто репозиторий с кодом**, а **полноценное, уже работающее онлайн-приложение**! Вам не нужно ничего скачивать, настраивать или запускать на компьютере.
+> 
+> Просто откройте ссылку в браузере на телефоне или компьютере:  
+> 👉 **[https://graf4444.github.io/currency-converter/](https://graf4444.github.io/currency-converter/)**
 
 <p align="center">
   <b>💻 Версия для ПК</b><br>
@@ -167,9 +223,40 @@ If you find a bug, have an idea, or want to add a feature:
 
 ### 📲 Как установить приложение на устройство
 Вам не нужно искать приложение в App Store или Google Play. Всё гораздо проще:
-1. Перейдите по [ссылке на сайт проекта](https://graf4444.github.io/currency-converter/).
+1. Перейдите по [ссылке на работающее приложение](https://graf4444.github.io/currency-converter/).
 2. **На телефоне (iOS/Android):** Нажмите кнопку **«Поделиться»** или **«Меню»** в браузере и выберите **«Добавить на главный экран»**.
 3. **На ПК (Chrome/Edge):** Нажмите на **иконку установки** в правой части адресной строки.
+
+---
+
+### 💻 Как запустить локально
+
+Если вы хотите запустить проект на своём компьютере для разработки, тестирования или личного использования:
+
+> ⚠️ **Важно:** Приложение использует Service Worker и технологии PWA, поэтому браузеры требуют запуск через локальный веб-сервер (`http://localhost`). Открытие файла `index.html` двойным кликом напрямую (`file:///...`) ограничит работу Service Worker и оффлайн-функций.
+
+1. **Склонируйте репозиторий:**
+   ```bash
+   git clone https://github.com/graf4444/currency-converter.git
+   cd currency-converter
+   ```
+
+2. **Запустите локальный веб-сервер (выберите любой удобный способ):**
+   * **Через Node.js / npm:**
+     ```bash
+     npm start
+     ```
+     *(или `npx serve .`)*
+   * **Через Python 3:**
+     ```bash
+     python3 -m http.server 8000
+     ```
+   * **Через VS Code:**
+     Установите расширение [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer), нажмите правой кнопкой на `index.html` и выберите **«Open with Live Server»** (или нажмите кнопку **«Go Live»** в статус-баре).
+
+3. **Откройте приложение в браузере:**
+   * Для Node.js / serve: `http://localhost:3000` (или порт, выведенный в терминале)
+   * Для Python: `http://localhost:8000`
 
 ---
 
@@ -181,7 +268,7 @@ If you find a bug, have an idea, or want to add a feature:
 ---
 
 ### 📢 Поделиться проектом
-[![Telegram](https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&weight=bold)](https://t.me/share/url?url=https://github.com/graf4444/currency-converter&text=Крутой%20конвертер%20валют%20без%20рекламы%20и%20регистрации!)
+[![Telegram](https://img.shields.io/badge/Telegram-26A5E4?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/share/url?url=https://github.com/graf4444/currency-converter&text=Крутой%20конвертер%20валют%20без%20рекламы%20и%20регистрации!)
 [![VK](https://img.shields.io/badge/ВКонтакте-4C75A3?style=for-the-badge&logo=vk&logoColor=white)](https://vk.com/share.php?url=https://github.com/graf4444/currency-converter)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/sharing/share-offsite/?url=https://github.com/graf4444/currency-converter)
 [![Reddit](https://img.shields.io/badge/Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white)](https://www.reddit.com/submit?url=https://github.com/graf4444/currency-converter&title=Отличный%20Конвертер%20Валют%20и%20Криптовалют)
