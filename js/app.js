@@ -684,6 +684,23 @@ function applyLocalization() {
     const hideLabel = document.getElementById('ui-keypad-hide-label');
     if (hideLabel) hideLabel.textContent = t.hideKeypad || 'Скрыть';
 
+    const footerInstallTxt = document.getElementById('ui-footer-install-text');
+    if (footerInstallTxt) {
+        footerInstallTxt.textContent = t.installApp || 'Install App';
+    }
+
+    const modalInstallTitle = document.getElementById('ui-install-modal-title');
+    if (modalInstallTitle) {
+        modalInstallTitle.textContent = t.installTitle || 'Install Application';
+    }
+
+    const modalInstallDesc = document.getElementById('ui-install-modal-desc');
+    if (modalInstallDesc) {
+        modalInstallDesc.textContent = t.installDesc || 'Install to your home screen for quick access and offline use:';
+    }
+
+    renderInstallSteps();
+
     renderAppVersion();
     updateLastUpdateUI();
     updateOnlineStatusUI(false);
@@ -1336,6 +1353,7 @@ if (searchBar) searchBar.addEventListener('input', filterCurrencies);
 window.addEventListener('click', (e) => {
     if (e.target === document.getElementById('search-modal')) closeModal();
     if (e.target === document.getElementById('chart-modal')) closeChartModal();
+    if (e.target === document.getElementById('install-modal')) closeInstallModal();
 });
 
 window.addEventListener('keydown', (e) => {
@@ -1344,6 +1362,8 @@ window.addEventListener('keydown', (e) => {
         if (modal && modal.style.display === 'flex') closeModal();
         const chartModal = document.getElementById('chart-modal');
         if (chartModal && chartModal.style.display === 'flex') closeChartModal();
+        const installModal = document.getElementById('install-modal');
+        if (installModal && installModal.style.display === 'flex') closeInstallModal();
         if (document.body.classList.contains('has-keypad-open')) closeVirtualKeypad();
     }
 });
@@ -1502,6 +1522,9 @@ function setupNavigationHistory() {
         const isKeypadOpen = document.body.classList.contains('has-keypad-open');
         const isInputActive = document.activeElement && document.activeElement.classList.contains('currency-input');
 
+        const installModal = document.getElementById('install-modal');
+        const isInstallModalOpen = installModal && (installModal.style.display === 'flex' || installModal.getAttribute('aria-hidden') === 'false');
+
         // Priority 1: If search modal is open, close it
         if (isSearchModalOpen) {
             closeModal();
@@ -1509,7 +1532,14 @@ function setupNavigationHistory() {
             return;
         }
 
-        // Priority 2: If chart modal is open, close it
+        // Priority 2: If install modal is open, close it
+        if (isInstallModalOpen) {
+            closeInstallModal();
+            try { window.history.pushState({ page: 'app' }, ''); } catch (_) {}
+            return;
+        }
+
+        // Priority 3: If chart modal is open, close it
         if (isChartModalOpen) {
             closeChartModal();
             try { window.history.pushState({ page: 'app' }, ''); } catch (_) {}
@@ -1546,6 +1576,144 @@ function setupNavigationHistory() {
 }
 
 // ============================================================
+// PWA INSTALLATION CONTROLLER
+// ============================================================
+
+let deferredInstallPrompt = null;
+
+function isRunningStandalone() {
+    return (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.matchMedia('(display-mode: window-controls-overlay)').matches ||
+        window.navigator.standalone === true ||
+        document.referrer.includes('android-app://')
+    );
+}
+
+function updateInstallButtonVisibility() {
+    const isStandalone = isRunningStandalone();
+    const btnFooter = document.getElementById('ui-footer-install-btn');
+
+    if (btnFooter) {
+        btnFooter.style.display = isStandalone ? 'none' : 'inline-flex';
+    }
+}
+
+async function handleInstallClick() {
+    triggerHaptic(12);
+    if (deferredInstallPrompt) {
+        try {
+            deferredInstallPrompt.prompt();
+            const choiceResult = await deferredInstallPrompt.userChoice;
+            if (choiceResult && choiceResult.outcome === 'accepted') {
+                deferredInstallPrompt = null;
+                updateInstallButtonVisibility();
+                const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : i18n.en;
+                showToast(t.installSuccess || 'Application installed successfully!');
+            }
+        } catch (_) {
+            openInstallModal();
+        }
+    } else {
+        openInstallModal();
+    }
+}
+
+function openInstallModal() {
+    triggerHaptic(10);
+    const modal = document.getElementById('install-modal');
+    if (!modal) return;
+
+    renderInstallSteps();
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+}
+
+function closeInstallModal() {
+    triggerHaptic(8);
+    const modal = document.getElementById('install-modal');
+    if (!modal) return;
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+}
+
+function renderInstallSteps() {
+    const stepsContainer = document.getElementById('install-steps-list');
+    if (!stepsContainer) return;
+
+    const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : i18n.en;
+    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    let html = '';
+    if (isIos) {
+        html = `
+            <div class="install-step-item">
+                <div class="install-step-badge">1</div>
+                <div>${t.installIosStep1 || 'Tap the Share button at the bottom of Safari'}</div>
+            </div>
+            <div class="install-step-item">
+                <div class="install-step-badge">2</div>
+                <div>${t.installIosStep2 || 'Scroll and select "Add to Home Screen"'}</div>
+            </div>
+        `;
+    } else {
+        html = `
+            <div class="install-step-item">
+                <div class="install-step-badge">1</div>
+                <div>${t.installDesktopStep || 'Click the install icon in the address bar or browser menu'}</div>
+            </div>
+        `;
+    }
+    stepsContainer.innerHTML = html;
+
+    const actionBtn = document.getElementById('ui-install-action-btn');
+    if (actionBtn) {
+        if (deferredInstallPrompt) {
+            actionBtn.textContent = t.install || 'Install';
+        } else {
+            actionBtn.textContent = t.installGotIt || 'Got it';
+        }
+    }
+}
+
+function setupPWAInstall() {
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        updateInstallButtonVisibility();
+        renderInstallSteps();
+    });
+
+    window.addEventListener('appinstalled', () => {
+        deferredInstallPrompt = null;
+        closeInstallModal();
+        updateInstallButtonVisibility();
+        const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : i18n.en;
+        showToast(t.installSuccess || 'Application installed successfully!');
+    });
+
+    const btnFooter = document.getElementById('ui-footer-install-btn');
+    if (btnFooter) btnFooter.addEventListener('click', handleInstallClick);
+
+    const closeBtn = document.getElementById('ui-install-close-btn');
+    if (closeBtn) closeBtn.addEventListener('click', closeInstallModal);
+
+    const actionBtn = document.getElementById('ui-install-action-btn');
+    if (actionBtn) {
+        actionBtn.addEventListener('click', () => {
+            if (deferredInstallPrompt) {
+                closeInstallModal();
+                handleInstallClick();
+            } else {
+                closeInstallModal();
+            }
+        });
+    }
+
+    updateInstallButtonVisibility();
+}
+
+// ============================================================
 // APPLICATION INITIALIZATION
 // ============================================================
 
@@ -1555,6 +1723,7 @@ applyTheme();
 updatePWAManifest();
 setupDragAndDropHandlers();
 setupNavigationHistory();
+setupPWAInstall();
 
 // Instant initial render from cache
 renderMain();

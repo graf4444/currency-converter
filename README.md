@@ -20,6 +20,7 @@
 
 <p align="center">
   <a href="https://graf4444.github.io/currency-converter/"><img src="https://img.shields.io/badge/Status-Online%20%26%20Ready-success?style=for-the-badge" alt="Status"></a>
+  <a href="https://currency-converter.goatcounter.com"><img src="https://currency-converter.goatcounter.com/counter/TOTAL.svg" alt="Visitors / Просмотры"></a>
   <img src="https://img.shields.io/badge/Open%20Source-%E2%9D%A4-FF4500?style=for-the-badge" alt="Open Source">
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License MIT">
   <img src="https://img.shields.io/badge/PWA-Ready-blue?style=for-the-badge" alt="PWA Ready">
@@ -58,7 +59,7 @@ A modern, fast, and lightweight **Open Source** web tool for converting world cu
 ### ✨ Key Features
 * **🎯 True Multi-Platform:** Use it as a website or install it directly onto your smartphone, tablet, or PC home screen as a standalone app (PWA).
 * **🔓 100% Open Source & Free:** The source code is completely open, transparent, and free under the MIT license. No hidden tracks or paywalls.
-* **🛡️ Privacy Focused:** No analytics, no cookies, and zero trackers. Your input and financial data never leave your device.
+* **🛡️ Privacy Focused:** Lightweight, privacy-first analytics powered by [GoatCounter](https://currency-converter.goatcounter.com) (no cookies, zero personal data collection, GDPR compliant). Your financial calculations and data never leave your device.
 * **💸 No Ads & No Registration:** Start using it instantly without creating accounts or sharing your personal data.
 * **📶 Full Offline Mode:** Lost your internet connection? The app keeps working seamlessly using cached exchange rates.
 * **🧠 Smart Memory:** Automatically saves your favorite currency layout, custom order, and preferred theme (Light/Dark).
@@ -182,7 +183,7 @@ If you find a bug, have an idea, or want to add a feature:
 ### ✨ Преимущества
 * **🎯 Настоящая кроссплатформенность:** Используйте как сайт или установите на главный экран смартфона, планшета или рабочий стол ПК как независимое приложение (PWA).
 * **🔓 100% Open Source и бесплатно:** Прозрачный открытый код под лицензией MIT. Никаких скрытых подписок, встроенных покупок или платных функций.
-* **🛡️ Полная конфиденциальность:** Никаких счетчиков аналитики, трекеров или куки. Все ваши расчеты происходят строго на вашем устройстве.
+* **🛡️ Конфиденциальность:** Этичная и открытая веб-аналитика на базе [GoatCounter](https://currency-converter.goatcounter.com) (без cookie, без сбора персональных данных, без межсайтовой слежки, соответствует GDPR). Все ваши расчеты и выбранные валюты обрабатываются строго на вашем устройстве.
 * **💸 Без рекламы и регистрации:** Только чистая конвертация и удобный интерфейс без назойливых баннеров или необходимости создавать аккаунт.
 * **📶 Оффлайн-режим:** Если пропал интернет или вы находитесь в полете, приложение продолжит полноценно работать на основе закэшированных курсов.
 * **🧠 Умное сохранение:** Автоматически запоминает выбранные вами валюты, их порядок на экране и настройки темы (Светлая/Тёмная).

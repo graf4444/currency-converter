@@ -20,7 +20,7 @@ body { background-color: var(--bg); color: var(--text); padding: 15px; display: 
 
 header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px 0; }
 h1 { font-size: 1.5rem; font-weight: 700; }
-.controls { display: flex; gap: 12px; align-items: center; }
+.controls { display: flex; gap: 10px; align-items: center; }
 .theme-toggle { background: none; border: none; font-size: 1.3rem; cursor: pointer; }
 .lang-select { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; font-size: 0.85rem; outline: none; cursor: pointer; }
 
@@ -40,12 +40,112 @@ h1 { font-size: 1.5rem; font-weight: 700; }
 .clear-btn:hover { opacity: 0.7; }
 
 .add-btn { width: 100%; padding: 14px; background: var(--card); border: 1px dashed var(--accent); color: var(--accent); border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; text-align: center; margin-bottom: 20px; }
-footer { margin-top: auto; text-align: center; font-size: 0.8rem; color: var(--text-muted); padding: 15px 0; }
-.app-version { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; opacity: 0.85; }
+footer {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 16px 0;
+    gap: 10px;
+}
 
-.github-badge { display: inline-flex; align-items: center; gap: 6px; margin-top: 12px; padding: 6px 12px; background: var(--card); border: 1px solid var(--border); border-radius: 20px; color: var(--text); font-weight: 500; text-decoration: none; font-size: 0.75rem; transition: transform 0.2s, border-color 0.2s; }
-.github-badge:hover { border-color: var(--accent); transform: translateY(-1px); }
-.github-badge svg { fill: currentColor; width: 14px; height: 14px; }
+.footer-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.footer-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.app-version {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    opacity: 0.85;
+}
+
+.footer-links {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+@media (min-width: 601px) {
+    .footer-links {
+        flex-direction: row;
+        gap: 10px;
+    }
+}
+
+.footer-install-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 13px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text);
+    font-weight: 500;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.footer-install-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+}
+
+.footer-install-btn:active {
+    transform: scale(0.97);
+}
+
+.footer-install-btn svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    flex-shrink: 0;
+}
+
+.github-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 13px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    color: var(--text);
+    font-weight: 500;
+    text-decoration: none;
+    font-size: 0.75rem;
+    transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.github-badge:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    transform: translateY(-1px);
+}
+.github-badge svg {
+    fill: currentColor;
+    width: 14px;
+    height: 14px;
+}
 
 .github-corner { display: none; position: fixed; top: 0; right: 0; border: 0; z-index: 999; text-decoration: none; }
 .github-corner svg { fill: var(--card); color: var(--text); position: absolute; top: 0; border: 0; right: 0; transition: fill 0.2s; border-bottom-left-radius: 4px; border-left: 1px solid var(--border); border-bottom: 1px solid var(--border); width: 110px; height: 110px; }
@@ -70,6 +170,100 @@ footer { margin-top: auto; text-align: center; font-size: 0.8rem; color: var(--t
 .modal-content { background: var(--card); width: 100%; max-width: 500px; height: 85vh; border-radius: 24px 24px 0 0; display: flex; flex-direction: column; padding: 20px; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .close-modal { background: none; border: none; font-size: 1rem; color: var(--accent); font-weight: 600; cursor: pointer; }
+
+.install-modal-content {
+    height: auto;
+    max-height: 85vh;
+    padding: 22px 20px 24px 20px;
+    overflow-y: auto;
+}
+
+@media (min-width: 601px) {
+    .modal {
+        align-items: center;
+    }
+    .install-modal-content {
+        border-radius: 24px;
+        box-shadow: 0 12px 36px rgba(0, 0, 0, 0.25);
+    }
+}
+
+.install-modal-header-info {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-grow: 1;
+}
+
+.install-modal-app-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+}
+
+.install-modal-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+    line-height: 1.35;
+}
+
+.install-steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 18px 0 20px 0;
+}
+
+.install-step-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.35;
+}
+
+.install-step-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    font-size: 1rem;
+    font-weight: 700;
+    flex-shrink: 0;
+    color: var(--accent);
+}
+
+.install-confirm-btn {
+    width: 100%;
+    padding: 13px;
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.98rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.15s ease;
+    user-select: none;
+}
+.install-confirm-btn:hover {
+    opacity: 0.92;
+}
+.install-confirm-btn:active {
+    transform: scale(0.98);
+}
 .search-input { width: 100%; padding: 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; color: var(--text); font-size: 1rem; margin-bottom: 15px; }
 .search-input:focus { outline: none; border-color: var(--accent); }
 
