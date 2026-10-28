@@ -1304,9 +1304,17 @@ async function updateRates(forceUpdate = false) {
 // ============================================================
 
 function updatePWAManifest() {
+    const lang = (state && state.lang && typeof i18n !== 'undefined' && i18n[state.lang]) ? state.lang : 'en';
+    const themeColor = state.theme === 'dark' ? '#1c1c1e' : '#f2f2f7';
+
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) {
-        metaTheme.setAttribute('content', state.theme === 'dark' ? '#1c1c1e' : '#f2f2f7');
+        metaTheme.setAttribute('content', themeColor);
+    }
+
+    const manifestLink = document.getElementById('app-manifest') || document.getElementById('dynamic-manifest');
+    if (manifestLink) {
+        manifestLink.href = `./manifests/${lang}.json`;
     }
 }
 
@@ -1642,10 +1650,21 @@ function renderInstallSteps() {
     if (!stepsContainer) return;
 
     const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : i18n.en;
-    const isIos = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const ua = navigator.userAgent;
+    const isIos = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+    const isAndroid = /Android/i.test(ua);
 
     let html = '';
-    if (isIos) {
+
+    if (deferredInstallPrompt) {
+        // Native install prompt is available — tell user to tap the button
+        html = `
+            <div class="install-step-item">
+                <div class="install-step-badge">✓</div>
+                <div>${t.installReadyDesc || 'Tap the button below to install the app on your device'}</div>
+            </div>
+        `;
+    } else if (isIos) {
         html = `
             <div class="install-step-item">
                 <div class="install-step-badge">1</div>
@@ -1654,6 +1673,13 @@ function renderInstallSteps() {
             <div class="install-step-item">
                 <div class="install-step-badge">2</div>
                 <div>${t.installIosStep2 || 'Scroll and select "Add to Home Screen"'}</div>
+            </div>
+        `;
+    } else if (isAndroid) {
+        html = `
+            <div class="install-step-item">
+                <div class="install-step-badge">1</div>
+                <div>${t.installAndroidStep || 'Tap the ⋮ menu in your browser and select "Add to Home Screen" or "Install App"'}</div>
             </div>
         `;
     } else {
@@ -1677,9 +1703,18 @@ function renderInstallSteps() {
 }
 
 function setupPWAInstall() {
+    // Pick up any prompt captured early by pwa-init.js (avoids race condition)
+    if (window.__deferredInstallPrompt) {
+        deferredInstallPrompt = window.__deferredInstallPrompt;
+        window.__deferredInstallPrompt = null;
+        updateInstallButtonVisibility();
+        renderInstallSteps();
+    }
+
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredInstallPrompt = e;
+        window.__deferredInstallPrompt = null;
         updateInstallButtonVisibility();
         renderInstallSteps();
     });

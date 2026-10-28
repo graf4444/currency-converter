@@ -133,6 +133,14 @@ function run() {
         } catch (_) {}
     }
 
+    // Regenerate Web App Manifests
+    const genManifestsPath = path.join(ROOT_DIR, 'scripts', 'generate-manifests.js');
+    if (fs.existsSync(genManifestsPath)) {
+        try {
+            require(genManifestsPath);
+        } catch (_) {}
+    }
+
     console.log(`\n✨ Build complete! v${newVersion} (${timestamp})\n`);
 }
 

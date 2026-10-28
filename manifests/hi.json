@@ -1,0 +1,32 @@
+{
+  "id": "/currency-converter/",
+  "name": "मुद्रा परिवर्तक",
+  "short_name": "परिवर्तक",
+  "description": "त्वरित और सरल मुद्रा परिवर्तक PWA",
+  "lang": "hi",
+  "dir": "ltr",
+  "start_url": "../index.html",
+  "scope": "../",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#1c1c1e",
+  "background_color": "#000000",
+  "icons": [
+    {
+      "src": "../icons/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "../icons/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "../icons/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

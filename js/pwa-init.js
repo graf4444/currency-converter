@@ -25,68 +25,26 @@ function _pwaResolveInitialPrefs() {
     return { lang, theme };
 }
 
-let _currentManifestURL = null;
-
-// Generates and injects (or replaces) the web app manifest.
+// Switches the web app manifest to the user's localized static manifest file.
 // `opts` is optional and lets app.js pass live state on language/theme change.
 function updatePWAManifest(opts) {
     const prefs = opts || (typeof state !== 'undefined'
         ? { lang: state.lang, theme: state.theme }
         : _pwaResolveInitialPrefs());
 
-    const t = (typeof i18n !== 'undefined' && i18n[prefs.lang]) ? i18n[prefs.lang] : i18n.en;
-    const appName = t.title;
-    const themeColor = prefs.theme === 'dark' ? '#1c1c1e' : '#ffffff';
-    const bgColor = prefs.theme === 'dark' ? '#000000' : '#f5f5f7';
+    const lang = (prefs && prefs.lang && typeof i18n !== 'undefined' && i18n[prefs.lang]) ? prefs.lang : 'en';
+    const themeColor = (prefs && prefs.theme === 'light') ? '#ffffff' : '#1c1c1e';
 
-    const manifestObj = {
-        // `id` must stay stable across deploys; do NOT localize it.
-        id: '/currency-converter/',
-        name: appName,
-        short_name: appName,
-        description: appName,
-        lang: prefs.lang,
-        dir: prefs.lang === 'ar' ? 'rtl' : 'ltr',
-        start_url: new URL('./index.html', window.location.href).href,
-        scope: new URL('./', window.location.href).href,
-        display: 'standalone',
-        orientation: 'portrait',
-        theme_color: themeColor,
-        background_color: bgColor,
-        icons: [
-            {
-                src: "./icons/android-chrome-192x192.png",
-                sizes: "192x192",
-                type: "image/png"
-            },
-            {
-                src: "./icons/android-chrome-512x512.png",
-                sizes: "512x512",
-                type: "image/png"
-            },
-            {
-                src: "./icons/android-chrome-512x512.png",
-                sizes: "512x512",
-                type: "image/png",
-                purpose: "maskable"
-            }
-        ]
-    };
-
-    const blob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
-    const url = URL.createObjectURL(blob);
-
-    let link = document.getElementById('dynamic-manifest');
+    let link = document.getElementById('app-manifest') || document.getElementById('dynamic-manifest');
     if (!link) {
         link = document.createElement('link');
-        link.id = 'dynamic-manifest';
+        link.id = 'app-manifest';
         link.rel = 'manifest';
         document.head.appendChild(link);
     }
-    // Release the previous blob URL to avoid memory leaks on repeated updates.
-    if (_currentManifestURL) URL.revokeObjectURL(_currentManifestURL);
-    _currentManifestURL = url;
-    link.href = url;
+    
+    // Use real static HTTPS manifest file for 100% compatibility with Android WebAPK generator
+    link.href = `./manifests/${lang}.json`;
 
     // Keep <meta name="theme-color"> in sync with the active theme.
     const metaTheme = document.getElementById('meta-theme-color');
@@ -97,6 +55,14 @@ function updatePWAManifest(opts) {
 // any install prompt). Requires DOM <head>, which exists at this point
 // because the <script> tag lives inside <head>.
 updatePWAManifest();
+
+// Capture the install prompt as early as possible so it is never lost
+// before app.js loads and calls setupPWAInstall().
+window.__deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    window.__deferredInstallPrompt = e;
+});
 
 // Register the service worker after the page has loaded so it never
 // competes with first paint.
