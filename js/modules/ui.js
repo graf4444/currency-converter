@@ -31,7 +31,7 @@ function applyLocalization() {
     if (metaAppName) metaAppName.setAttribute("content", t.title);
 
     const btnAdd = document.getElementById('ui-add-btn');
-    if (btnAdd) btnAdd.textContent = "+ " + t.add;
+    if (btnAdd) btnAdd.textContent = t.add;
     
     const modalTitle = document.getElementById('ui-modal-title');
     if (modalTitle) modalTitle.textContent = t.searchTitle;
