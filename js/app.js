@@ -30,8 +30,9 @@ let state = {
 let currentInputCode = null;
 let currentInputValue = '';
 let activeInputEl = null;
+let currentEditingCode = null;
 let useCustomKeypad = true;
-let lastKeypadInteractionTime = 0;
+let lastCloseKeypadTime = 0;
 let isClosingKeypad = false;
 let keypadCloseTimeout = null;
 
@@ -233,6 +234,48 @@ function isTouchDevice() {
     );
 }
 
+function countNonSpaces(str) {
+    if (!str) return 0;
+    let count = 0;
+    for (let i = 0; i < str.length; i++) {
+        if (!/\s/.test(str[i])) count++;
+    }
+    return count;
+}
+
+function findCursorPosByNonSpaceCount(str, targetCount) {
+    if (targetCount <= 0) return 0;
+    let count = 0;
+    for (let i = 0; i < str.length; i++) {
+        if (!/\s/.test(str[i])) {
+            count++;
+            if (count === targetCount) {
+                return i + 1;
+            }
+        }
+    }
+    return str.length;
+}
+
+function getCursorSelection(input) {
+    let start = input.selectionStart;
+    let end = input.selectionEnd;
+    const val = input.value || '';
+    if (start === null || end === null || start === undefined) {
+        start = val.length;
+        end = val.length;
+    }
+    return { start, end, val };
+}
+
+function isCurrencyActive(code, input) {
+    if (currentEditingCode !== code) return false;
+    if (isTouchDevice()) {
+        return document.body.classList.contains('has-keypad-open');
+    }
+    return document.activeElement === input;
+}
+
 let savedScrollY = null;
 
 function scrollCardAboveKeypad(card, keypad) {
@@ -250,7 +293,7 @@ function scrollCardAboveKeypad(card, keypad) {
 }
 
 function openVirtualKeypad(input) {
-    if (!isTouchDevice() || !input || input.disabled || isClosingKeypad || (Date.now() - lastKeypadInteractionTime < 450)) return;
+    if (!input || input.disabled || isClosingKeypad || (Date.now() - lastCloseKeypadTime < 420)) return;
     
     activeInputEl = input;
     currentInputCode = input.dataset.code;
@@ -270,20 +313,29 @@ function openVirtualKeypad(input) {
         if (parentCard) parentCard.classList.add('active-input-card');
         
         if (useCustomKeypad) {
-            input.setAttribute('inputmode', 'none');
+            if (isTouchDevice()) {
+                input.setAttribute('inputmode', 'none');
+            }
+            
+            const alreadyVisible = !keypad.hasAttribute('hidden') && keypad.classList.contains('is-visible');
+
             keypad.classList.remove('is-closing');
             keypad.removeAttribute('hidden');
 
-            requestAnimationFrame(() => {
-                keypad.classList.add('is-visible');
-                document.body.classList.add('has-keypad-open');
+            if (!alreadyVisible) {
+                requestAnimationFrame(() => {
+                    keypad.classList.add('is-visible');
+                    document.body.classList.add('has-keypad-open');
 
-                if (parentCard) {
-                    setTimeout(() => {
+                    if (parentCard) {
                         scrollCardAboveKeypad(parentCard, keypad);
-                    }, 80);
+                    }
+                });
+            } else {
+                if (parentCard) {
+                    scrollCardAboveKeypad(parentCard, keypad);
                 }
-            });
+            }
         } else {
             input.setAttribute('inputmode', 'decimal');
             keypad.classList.remove('is-visible');
@@ -305,7 +357,8 @@ function triggerHaptic(duration = 10) {
 function closeVirtualKeypad() {
     if (isClosingKeypad) return;
     isClosingKeypad = true;
-    lastKeypadInteractionTime = Date.now();
+    currentEditingCode = null;
+    lastCloseKeypadTime = Date.now();
     triggerHaptic(8);
     
     const keypad = document.getElementById('virtual-keypad');
@@ -324,7 +377,7 @@ function closeVirtualKeypad() {
             keypad.setAttribute('hidden', '');
             keypad.classList.remove('is-closing');
             isClosingKeypad = false;
-        }, 280);
+        }, 400);
     } else {
         isClosingKeypad = false;
     }
@@ -336,8 +389,6 @@ function closeVirtualKeypad() {
 }
 
 function handleKeypadPress(key) {
-    lastKeypadInteractionTime = Date.now();
-    
     let input = activeInputEl;
     if (!input && currentInputCode) {
         input = document.getElementById(`input-${currentInputCode}`);
@@ -350,23 +401,66 @@ function handleKeypadPress(key) {
     if (key === 'C') {
         input.value = '';
         currentInputValue = '';
+        input.setSelectionRange(0, 0);
         input.dispatchEvent(new Event('input', { bubbles: true }));
-    } else if (key === 'BACKSPACE') {
-        let raw = input.value.replace(/\s/g, '');
-        raw = raw.slice(0, -1);
-        let cleanVal = raw.replace(/,/g, '.').replace(/[^0-9.\+\-\*\/\(\)]/g, '');
-        input.value = formatExpression(cleanVal);
-        currentInputValue = cleanVal;
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-    } else if (key === '=') {
+        return;
+    }
+    
+    if (key === '=') {
         applyMathResult(input);
         closeVirtualKeypad();
-    } else {
-        let raw = input.value.replace(/\s/g, '');
-        raw += key;
-        let cleanVal = raw.replace(/,/g, '.').replace(/[^0-9.\+\-\*\/\(\)]/g, '');
-        input.value = formatExpression(cleanVal);
+        return;
+    }
+
+    const { start, end, val } = getCursorSelection(input);
+
+    if (key === 'BACKSPACE') {
+        if (val.length === 0) return;
+        
+        let newRaw = '';
+        let targetNonSpaces = 0;
+        
+        if (start !== end) {
+            const before = val.slice(0, start);
+            const after = val.slice(end);
+            targetNonSpaces = countNonSpaces(before);
+            newRaw = before + after;
+        } else {
+            if (start === 0) return;
+            
+            let deleteFrom = start - 1;
+            while (deleteFrom > 0 && /\s/.test(val[deleteFrom])) {
+                deleteFrom--;
+            }
+            const before = val.slice(0, deleteFrom);
+            const after = val.slice(start);
+            targetNonSpaces = countNonSpaces(before);
+            newRaw = before + after;
+        }
+
+        let cleanVal = newRaw.replace(/,/g, '.').replace(/\s/g, '').replace(/[^0-9.\+\-\*\/\(\)]/g, '');
+        let formatted = formatExpression(cleanVal);
+        input.value = formatted;
         currentInputValue = cleanVal;
+        
+        const newCursorPos = findCursorPosByNonSpaceCount(formatted, targetNonSpaces);
+        input.setSelectionRange(newCursorPos, newCursorPos);
+        
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    } else {
+        const before = val.slice(0, start);
+        const after = val.slice(end);
+        const targetNonSpaces = countNonSpaces(before) + 1;
+        const newRaw = before + key + after;
+
+        let cleanVal = newRaw.replace(/,/g, '.').replace(/\s/g, '').replace(/[^0-9.\+\-\*\/\(\)]/g, '');
+        let formatted = formatExpression(cleanVal);
+        input.value = formatted;
+        currentInputValue = cleanVal;
+
+        const newCursorPos = findCursorPosByNonSpaceCount(formatted, targetNonSpaces);
+        input.setSelectionRange(newCursorPos, newCursorPos);
+
         input.dispatchEvent(new Event('input', { bubbles: true }));
     }
 }
@@ -743,7 +837,7 @@ function adjustFontSize(input) {
 }
 
 function clearAllInputs(e) {
-    if (e && (Date.now() - lastKeypadInteractionTime < 450)) {
+    if (e && (Date.now() - lastCloseKeypadTime < 420)) {
         if (e.preventDefault) e.preventDefault();
         if (e.stopPropagation) e.stopPropagation();
         return;
@@ -852,7 +946,7 @@ function renderMain() {
                 </div>
             </div>
             <div class="right-block">
-                <input type="text" ${isTouchDevice() ? 'readonly inputmode="none"' : 'inputmode="decimal"'} class="currency-input" id="input-${code}" placeholder="${placeholderText}" data-code="${code}" autocomplete="off" ${!hasRate ? 'disabled' : ''}>
+                <input type="text" ${isTouchDevice() ? 'inputmode="none"' : 'inputmode="decimal"'} class="currency-input" id="input-${code}" placeholder="${placeholderText}" data-code="${code}" autocomplete="off" ${!hasRate ? 'disabled' : ''}>
                 <button class="clear-btn" id="clear-${code}">×</button>
             </div>
         `;
@@ -860,15 +954,26 @@ function renderMain() {
         card.querySelector('.clear-btn').addEventListener('click', clearAllInputs);
 
         card.addEventListener('click', (e) => {
-            if (e.target.closest('.clear-btn')) return;
+            if (e.target.closest('.clear-btn') || e.target.closest('.currency-input')) return;
             const input = card.querySelector('.currency-input');
             if (!input || input.disabled) return;
 
+            const code = input.dataset.code;
+            const isFirst = !isCurrencyActive(code, input);
+
             if (isTouchDevice()) {
-                if (isClosingKeypad || (Date.now() - lastKeypadInteractionTime < 450)) return;
+                if (isClosingKeypad || (Date.now() - lastCloseKeypadTime < 420)) return;
                 openVirtualKeypad(input);
             } else {
                 input.focus();
+            }
+
+            if (isFirst) {
+                currentEditingCode = code;
+                requestAnimationFrame(() => {
+                    const len = input.value.length;
+                    input.setSelectionRange(len, len);
+                });
             }
         });
     });
@@ -878,39 +983,80 @@ function renderMain() {
     container.appendChild(fragment);
 
     document.querySelectorAll('.currency-input').forEach(input => {
+        // Track pointerdown to determine if this is first tap on this currency
+        input.addEventListener('pointerdown', () => {
+            const code = input.dataset.code;
+            const isFirst = !isCurrencyActive(code, input);
+            input.dataset.isFirstTap = isFirst ? 'true' : 'false';
+        });
+
         // Show virtual keypad on focus or click (touch only)
         input.addEventListener('focus', (e) => {
+            const inputEl = e.target;
+            const code = inputEl.dataset.code;
+            const parentCard = inputEl.closest('.currency-card');
+
             document.querySelectorAll('.currency-card').forEach(c => c.classList.remove('active-input-card'));
-            const parentCard = e.target.closest('.currency-card');
             if (parentCard) parentCard.classList.add('active-input-card');
-            activeInputEl = e.target;
-            currentInputCode = e.target.dataset.code;
+            activeInputEl = inputEl;
+            currentInputCode = code;
+
+            const isFirst = inputEl.dataset.isFirstTap === 'true' || currentEditingCode !== code;
 
             if (isTouchDevice()) {
-                if (!isClosingKeypad && (Date.now() - lastKeypadInteractionTime >= 450)) openVirtualKeypad(e.target);
+                if (!isClosingKeypad && (Date.now() - lastCloseKeypadTime >= 420)) openVirtualKeypad(inputEl);
+            }
+
+            if (isFirst) {
+                currentEditingCode = code;
+                requestAnimationFrame(() => {
+                    const len = inputEl.value.length;
+                    inputEl.setSelectionRange(len, len);
+                });
             }
         });
 
         input.addEventListener('click', (e) => {
+            const inputEl = e.target;
+            const code = inputEl.dataset.code;
+            const isFirst = inputEl.dataset.isFirstTap === 'true';
+
             if (isTouchDevice()) {
-                if (!isClosingKeypad && (Date.now() - lastKeypadInteractionTime >= 450)) openVirtualKeypad(e.target);
+                if (!isClosingKeypad && (Date.now() - lastCloseKeypadTime >= 420)) openVirtualKeypad(inputEl);
+            }
+
+            if (isFirst) {
+                currentEditingCode = code;
+                inputEl.dataset.isFirstTap = 'false';
+                requestAnimationFrame(() => {
+                    const len = inputEl.value.length;
+                    inputEl.setSelectionRange(len, len);
+                });
             }
         });
 
         // 1. User input handler
         input.addEventListener('input', (e) => {
-            let raw = e.target.value.replace(/,/g, '.').replace(/\s/g, '');
+            const inputEl = e.target;
+            const selStart = inputEl.selectionStart ?? inputEl.value.length;
+            const nonSpacesBefore = countNonSpaces(inputEl.value.slice(0, selStart));
+
+            let raw = inputEl.value.replace(/,/g, '.').replace(/\s/g, '');
             let cleanVal = raw.replace(/[^0-9.\+\-\*\/\(\)]/g, ''); 
             
             let formatted = formatExpression(cleanVal);
-            e.target.value = formatted;
+            if (inputEl.value !== formatted) {
+                inputEl.value = formatted;
+                const newPos = findCursorPosByNonSpaceCount(formatted, nonSpacesBefore);
+                inputEl.setSelectionRange(newPos, newPos);
+            }
             
-            adjustFontSize(e.target);
+            adjustFontSize(inputEl);
             
-            currentInputCode = e.target.dataset.code;
+            currentInputCode = inputEl.dataset.code;
             currentInputValue = cleanVal;
             
-            const clearBtn = document.getElementById(`clear-${e.target.dataset.code}`);
+            const clearBtn = document.getElementById(`clear-${inputEl.dataset.code}`);
             if (clearBtn) {
                 if (cleanVal !== '') clearBtn.classList.add('visible');
                 else clearBtn.classList.remove('visible');
@@ -921,7 +1067,7 @@ function renderMain() {
                 currentInputValue = '';
                 saveState();
                 state.favorites.forEach(c => {
-                    if (c !== e.target.dataset.code) {
+                    if (c !== inputEl.dataset.code) {
                         const otherInput = document.getElementById(`input-${c}`);
                         const otherClear = document.getElementById(`clear-${c}`);
                         if (otherInput) { otherInput.value = ''; otherInput.style.fontSize = '1.4rem'; }
@@ -930,7 +1076,7 @@ function renderMain() {
                 });
             } else {
                 saveState();
-                recalculate(e.target.dataset.code, cleanVal);
+                recalculate(inputEl.dataset.code, cleanVal);
             }
         });
 
@@ -949,6 +1095,13 @@ function renderMain() {
             if (!isTouchDevice()) {
                 const parentCard = e.target.closest('.currency-card');
                 if (parentCard) parentCard.classList.remove('active-input-card');
+                setTimeout(() => {
+                    if (document.activeElement !== input) {
+                        if (currentEditingCode === input.dataset.code) {
+                            currentEditingCode = null;
+                        }
+                    }
+                }, 100);
             }
             applyMathResult(e.target);
         });
@@ -970,7 +1123,7 @@ function renderMain() {
 }
 
 function openModal(e) { 
-    if (isClosingKeypad || (Date.now() - lastKeypadInteractionTime < 450)) {
+    if (isClosingKeypad || (Date.now() - lastCloseKeypadTime < 420)) {
         if (e && e.preventDefault) e.preventDefault();
         if (e && e.stopPropagation) e.stopPropagation();
         return;
@@ -1353,7 +1506,7 @@ if (themeBtn) {
 const addBtn = document.getElementById('ui-add-btn');
 if (addBtn) {
     addBtn.addEventListener('click', (e) => {
-        if (isClosingKeypad || (Date.now() - lastKeypadInteractionTime < 450)) {
+        if (isClosingKeypad || (Date.now() - lastCloseKeypadTime < 420)) {
             e.preventDefault();
             e.stopPropagation();
             return;
@@ -1510,8 +1663,6 @@ if (keypadHideBtn) {
 
 // Close keypad when clicking outside input fields, cards, or keypad
 document.addEventListener('pointerdown', (e) => {
-    if (!document.body.classList.contains('has-keypad-open') || isClosingKeypad) return;
-    
     const target = e.target;
     if (
         !target.closest('#virtual-keypad') &&
@@ -1519,7 +1670,11 @@ document.addEventListener('pointerdown', (e) => {
         !target.closest('#search-modal') &&
         !target.closest('header')
     ) {
-        closeVirtualKeypad();
+        if (document.body.classList.contains('has-keypad-open') && !isClosingKeypad) {
+            closeVirtualKeypad();
+        } else if (!isTouchDevice()) {
+            currentEditingCode = null;
+        }
     }
 });
 
