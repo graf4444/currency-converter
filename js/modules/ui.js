@@ -165,7 +165,7 @@ function renderMain() {
                 if (isClosingKeypad || (Date.now() - lastCloseKeypadTime < 420)) return;
                 openVirtualKeypad(input);
             } else {
-                input.focus();
+                input.focus({ preventScroll: true });
             }
 
             if (isFirst) {

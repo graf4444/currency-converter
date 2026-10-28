@@ -11,7 +11,14 @@ function isCurrencyActive(code, input) {
     return document.activeElement === input;
 }
 
-let currentListShift = 0;
+function getElementDocumentTop(el) {
+    let top = 0;
+    while (el) {
+        top += el.offsetTop || 0;
+        el = el.offsetParent;
+    }
+    return top;
+}
 
 function updateListPositionForCard(card, keypad) {
     const favList = document.getElementById('favorites-container');
@@ -19,33 +26,38 @@ function updateListPositionForCard(card, keypad) {
 
     if (!card) {
         favList.style.transform = '';
-        currentListShift = 0;
         return;
     }
 
-    const keypadHeight = (keypad && keypad.offsetHeight > 0) ? keypad.offsetHeight : 360;
+    const keypadEl = keypad || document.getElementById('virtual-keypad');
+    const keypadHeight = (keypadEl && keypadEl.offsetHeight > 0) ? keypadEl.offsetHeight : 340;
     const keypadTop = window.innerHeight - keypadHeight;
     const safeGap = 20;
 
-    const cardRect = card.getBoundingClientRect();
-    const naturalBottom = cardRect.bottom + currentListShift;
-    const naturalTop = cardRect.top + currentListShift;
+    // Use invariant DOM layout positions (offsetTop) that never drift or accumulate errors
+    const cardTop = getElementDocumentTop(card);
+    const cardBottom = cardTop + card.offsetHeight;
+    const scrollY = window.scrollY || window.pageYOffset || 0;
+
+    const cardViewportTop = cardTop - scrollY;
+    const cardViewportBottom = cardBottom - scrollY;
 
     const maxAllowedBottom = keypadTop - safeGap;
 
-    if (naturalBottom > maxAllowedBottom) {
-        let neededShift = naturalBottom - maxAllowedBottom;
+    if (cardViewportBottom > maxAllowedBottom) {
+        let neededShift = cardViewportBottom - maxAllowedBottom;
 
         const headerEl = document.querySelector('header');
-        const headerBottom = headerEl ? headerEl.getBoundingClientRect().bottom : 70;
-        const maxShiftBeforeHeader = Math.max(0, naturalTop - (headerBottom + 12));
+        const headerTop = headerEl ? getElementDocumentTop(headerEl) : 0;
+        const headerHeight = headerEl ? headerEl.offsetHeight : 60;
+        const headerBottom = (headerTop + headerHeight) - scrollY;
 
+        // Strictly guarantee the active card never rises past the header
+        const maxShiftBeforeHeader = Math.max(0, cardViewportTop - (headerBottom + 12));
         neededShift = Math.min(neededShift, maxShiftBeforeHeader);
 
-        currentListShift = neededShift;
-        favList.style.transform = neededShift > 0 ? `translateY(-${neededShift}px)` : '';
+        favList.style.transform = neededShift > 0 ? `translateY(-${Math.round(neededShift)}px)` : '';
     } else {
-        currentListShift = 0;
         favList.style.transform = '';
     }
 }
