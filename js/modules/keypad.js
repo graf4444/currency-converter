@@ -22,16 +22,14 @@ function getElementDocumentTop(el) {
 
 function updateListPositionForCard(card, keypad) {
     const favList = document.getElementById('favorites-container');
+    const headerEl = document.querySelector('header');
     if (!favList) return;
 
     if (!card) {
         favList.style.transform = '';
+        if (headerEl) headerEl.style.transform = '';
         return;
     }
-
-    const headerEl = document.querySelector('header');
-    const headerHeight = headerEl ? headerEl.offsetHeight : 55;
-    const safeTop = headerHeight + 10;
 
     const keypadEl = keypad || document.getElementById('virtual-keypad');
     const keypadHeight = (keypadEl && keypadEl.offsetHeight > 0) ? keypadEl.offsetHeight : 340;
@@ -42,30 +40,16 @@ function updateListPositionForCard(card, keypad) {
     const cardBottom = cardTop + card.offsetHeight;
     const scrollY = window.scrollY || window.pageYOffset || 0;
 
-    const naturalCardTop = cardTop - scrollY;
     const naturalCardBottom = cardBottom - scrollY;
 
-    // Check if card is already comfortably inside the visible area between sticky header and keypad
-    if (naturalCardTop >= safeTop && naturalCardBottom <= safeBottom) {
-        favList.style.transform = '';
-        return;
-    }
-
     if (naturalCardBottom > safeBottom) {
-        // Card is too low and would be overlapped by keypad: shift UP
-        let shift = naturalCardBottom - safeBottom;
-
-        // Strictly guarantee the active card never rises past safeTop (below the sticky header)
-        const maxShift = Math.max(0, naturalCardTop - safeTop);
-        shift = Math.min(shift, maxShift);
-
-        favList.style.transform = shift > 0 ? `translateY(-${Math.round(shift)}px)` : '';
-    } else if (naturalCardTop < safeTop) {
-        // Card is scrolled above header: shift DOWN
-        let shift = safeTop - naturalCardTop;
-        favList.style.transform = shift > 0 ? `translateY(${Math.round(shift)}px)` : '';
+        const shift = Math.round(naturalCardBottom - safeBottom);
+        const transformVal = `translateY(-${shift}px)`;
+        favList.style.transform = transformVal;
+        if (headerEl) headerEl.style.transform = transformVal;
     } else {
         favList.style.transform = '';
+        if (headerEl) headerEl.style.transform = '';
     }
 }
 
