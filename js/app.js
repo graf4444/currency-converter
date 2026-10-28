@@ -716,10 +716,13 @@ function renderAppVersion() {
 }
 
 function applyTheme() {
+    document.documentElement.setAttribute('data-theme', state.theme);
     document.body.setAttribute('data-theme', state.theme);
     const themeBtn = document.getElementById('theme-btn');
     if (themeBtn) {
         themeBtn.textContent = state.theme === 'dark' ? '☀️' : '🌙';
+        themeBtn.setAttribute('title', state.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+        themeBtn.setAttribute('aria-label', state.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
     }
 }
 
@@ -1332,7 +1335,12 @@ if (langPicker) {
 
 const themeBtn = document.getElementById('theme-btn');
 if (themeBtn) {
-    themeBtn.addEventListener('click', () => {
+    themeBtn.addEventListener('click', (e) => {
+        if (e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        triggerHaptic(10);
         state.theme = state.theme === 'dark' ? 'light' : 'dark';
         applyTheme();
         updatePWAManifest();
@@ -1769,8 +1777,8 @@ function dismissSplashScreen() {
     if (!splash) return;
     const startTime = window.__splashStartTime || Date.now();
     const elapsed = Date.now() - startTime;
-    // Keep visible for at least 650ms for smooth aesthetic completion
-    const delay = Math.max(0, 650 - elapsed);
+    // Keep visible for ~1600ms so the user can enjoy the smooth roll and glow without rush
+    const delay = Math.max(0, 1600 - elapsed);
 
     setTimeout(() => {
         splash.classList.add('splash-fade-out');

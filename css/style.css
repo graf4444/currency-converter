@@ -1,4 +1,4 @@
-:root {
+:root, [data-theme="light"] {
     --bg: #f5f5f7; --card: #ffffff; --text: #1d1d1f; --text-muted: #86868b; --accent: #0071e3; --border: #d2d2d7;
 }
 [data-theme="dark"] {
@@ -753,7 +753,7 @@ body.has-keypad-open .container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    animation: splashSlotRoll 1.1s cubic-bezier(0.15, 0.85, 0.25, 1) forwards;
+    animation: splashSlotRoll 1.5s cubic-bezier(0.12, 0.85, 0.22, 1) forwards;
 }
 
 .splash-symbol {
@@ -764,17 +764,28 @@ body.has-keypad-open .container {
     color: var(--accent);
     text-align: center;
     width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.splash-icon-img {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
     display: block;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 @keyframes splashSlotRoll {
     0% { transform: translateY(0); }
-    14% { transform: translateY(-48px); }
-    29% { transform: translateY(-96px); }
-    45% { transform: translateY(-144px); }
-    62% { transform: translateY(-192px); }
-    80% { transform: translateY(-240px); }
-    100% { transform: translateY(-288px); }
+    12% { transform: translateY(-48px); }
+    25% { transform: translateY(-96px); }
+    39% { transform: translateY(-144px); }
+    53% { transform: translateY(-192px); }
+    67% { transform: translateY(-240px); }
+    82% { transform: translateY(-288px); }
+    100% { transform: translateY(-336px); }
 }
 
 .splash-info {
