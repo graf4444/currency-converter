@@ -1,6 +1,6 @@
 {
   "name": "currency-converter",
-  "version": "1.12",
+  "version": "1.13",
   "description": "Multi-currency and cryptocurrency converter PWA with offline support",
   "scripts": {
     "start": "npx serve .",

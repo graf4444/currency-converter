@@ -319,6 +319,10 @@ function openVirtualKeypad(input) {
             
             const alreadyVisible = !keypad.hasAttribute('hidden') && keypad.classList.contains('is-visible');
 
+            if (!alreadyVisible && savedScrollY === null) {
+                savedScrollY = window.scrollY;
+            }
+
             keypad.classList.remove('is-closing');
             keypad.removeAttribute('hidden');
 
@@ -341,6 +345,7 @@ function openVirtualKeypad(input) {
             keypad.classList.remove('is-visible');
             keypad.setAttribute('hidden', '');
             document.body.classList.remove('has-keypad-open');
+            savedScrollY = null;
         }
     }
 }
@@ -363,6 +368,12 @@ function closeVirtualKeypad() {
     
     const keypad = document.getElementById('virtual-keypad');
     document.querySelectorAll('.currency-card').forEach(card => card.classList.remove('active-input-card'));
+    
+    if (savedScrollY !== null) {
+        const targetY = savedScrollY;
+        savedScrollY = null;
+        window.scrollTo({ top: targetY, behavior: 'smooth' });
+    }
     
     if (keypad && !keypad.hasAttribute('hidden')) {
         // Trigger smooth slide-down animation
