@@ -7,32 +7,36 @@
 <div align="center">
 
 ### 🌐 Select Language / Выберите язык документации:
-[![English Documentation](https://img.shields.io/badge/Language-English-blue?style=for-the-badge&logo=readme&logoColor=white)](#-english)
-[![Русская документация](https://img.shields.io/badge/Язык-Русский-red?style=for-the-badge&logo=readme&logoColor=white)](#-русская-версия)
+[![English Documentation](https://img.shields.io/badge/Language-English-blue?style=for-the-badge&logo=readme&logoColor=white)](#english)
+[![Русская документация](https://img.shields.io/badge/Язык-Русский-red?style=for-the-badge&logo=readme&logoColor=white)](#russian)
 
 ---
 
-### 🚀 **Приложение уже запущено и готово к использованию! / Web App is Live!**
-**Вам не нужно ничего устанавливать или компилировать — это работающее бесплатное приложение.**  
-*You don't need to build or install anything — it is already deployed and ready to use in your browser.*
-
-[![Launch Web App](https://img.shields.io/badge/👉_LAUNCH_APP_/_ОТКРЫТЬ_ПРИЛОЖЕНИЕ-graf4444.github.io/currency--converter-success?style=for-the-badge&logo=googlechrome&logoColor=white)](https://graf4444.github.io/currency-converter/)
+### 🚀 **[graf4444.github.io/currency-converter](https://graf4444.github.io/currency-converter/)**
+**Free live web application — ready to use in any browser with no installation!**  
+*Бесплатное веб-приложение готово к использованию прямо в браузере без установки.*
 
 <p align="center">
   <a href="https://graf4444.github.io/currency-converter/"><img src="https://img.shields.io/badge/Status-Online%20%26%20Ready-success?style=for-the-badge" alt="Status"></a>
-  <a href="https://currency-converter.goatcounter.com"><img src="https://currency-converter.goatcounter.com/counter/TOTAL.svg" alt="Visitors / Просмотры"></a>
   <img src="https://img.shields.io/badge/Open%20Source-%E2%9D%A4-FF4500?style=for-the-badge" alt="Open Source">
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License MIT">
   <img src="https://img.shields.io/badge/PWA-Ready-blue?style=for-the-badge" alt="PWA Ready">
+</p>
+
+<p align="center">
+  <img src="https://currency-converter.goatcounter.com/counter/TOTAL.svg" alt="Visitors Count">
+  <br>
+  <sub>🛡️ <i>Total visits / Счётчик просмотров (<a href="https://www.goatcounter.com" target="_blank" rel="noopener noreferrer">GoatCounter</a>: privacy-friendly, no cookies / без cookie и сбора данных)</i></sub>
 </p>
 
 </div>
 
 ---
 
+<a id="english"></a>
 ## 🇬🇧 English
 
-> 🇷🇺 **Ищете описание на русском языке?** [Перейти к русской версии](#-русская-версия)
+> 🇷🇺 **Ищете описание на русском языке?** [Перейти к русской версии](#russian)
 
 A modern, fast, and lightweight **Open Source** web tool for converting world currencies and popular cryptocurrencies. It works instantly as a regular website in any browser, but can also be installed as a full-featured application on any device (iOS, Android, Windows, macOS) — with no app stores required.
 
@@ -40,12 +44,11 @@ A modern, fast, and lightweight **Open Source** web tool for converting world cu
 
 ---
 
-### 🚀 Live Web Application (Use It Right Now!)
+### 🚀 Live Web Application
 
-> 💡 **For users:** This is **not just a repository with code**, but a **fully functional, live web application** running online! You don't need to download anything to use it.
->
-> Simply open the application directly in your browser:  
-> 👉 **[https://graf4444.github.io/currency-converter/](https://graf4444.github.io/currency-converter/)**
+> 💡 Open the application directly in your browser:  
+> 👉 **[graf4444.github.io/currency-converter](https://graf4444.github.io/currency-converter/)**  
+> *Free, no registration, no ads, works on any smartphone, tablet, or desktop.*
 
 <p align="center">
   <b>💻 Desktop Version</b><br>
@@ -59,7 +62,7 @@ A modern, fast, and lightweight **Open Source** web tool for converting world cu
 ### ✨ Key Features
 * **🎯 True Multi-Platform:** Use it as a website or install it directly onto your smartphone, tablet, or PC home screen as a standalone app (PWA).
 * **🔓 100% Open Source & Free:** The source code is completely open, transparent, and free under the MIT license. No hidden tracks or paywalls.
-* **🛡️ Privacy Focused:** Lightweight, privacy-first analytics powered by [GoatCounter](https://currency-converter.goatcounter.com) (no cookies, zero personal data collection, GDPR compliant). Your financial calculations and data never leave your device.
+* **🛡️ Privacy Focused:** Lightweight, privacy-first analytics powered by [GoatCounter](https://www.goatcounter.com) (no cookies, zero personal data collection, GDPR compliant). Your financial calculations and data never leave your device.
 * **💸 No Ads & No Registration:** Start using it instantly without creating accounts or sharing your personal data.
 * **📶 Full Offline Mode:** Lost your internet connection? The app keeps working seamlessly using cached exchange rates.
 * **🧠 Smart Memory:** Automatically saves your favorite currency layout, custom order, and preferred theme (Light/Dark).
@@ -99,10 +102,11 @@ The app fetches mid-market interbank exchange rates from official open-source fi
 ---
 
 ### 📲 How to Install on Your Device
-You don't need to download anything from app stores. Just follow these simple steps:
+You don't need to download anything from app stores:
 1. Open the [Live Application](https://graf4444.github.io/currency-converter/) in your browser.
-2. **On Mobile (iOS/Android):** Tap the **"Share"** or **"Menu"** button and select **"Add to Home Screen"**.
-3. **On PC (Chrome/Edge):** Click the **install icon** in the address bar (on the right side).
+2. Tap the **"Install App"** button at the bottom of the page (or use your browser's menu / address bar):
+   * **On Mobile (iOS/Android):** In Safari tap **"Share"** → **"Add to Home Screen"**. In Chrome tap **"Install"** or the menu (`⋮`) → **"Add to Home Screen"**.
+   * **On PC (Chrome/Edge):** Click the **install icon** in the address bar (on the right side).
 
 ---
 
@@ -154,9 +158,10 @@ If you find a bug, have an idea, or want to add a feature:
 
 ---
 
+<a id="russian"></a>
 ## 🇷🇺 Русская версия
 
-> 🇬🇧 **Looking for English documentation?** [Switch to English version](#-english)
+> 🇬🇧 **Looking for English documentation?** [Switch to English version](#english)
 
 Современный, быстрый и легкий веб-инструмент с **открытым исходным кодом (Open Source)** для конвертации мировых валют и популярных криптовалют. Он мгновенно работает как обычный сайт в любом браузере, а также может быть установлен как полноценное приложение на любое устройство (iOS, Android, Windows, macOS) — без скачивания из магазинов приложений.
 
@@ -164,12 +169,11 @@ If you find a bug, have an idea, or want to add a feature:
 
 ---
 
-### 🚀 Готовое онлайн-приложение (Пользуйтесь прямо сейчас!)
+### 🚀 Готовое онлайн-приложение
 
-> 💡 **Для обычных пользователей:** Это **не просто репозиторий с кодом**, а **полноценное, уже работающее онлайн-приложение**! Вам не нужно ничего скачивать, настраивать или запускать на компьютере.
-> 
-> Просто откройте ссылку в браузере на телефоне или компьютере:  
-> 👉 **[https://graf4444.github.io/currency-converter/](https://graf4444.github.io/currency-converter/)**
+> 💡 Откройте приложение прямо в браузере:  
+> 👉 **[graf4444.github.io/currency-converter](https://graf4444.github.io/currency-converter/)**  
+> *Бесплатно, без регистрации, без рекламы — работает на смартфонах, планшетах и компьютерах.*
 
 <p align="center">
   <b>💻 Версия для ПК</b><br>
@@ -183,7 +187,7 @@ If you find a bug, have an idea, or want to add a feature:
 ### ✨ Преимущества
 * **🎯 Настоящая кроссплатформенность:** Используйте как сайт или установите на главный экран смартфона, планшета или рабочий стол ПК как независимое приложение (PWA).
 * **🔓 100% Open Source и бесплатно:** Прозрачный открытый код под лицензией MIT. Никаких скрытых подписок, встроенных покупок или платных функций.
-* **🛡️ Конфиденциальность:** Этичная и открытая веб-аналитика на базе [GoatCounter](https://currency-converter.goatcounter.com) (без cookie, без сбора персональных данных, без межсайтовой слежки, соответствует GDPR). Все ваши расчеты и выбранные валюты обрабатываются строго на вашем устройстве.
+* **🛡️ Конфиденциальность:** Этичная и открытая веб-аналитика на базе [GoatCounter](https://www.goatcounter.com) (без cookie, без сбора персональных данных, без межсайтовой слежки, соответствует GDPR). Все ваши расчеты и выбранные валюты обрабатываются строго на вашем устройстве.
 * **💸 Без рекламы и регистрации:** Только чистая конвертация и удобный интерфейс без назойливых баннеров или необходимости создавать аккаунт.
 * **📶 Оффлайн-режим:** Если пропал интернет или вы находитесь в полете, приложение продолжит полноценно работать на основе закэшированных курсов.
 * **🧠 Умное сохранение:** Автоматически запоминает выбранные вами валюты, их порядок на экране и настройки темы (Светлая/Тёмная).
@@ -223,10 +227,11 @@ If you find a bug, have an idea, or want to add a feature:
 ---
 
 ### 📲 Как установить приложение на устройство
-Вам не нужно искать приложение в App Store или Google Play. Всё гораздо проще:
+Вам не нужно искать приложение в магазинах приложений:
 1. Перейдите по [ссылке на работающее приложение](https://graf4444.github.io/currency-converter/).
-2. **На телефоне (iOS/Android):** Нажмите кнопку **«Поделиться»** или **«Меню»** в браузере и выберите **«Добавить на главный экран»**.
-3. **На ПК (Chrome/Edge):** Нажмите на **иконку установки** в правой части адресной строки.
+2. Нажмите кнопку **«Установить приложение»** внизу страницы (или воспользуйтесь меню браузера / адресной строкой):
+   * **На телефоне (iOS/Android):** В Safari нажмите **«Поделиться»** → **«На экран "Домой"»**. В Chrome нажмите **«Установить»** или меню (`⋮`) → **«Добавить на главный экран»**.
+   * **На ПК (Chrome/Edge):** Нажмите на **иконку установки** в правой части адресной строки.
 
 ---
 
