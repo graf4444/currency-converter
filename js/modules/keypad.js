@@ -11,17 +11,42 @@ function isCurrencyActive(code, input) {
     return document.activeElement === input;
 }
 
-function scrollCardAboveKeypad(card, keypad) {
-    if (!card) return;
-    const cardRect = card.getBoundingClientRect();
-    const keypadHeight = keypad ? keypad.offsetHeight : 340;
-    const visibleHeight = window.innerHeight - keypadHeight;
-    const safeBottom = visibleHeight - 12;
+let currentListShift = 0;
 
-    if (cardRect.bottom > safeBottom || cardRect.top < 12) {
-        const desiredTop = Math.max(12, (visibleHeight - cardRect.height) / 2);
-        const targetY = window.scrollY + (cardRect.top - desiredTop);
-        window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+function updateListPositionForCard(card, keypad) {
+    const favList = document.getElementById('favorites-container');
+    if (!favList) return;
+
+    if (!card) {
+        favList.style.transform = '';
+        currentListShift = 0;
+        return;
+    }
+
+    const keypadHeight = (keypad && keypad.offsetHeight > 0) ? keypad.offsetHeight : 360;
+    const keypadTop = window.innerHeight - keypadHeight;
+    const safeGap = 20;
+
+    const cardRect = card.getBoundingClientRect();
+    const naturalBottom = cardRect.bottom + currentListShift;
+    const naturalTop = cardRect.top + currentListShift;
+
+    const maxAllowedBottom = keypadTop - safeGap;
+
+    if (naturalBottom > maxAllowedBottom) {
+        let neededShift = naturalBottom - maxAllowedBottom;
+
+        const headerEl = document.querySelector('header');
+        const headerBottom = headerEl ? headerEl.getBoundingClientRect().bottom : 70;
+        const maxShiftBeforeHeader = Math.max(0, naturalTop - (headerBottom + 12));
+
+        neededShift = Math.min(neededShift, maxShiftBeforeHeader);
+
+        currentListShift = neededShift;
+        favList.style.transform = neededShift > 0 ? `translateY(-${neededShift}px)` : '';
+    } else {
+        currentListShift = 0;
+        favList.style.transform = '';
     }
 }
 
@@ -52,10 +77,6 @@ function openVirtualKeypad(input) {
             
             const alreadyVisible = !keypad.hasAttribute('hidden') && keypad.classList.contains('is-visible');
 
-            if (!alreadyVisible && savedScrollY === null) {
-                savedScrollY = window.scrollY;
-            }
-
             keypad.classList.remove('is-closing');
             keypad.removeAttribute('hidden');
 
@@ -65,20 +86,20 @@ function openVirtualKeypad(input) {
                     document.body.classList.add('has-keypad-open');
 
                     if (parentCard) {
-                        scrollCardAboveKeypad(parentCard, keypad);
+                        updateListPositionForCard(parentCard, keypad);
                     }
                 });
             } else {
                 if (parentCard) {
-                    scrollCardAboveKeypad(parentCard, keypad);
+                    updateListPositionForCard(parentCard, keypad);
                 }
             }
         } else {
             input.setAttribute('inputmode', 'decimal');
             keypad.classList.remove('is-visible');
             keypad.setAttribute('hidden', '');
+            updateListPositionForCard(null);
             document.body.classList.remove('has-keypad-open');
-            savedScrollY = null;
         }
     }
 }
@@ -93,27 +114,23 @@ function closeVirtualKeypad() {
     const keypad = document.getElementById('virtual-keypad');
     document.querySelectorAll('.currency-card').forEach(card => card.classList.remove('active-input-card'));
     
-    if (savedScrollY !== null) {
-        const targetY = savedScrollY;
-        savedScrollY = null;
-        window.scrollTo({ top: targetY, behavior: 'smooth' });
-    }
+    // Smoothly slide currency cards back to natural position
+    updateListPositionForCard(null);
     
     if (keypad && !keypad.hasAttribute('hidden')) {
         // Trigger smooth slide-down animation
         keypad.classList.remove('is-visible');
         keypad.classList.add('is-closing');
-        
-        // Smoothly reduce container padding in sync
-        document.body.classList.remove('has-keypad-open');
 
         clearTimeout(keypadCloseTimeout);
         keypadCloseTimeout = setTimeout(() => {
             keypad.setAttribute('hidden', '');
             keypad.classList.remove('is-closing');
+            document.body.classList.remove('has-keypad-open');
             isClosingKeypad = false;
-        }, 400);
+        }, 380);
     } else {
+        document.body.classList.remove('has-keypad-open');
         isClosingKeypad = false;
     }
 
@@ -263,6 +280,14 @@ function setupKeypadEvents() {
             } else if (!isTouchDevice()) {
                 currentEditingCode = null;
             }
+        }
+    });
+
+    window.addEventListener('resize', () => {
+        if (document.body.classList.contains('has-keypad-open') && activeInputEl) {
+            const parentCard = activeInputEl.closest('.currency-card');
+            const keypad = document.getElementById('virtual-keypad');
+            updateListPositionForCard(parentCard, keypad);
         }
     });
 }

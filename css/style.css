@@ -22,16 +22,31 @@ body { background-color: var(--bg); color: var(--text); padding: 15px; display: 
     display: flex;
     flex-direction: column;
     min-height: 90vh;
-    transition: padding-bottom 0.4s cubic-bezier(0.25, 0.9, 0.3, 1);
 }
 
-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px 0; }
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px 0;
+    position: relative;
+    z-index: 30;
+    background: var(--bg);
+}
 h1 { font-size: 1.5rem; font-weight: 700; }
 .controls { display: flex; gap: 10px; align-items: center; }
 .theme-toggle { background: none; border: none; font-size: 1.3rem; cursor: pointer; }
 .lang-select { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; font-size: 0.85rem; outline: none; cursor: pointer; }
 
-.currency-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+.currency-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: transform;
+}
 .currency-card {
     background: var(--card);
     padding: 14px;
@@ -494,9 +509,6 @@ footer {
     box-shadow: 0 0 0 2px rgba(41, 151, 255, 0.35), 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
-body.has-keypad-open .container {
-    padding-bottom: 350px;
-}
 
 /* ============================================================
    HISTORICAL CHARTS & TREND BADGES STYLES
