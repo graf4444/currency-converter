@@ -29,34 +29,41 @@ function updateListPositionForCard(card, keypad) {
         return;
     }
 
+    const headerEl = document.querySelector('header');
+    const headerHeight = headerEl ? headerEl.offsetHeight : 55;
+    const safeTop = headerHeight + 10;
+
     const keypadEl = keypad || document.getElementById('virtual-keypad');
     const keypadHeight = (keypadEl && keypadEl.offsetHeight > 0) ? keypadEl.offsetHeight : 340;
-    const keypadTop = window.innerHeight - keypadHeight;
-    const safeGap = 20;
+    const safeBottom = window.innerHeight - keypadHeight - 16;
 
     // Use invariant DOM layout positions (offsetTop) that never drift or accumulate errors
     const cardTop = getElementDocumentTop(card);
     const cardBottom = cardTop + card.offsetHeight;
     const scrollY = window.scrollY || window.pageYOffset || 0;
 
-    const cardViewportTop = cardTop - scrollY;
-    const cardViewportBottom = cardBottom - scrollY;
+    const naturalCardTop = cardTop - scrollY;
+    const naturalCardBottom = cardBottom - scrollY;
 
-    const maxAllowedBottom = keypadTop - safeGap;
+    // Check if card is already comfortably inside the visible area between sticky header and keypad
+    if (naturalCardTop >= safeTop && naturalCardBottom <= safeBottom) {
+        favList.style.transform = '';
+        return;
+    }
 
-    if (cardViewportBottom > maxAllowedBottom) {
-        let neededShift = cardViewportBottom - maxAllowedBottom;
+    if (naturalCardBottom > safeBottom) {
+        // Card is too low and would be overlapped by keypad: shift UP
+        let shift = naturalCardBottom - safeBottom;
 
-        const headerEl = document.querySelector('header');
-        const headerTop = headerEl ? getElementDocumentTop(headerEl) : 0;
-        const headerHeight = headerEl ? headerEl.offsetHeight : 60;
-        const headerBottom = (headerTop + headerHeight) - scrollY;
+        // Strictly guarantee the active card never rises past safeTop (below the sticky header)
+        const maxShift = Math.max(0, naturalCardTop - safeTop);
+        shift = Math.min(shift, maxShift);
 
-        // Strictly guarantee the active card never rises past the header
-        const maxShiftBeforeHeader = Math.max(0, cardViewportTop - (headerBottom + 12));
-        neededShift = Math.min(neededShift, maxShiftBeforeHeader);
-
-        favList.style.transform = neededShift > 0 ? `translateY(-${Math.round(neededShift)}px)` : '';
+        favList.style.transform = shift > 0 ? `translateY(-${Math.round(shift)}px)` : '';
+    } else if (naturalCardTop < safeTop) {
+        // Card is scrolled above header: shift DOWN
+        let shift = safeTop - naturalCardTop;
+        favList.style.transform = shift > 0 ? `translateY(${Math.round(shift)}px)` : '';
     } else {
         favList.style.transform = '';
     }
