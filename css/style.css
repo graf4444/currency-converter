@@ -16,7 +16,14 @@ body, .currency-card, .lang-select, .search-input, .modal-content, .add-btn, .gi
 }
 
 body { background-color: var(--bg); color: var(--text); padding: 15px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-.container { width: 100%; max-width: 480px; display: flex; flex-direction: column; min-height: 90vh; }
+.container {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    min-height: 90vh;
+    transition: padding-bottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
 header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px 0; }
 h1 { font-size: 1.5rem; font-weight: 700; }
@@ -25,7 +32,17 @@ h1 { font-size: 1.5rem; font-weight: 700; }
 .lang-select { background: var(--card); color: var(--text); border: 1px solid var(--border); padding: 6px 10px; border-radius: 8px; font-size: 0.85rem; outline: none; cursor: pointer; }
 
 .currency-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-.currency-card { background: var(--card); padding: 14px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between; border: 1px solid var(--border); box-shadow: 0 4px 6px rgba(0,0,0,0.01); }
+.currency-card {
+    background: var(--card);
+    padding: 14px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.01);
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+}
 .currency-meta { display: flex; align-items: center; gap: 12px; min-width: 40%; user-select: none; }
 .flag { font-size: 2rem; width: 40px; text-align: center; display: inline-block; }
 .code-name { display: flex; flex-direction: column; overflow: hidden; }
@@ -33,7 +50,7 @@ h1 { font-size: 1.5rem; font-weight: 700; }
 .c-name { font-size: 0.8rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .right-block { display: flex; align-items: center; gap: 10px; width: 60%; justify-content: flex-end; overflow: hidden; }
-.currency-input { background: transparent; border: none; color: var(--text); padding: 5px 0; font-size: 1.4rem; text-align: right; width: 100%; font-variant-numeric: tabular-nums; font-weight: 500; min-width: 0; }
+.currency-input { background: transparent; border: none; color: var(--text); padding: 5px 0; font-size: 1.4rem; text-align: right; width: 100%; font-variant-numeric: tabular-nums; font-weight: 500; min-width: 0; cursor: pointer; }
 .currency-input:focus { outline: none; }
 .clear-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; opacity: 0.3; padding: 0 4px; display: none; flex-shrink: 0; }
 .clear-btn.visible { display: inline-block; }
@@ -166,7 +183,25 @@ footer {
     .github-corner svg { width: 140px; height: 140px; }
 }
 
-.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); z-index: 100; justify-content: center; align-items: flex-end; }
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 100; justify-content: center; align-items: flex-end; }
+
+@keyframes modalBackdropFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modalContentSlideUp {
+    from { transform: translateY(40px); opacity: 0.85; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal[style*="display: flex"] {
+    animation: modalBackdropFadeIn 0.22s ease forwards;
+}
+
+.modal[style*="display: flex"] .modal-content {
+    animation: modalContentSlideUp 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
 .modal-content { background: var(--card); width: 100%; max-width: 500px; height: 85vh; border-radius: 24px 24px 0 0; display: flex; flex-direction: column; padding: 20px; }
 .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
 .close-modal { background: none; border: none; font-size: 1rem; color: var(--accent); font-weight: 600; cursor: pointer; }
@@ -293,18 +328,32 @@ footer {
     position: fixed;
     bottom: 0;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(100%);
     width: 100%;
     max-width: 480px;
     background: var(--card);
     border-top: 1px solid var(--border);
     border-radius: 20px 20px 0 0;
-    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.18);
     padding: 12px 14px 20px 14px;
     z-index: 90;
-    transition: transform 0.25s cubic-bezier(0.1, 0.9, 0.2, 1), opacity 0.2s ease;
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
     user-select: none;
     -webkit-user-select: none;
+    will-change: transform, opacity;
+}
+
+.keypad-container.is-visible {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+.keypad-container.is-closing {
+    transform: translateX(-50%) translateY(100%);
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.28s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.22s ease;
 }
 
 .keypad-container[hidden] {
@@ -332,7 +381,6 @@ footer {
     align-items: center;
 }
 
-.keypad-toggle-mode-btn,
 .keypad-close-btn {
     background: var(--bg);
     border: 1px solid var(--border);
@@ -344,7 +392,6 @@ footer {
     transition: background 0.15s ease, border-color 0.15s ease;
 }
 
-.keypad-toggle-mode-btn:hover,
 .keypad-close-btn:hover {
     border-color: var(--accent);
 }
@@ -441,6 +488,11 @@ footer {
 .currency-card.active-input-card {
     border-color: var(--accent);
     box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.25);
+    transform: scale(1.01);
+}
+
+[data-theme="dark"] .currency-card.active-input-card {
+    box-shadow: 0 0 0 2px rgba(41, 151, 255, 0.35), 0 4px 16px rgba(0, 0, 0, 0.3);
 }
 
 body.has-keypad-open .container {

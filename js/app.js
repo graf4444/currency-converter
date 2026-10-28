@@ -222,8 +222,16 @@ function applyMathResult(input) {
 }
 
 // ============================================================
-// VIRTUAL CALCULATOR KEYPAD CONTROLLER
+// TOUCH DETECTION & VIRTUAL KEYPAD CONTROLLER
 // ============================================================
+
+function isTouchDevice() {
+    return (
+        'ontouchstart' in window ||
+        (Boolean(navigator.maxTouchPoints) && navigator.maxTouchPoints > 0) ||
+        (window.matchMedia && window.matchMedia('(pointer: coarse)').matches)
+    );
+}
 
 let savedScrollY = null;
 
@@ -242,7 +250,7 @@ function scrollCardAboveKeypad(card, keypad) {
 }
 
 function openVirtualKeypad(input) {
-    if (!input || input.disabled || isClosingKeypad || (Date.now() - lastKeypadInteractionTime < 450)) return;
+    if (!isTouchDevice() || !input || input.disabled || isClosingKeypad || (Date.now() - lastKeypadInteractionTime < 450)) return;
     
     activeInputEl = input;
     currentInputCode = input.dataset.code;
@@ -262,25 +270,25 @@ function openVirtualKeypad(input) {
         if (parentCard) parentCard.classList.add('active-input-card');
         
         if (useCustomKeypad) {
-            if (!document.body.classList.contains('has-keypad-open')) {
-                savedScrollY = window.scrollY;
-            }
-
             input.setAttribute('inputmode', 'none');
+            keypad.classList.remove('is-closing');
             keypad.removeAttribute('hidden');
-            document.body.classList.add('has-keypad-open');
 
-            if (parentCard) {
-                // Defer slightly so DOM styles and padding are active
-                requestAnimationFrame(() => {
-                    scrollCardAboveKeypad(parentCard, keypad);
-                });
-            }
+            requestAnimationFrame(() => {
+                keypad.classList.add('is-visible');
+                document.body.classList.add('has-keypad-open');
+
+                if (parentCard) {
+                    setTimeout(() => {
+                        scrollCardAboveKeypad(parentCard, keypad);
+                    }, 80);
+                }
+            });
         } else {
             input.setAttribute('inputmode', 'decimal');
+            keypad.classList.remove('is-visible');
             keypad.setAttribute('hidden', '');
             document.body.classList.remove('has-keypad-open');
-            savedScrollY = null;
         }
     }
 }
@@ -295,32 +303,36 @@ function triggerHaptic(duration = 10) {
 }
 
 function closeVirtualKeypad() {
+    if (isClosingKeypad) return;
     isClosingKeypad = true;
     lastKeypadInteractionTime = Date.now();
     triggerHaptic(8);
     
     const keypad = document.getElementById('virtual-keypad');
-    if (keypad) {
-        keypad.setAttribute('hidden', '');
-        document.body.classList.remove('has-keypad-open');
-    }
     document.querySelectorAll('.currency-card').forEach(card => card.classList.remove('active-input-card'));
     
-    if (savedScrollY !== null) {
-        const targetY = savedScrollY;
-        savedScrollY = null;
-        window.scrollTo({ top: targetY, behavior: 'smooth' });
+    if (keypad && !keypad.hasAttribute('hidden')) {
+        // Trigger smooth slide-down animation
+        keypad.classList.remove('is-visible');
+        keypad.classList.add('is-closing');
+        
+        // Smoothly reduce container padding in sync
+        document.body.classList.remove('has-keypad-open');
+
+        clearTimeout(keypadCloseTimeout);
+        keypadCloseTimeout = setTimeout(() => {
+            keypad.setAttribute('hidden', '');
+            keypad.classList.remove('is-closing');
+            isClosingKeypad = false;
+        }, 280);
+    } else {
+        isClosingKeypad = false;
     }
 
     if (activeInputEl) {
         try { activeInputEl.blur(); } catch (_) {}
     }
     activeInputEl = null;
-
-    clearTimeout(keypadCloseTimeout);
-    keypadCloseTimeout = setTimeout(() => {
-        isClosingKeypad = false;
-    }, 450);
 }
 
 function handleKeypadPress(key) {
@@ -359,32 +371,6 @@ function handleKeypadPress(key) {
     }
 }
 
-function toggleKeypadMode() {
-    triggerHaptic(12);
-    useCustomKeypad = !useCustomKeypad;
-    const toggleBtn = document.getElementById('keypad-toggle-mode');
-    if (toggleBtn) {
-        toggleBtn.textContent = useCustomKeypad ? '⌨️' : '🔢';
-        toggleBtn.title = useCustomKeypad ? 'Switch to native keyboard' : 'Switch to built-in keypad';
-    }
-    
-    document.querySelectorAll('.currency-input').forEach(input => {
-        input.setAttribute('inputmode', useCustomKeypad ? 'none' : 'decimal');
-    });
-
-    if (activeInputEl) {
-        if (useCustomKeypad) {
-            activeInputEl.setAttribute('inputmode', 'none');
-            const keypad = document.getElementById('virtual-keypad');
-            if (keypad) keypad.removeAttribute('hidden');
-            document.body.classList.add('has-keypad-open');
-        } else {
-            activeInputEl.setAttribute('inputmode', 'decimal');
-            closeVirtualKeypad();
-            activeInputEl.focus();
-        }
-    }
-}
 
 // ============================================================
 // HISTORICAL CHART & TREND CONTROLLER (Feature 1)
@@ -866,7 +852,7 @@ function renderMain() {
                 </div>
             </div>
             <div class="right-block">
-                <input type="text" inputmode="${useCustomKeypad ? 'none' : 'decimal'}" enterkeyhint="done" class="currency-input" id="input-${code}" placeholder="${placeholderText}" data-code="${code}" autocomplete="off" ${!hasRate ? 'disabled' : ''}>
+                <input type="text" ${isTouchDevice() ? 'readonly inputmode="none"' : 'inputmode="decimal"'} class="currency-input" id="input-${code}" placeholder="${placeholderText}" data-code="${code}" autocomplete="off" ${!hasRate ? 'disabled' : ''}>
                 <button class="clear-btn" id="clear-${code}">×</button>
             </div>
         `;
@@ -875,10 +861,14 @@ function renderMain() {
 
         card.addEventListener('click', (e) => {
             if (e.target.closest('.clear-btn')) return;
-            if (isClosingKeypad || (Date.now() - lastKeypadInteractionTime < 450)) return;
             const input = card.querySelector('.currency-input');
-            if (input && !input.disabled) {
+            if (!input || input.disabled) return;
+
+            if (isTouchDevice()) {
+                if (isClosingKeypad || (Date.now() - lastKeypadInteractionTime < 450)) return;
                 openVirtualKeypad(input);
+            } else {
+                input.focus();
             }
         });
     });
@@ -888,13 +878,23 @@ function renderMain() {
     container.appendChild(fragment);
 
     document.querySelectorAll('.currency-input').forEach(input => {
-        // Show virtual keypad on focus or click
+        // Show virtual keypad on focus or click (touch only)
         input.addEventListener('focus', (e) => {
-            if (!isClosingKeypad && (Date.now() - lastKeypadInteractionTime >= 450)) openVirtualKeypad(e.target);
+            document.querySelectorAll('.currency-card').forEach(c => c.classList.remove('active-input-card'));
+            const parentCard = e.target.closest('.currency-card');
+            if (parentCard) parentCard.classList.add('active-input-card');
+            activeInputEl = e.target;
+            currentInputCode = e.target.dataset.code;
+
+            if (isTouchDevice()) {
+                if (!isClosingKeypad && (Date.now() - lastKeypadInteractionTime >= 450)) openVirtualKeypad(e.target);
+            }
         });
 
         input.addEventListener('click', (e) => {
-            if (!isClosingKeypad && (Date.now() - lastKeypadInteractionTime >= 450)) openVirtualKeypad(e.target);
+            if (isTouchDevice()) {
+                if (!isClosingKeypad && (Date.now() - lastKeypadInteractionTime >= 450)) openVirtualKeypad(e.target);
+            }
         });
 
         // 1. User input handler
@@ -944,11 +944,13 @@ function renderMain() {
             }
         });
 
-        // 3. Blur event handler (only when native keyboard is active)
+        // 3. Blur event handler
         input.addEventListener('blur', (e) => {
-            if (!useCustomKeypad || !document.body.classList.contains('has-keypad-open')) {
-                applyMathResult(e.target);
+            if (!isTouchDevice()) {
+                const parentCard = e.target.closest('.currency-card');
+                if (parentCard) parentCard.classList.remove('active-input-card');
             }
+            applyMathResult(e.target);
         });
     });
 
@@ -1381,6 +1383,28 @@ window.addEventListener('keydown', (e) => {
         const installModal = document.getElementById('install-modal');
         if (installModal && installModal.style.display === 'flex') closeInstallModal();
         if (document.body.classList.contains('has-keypad-open')) closeVirtualKeypad();
+        return;
+    }
+
+    // Route physical keyboard presses to virtual calculator when keypad is open
+    if (document.body.classList.contains('has-keypad-open')) {
+        const searchModal = document.getElementById('search-modal');
+        if (searchModal && searchModal.style.display === 'flex') return;
+
+        const key = e.key;
+        if (/^[0-9\+\-\*\/\(\)\.]$/.test(key)) {
+            e.preventDefault();
+            handleKeypadPress(key);
+        } else if (key === 'Backspace') {
+            e.preventDefault();
+            handleKeypadPress('BACKSPACE');
+        } else if (key === 'Enter' || key === '=') {
+            e.preventDefault();
+            handleKeypadPress('=');
+        } else if (key.toLowerCase() === 'c' && !e.ctrlKey && !e.metaKey) {
+            e.preventDefault();
+            handleKeypadPress('C');
+        }
     }
 });
 
@@ -1419,7 +1443,17 @@ window.addEventListener('online', () => updateRates(false));
 window.addEventListener('offline', () => updateOnlineStatusUI(false));
 window.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
+        // Prevent Android soft keyboard resurrection on app restore
+        if (document.activeElement && document.activeElement.classList.contains('currency-input')) {
+            document.activeElement.blur();
+        }
         updateRates(false);
+    }
+});
+window.addEventListener('focus', () => {
+    // Extra safety against mobile soft keyboard on app switch
+    if (document.activeElement && document.activeElement.classList.contains('currency-input')) {
+        document.activeElement.blur();
     }
 });
 
@@ -1473,13 +1507,6 @@ if (keypadHideBtn) {
     keypadHideBtn.addEventListener('click', handleHide);
 }
 
-const keypadToggleBtn = document.getElementById('keypad-toggle-mode');
-if (keypadToggleBtn) {
-    keypadToggleBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        toggleKeypadMode();
-    });
-}
 
 // Close keypad when clicking outside input fields, cards, or keypad
 document.addEventListener('pointerdown', (e) => {
