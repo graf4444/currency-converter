@@ -5,6 +5,8 @@
 // then appear in the user's chosen language.
 // ============================================================
 
+window.__splashStartTime = Date.now();
+
 // Resolve initial language/theme without depending on app.js.
 function _pwaResolveInitialPrefs() {
     let lang = 'en';
@@ -24,6 +26,22 @@ function _pwaResolveInitialPrefs() {
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) theme = 'light';
     return { lang, theme };
 }
+
+const _initialPrefs = _pwaResolveInitialPrefs();
+try {
+    document.documentElement.setAttribute('data-theme', _initialPrefs.theme);
+} catch (_) {}
+
+// Localize splash screen immediately as soon as DOM parsed
+document.addEventListener('DOMContentLoaded', () => {
+    const splashTitle = document.getElementById('splash-title');
+    const splashSync = document.getElementById('splash-status-text');
+    const t = (typeof i18n !== 'undefined' && i18n[_initialPrefs.lang]) ? i18n[_initialPrefs.lang] : null;
+    if (t) {
+        if (splashTitle) splashTitle.textContent = t.title;
+        if (splashSync) splashSync.textContent = t.sync || 'Syncing...';
+    }
+});
 
 // Switches the web app manifest to the user's localized static manifest file.
 // `opts` is optional and lets app.js pass live state on language/theme change.

@@ -33,8 +33,49 @@
     <!-- GoatCounter Analytics (privacy-friendly, GDPR-compliant, no cookies) -->
     <script data-goatcounter="https://currency-converter.goatcounter.com/count"
             async src="//gc.zgo.at/count.js"></script>
+
+    <style id="splash-critical-css">
+        .splash-screen {
+            position: fixed; inset: 0; z-index: 99999;
+            background-color: #000000;
+            display: flex; align-items: center; justify-content: center;
+        }
+        [data-theme="light"] .splash-screen {
+            background-color: #f5f5f7;
+        }
+    </style>
 </head>
 <body>
+
+<!-- In-App Animated Splash Screen (Currency Morph) -->
+<div id="splash-screen" class="splash-screen" aria-hidden="true">
+    <div class="splash-container">
+        <div class="splash-badge-box">
+            <div class="splash-ring"></div>
+            <div class="splash-ring splash-ring-secondary"></div>
+            <div class="splash-badge">
+                <div class="splash-slot-window">
+                    <div class="splash-slot-track" id="splash-slot-track">
+                        <span class="splash-symbol">$</span>
+                        <span class="splash-symbol">€</span>
+                        <span class="splash-symbol">£</span>
+                        <span class="splash-symbol">¥</span>
+                        <span class="splash-symbol">₽</span>
+                        <span class="splash-symbol">₿</span>
+                        <span class="splash-symbol">⇄</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="splash-info">
+            <h2 class="splash-title" id="splash-title">Currency Converter</h2>
+            <div class="splash-status">
+                <span class="splash-dot"></span>
+                <span id="splash-status-text">Syncing...</span>
+            </div>
+        </div>
+    </div>
+</div>
 
 <a href="https://github.com/graf4444/currency-converter" target="_blank" class="github-corner" aria-label="View source on GitHub">
     <svg width="250" height="250" viewBox="0 0 250 250" aria-hidden="true">
@@ -78,7 +119,7 @@
                 <div class="spinner" id="loader" aria-hidden="true"></div>
             </div>
             <div id="last-update"></div>
-            <div id="app-version" class="app-version">v1.6 (2026-10-28 18:36)</div>
+            <div id="app-version" class="app-version">v1.8 (2026-10-28 18:51)</div>
         </div>
 
         <div class="footer-links">

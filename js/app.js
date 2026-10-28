@@ -1762,6 +1762,27 @@ setupPWAInstall();
 
 // Instant initial render from cache
 renderMain();
+dismissSplashScreen();
+
+function dismissSplashScreen() {
+    const splash = document.getElementById('splash-screen');
+    if (!splash) return;
+    const startTime = window.__splashStartTime || Date.now();
+    const elapsed = Date.now() - startTime;
+    // Keep visible for at least 650ms for smooth aesthetic completion
+    const delay = Math.max(0, 650 - elapsed);
+
+    setTimeout(() => {
+        splash.classList.add('splash-fade-out');
+        const cleanup = () => {
+            try { splash.remove(); } catch (_) { splash.style.display = 'none'; }
+            const crit = document.getElementById('splash-critical-css');
+            if (crit) crit.remove();
+        };
+        splash.addEventListener('transitionend', cleanup, { once: true });
+        setTimeout(cleanup, 500);
+    }, delay);
+}
 
 // Check if page was explicitly reloaded by user (Cmd+R / F5 / browser reload / pull-to-refresh)
 const isReload = isPageReload();

@@ -658,3 +658,159 @@ body.has-keypad-open .container {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
+
+/* ============================================================
+   IN-APP SPLASH SCREEN (Currency Morph)
+   ============================================================ */
+.splash-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    background-color: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    user-select: none;
+    -webkit-user-select: none;
+    transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), filter 0.4s ease;
+}
+
+.splash-screen.splash-fade-out {
+    opacity: 0;
+    transform: scale(1.05);
+    filter: blur(6px);
+    pointer-events: none;
+}
+
+.splash-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+}
+
+.splash-badge-box {
+    position: relative;
+    width: 82px;
+    height: 82px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.splash-ring {
+    position: absolute;
+    inset: -6px;
+    border-radius: 28px;
+    border: 1.5px solid var(--accent);
+    opacity: 0;
+    animation: splashSonar 1.6s ease-out infinite;
+    pointer-events: none;
+}
+
+.splash-ring-secondary {
+    animation-delay: 0.5s;
+}
+
+@keyframes splashSonar {
+    0% { transform: scale(0.92); opacity: 0.7; }
+    50% { opacity: 0.2; }
+    100% { transform: scale(1.55); opacity: 0; }
+}
+
+.splash-badge {
+    width: 82px;
+    height: 82px;
+    border-radius: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.2), 0 0 28px rgba(41, 151, 255, 0.22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 2;
+    animation: splashBadgePop 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes splashBadgePop {
+    0% { transform: scale(0.75); opacity: 0; }
+    70% { transform: scale(1.04); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.splash-slot-window {
+    width: 48px;
+    height: 48px;
+    overflow: hidden;
+    position: relative;
+    mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%);
+}
+
+.splash-slot-track {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    animation: splashSlotRoll 1.1s cubic-bezier(0.15, 0.85, 0.25, 1) forwards;
+}
+
+.splash-symbol {
+    height: 48px;
+    line-height: 48px;
+    font-size: 2.1rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-align: center;
+    width: 100%;
+    display: block;
+}
+
+@keyframes splashSlotRoll {
+    0% { transform: translateY(0); }
+    14% { transform: translateY(-48px); }
+    29% { transform: translateY(-96px); }
+    45% { transform: translateY(-144px); }
+    62% { transform: translateY(-192px); }
+    80% { transform: translateY(-240px); }
+    100% { transform: translateY(-288px); }
+}
+
+.splash-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+}
+
+.splash-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: -0.3px;
+    color: var(--text);
+    margin: 0;
+}
+
+.splash-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+.splash-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #34c759;
+    box-shadow: 0 0 8px rgba(52, 199, 89, 0.6);
+    animation: splashDotPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes splashDotPulse {
+    0%, 100% { transform: scale(0.85); opacity: 0.5; }
+    50% { transform: scale(1.2); opacity: 1; }
+}
