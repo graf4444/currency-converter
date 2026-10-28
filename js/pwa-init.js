@@ -7,6 +7,21 @@
 
 window.__splashStartTime = Date.now();
 
+// Determine if splash screen should be skipped (e.g. pull-to-refresh or page reload)
+function shouldSkipSplashScreen() {
+    try {
+        const nav = performance.getEntriesByType('navigation');
+        if (nav && nav[0] && nav[0].type === 'reload') return true;
+        if (window.performance && window.performance.navigation && window.performance.navigation.type === 1) return true;
+        if (sessionStorage.getItem('pwa_splash_shown') === 'true') return true;
+    } catch (_) {}
+    return false;
+}
+
+if (shouldSkipSplashScreen()) {
+    try { document.documentElement.classList.add('skip-splash'); } catch (_) {}
+}
+
 // Resolve initial language/theme without depending on app.js.
 function _pwaResolveInitialPrefs() {
     let lang = 'en';

@@ -714,6 +714,11 @@ body.has-keypad-open .container {
 /* ============================================================
    IN-APP SPLASH SCREEN (Currency Morph)
    ============================================================ */
+.skip-splash .splash-screen,
+.skip-splash #splash-screen {
+    display: none !important;
+}
+
 .splash-screen {
     position: fixed;
     inset: 0;

@@ -1802,9 +1802,21 @@ dismissSplashScreen();
 function dismissSplashScreen() {
     const splash = document.getElementById('splash-screen');
     if (!splash) return;
+
+    // Skip immediately on pull-to-refresh or page reload
+    if (typeof shouldSkipSplashScreen === 'function' && shouldSkipSplashScreen()) {
+        try { splash.remove(); } catch (_) { splash.style.display = 'none'; }
+        const crit = document.getElementById('splash-critical-css');
+        if (crit) crit.remove();
+        return;
+    }
+
+    // Mark as shown for this app session
+    try { sessionStorage.setItem('pwa_splash_shown', 'true'); } catch (_) {}
+
     const startTime = window.__splashStartTime || Date.now();
     const elapsed = Date.now() - startTime;
-    // Keep visible for ~1600ms so the user can enjoy the smooth roll and glow without rush
+    // Keep visible for ~1600ms so the user can enjoy the smooth roll and glow on fresh launch
     const delay = Math.max(0, 1600 - elapsed);
 
     setTimeout(() => {
