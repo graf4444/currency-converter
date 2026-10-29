@@ -150,14 +150,31 @@ function renderMain() {
             </div>
             <div class="right-block">
                 <input type="text" ${isTouchDevice() ? 'inputmode="none"' : 'inputmode="decimal"'} class="currency-input" id="input-${code}" placeholder="${placeholderText}" data-code="${code}" autocomplete="off" ${!hasRate ? 'disabled' : ''}>
-                <button class="clear-btn" id="clear-${code}">×</button>
+                <div class="card-action-btns">
+                    <button type="button" class="share-btn" id="share-${code}" title="Share Breakdown" aria-label="Share conversion">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                            <polyline points="16 6 12 2 8 6"></polyline>
+                            <line x1="12" y1="2" x2="12" y2="15"></line>
+                        </svg>
+                    </button>
+                    <button type="button" class="clear-btn" id="clear-${code}" title="Clear">×</button>
+                </div>
             </div>
         `;
         fragment.appendChild(card);
         card.querySelector('.clear-btn').addEventListener('click', clearAllInputs);
+        const cardShareBtn = card.querySelector('.share-btn');
+        if (cardShareBtn) {
+            cardShareBtn.addEventListener('click', (e) => {
+                if (typeof shareBreakdown === 'function') {
+                    shareBreakdown(code, e);
+                }
+            });
+        }
 
         card.addEventListener('click', (e) => {
-            if (e.target.closest('.clear-btn') || e.target.closest('.currency-input')) return;
+            if (e.target.closest('.clear-btn') || e.target.closest('.share-btn') || e.target.closest('.currency-input')) return;
             const input = card.querySelector('.currency-input');
             if (!input || input.disabled) return;
 
@@ -263,6 +280,11 @@ function renderMain() {
                 if (cleanVal !== '') clearBtn.classList.add('visible');
                 else clearBtn.classList.remove('visible');
             }
+            const shareBtn = document.getElementById(`share-${inputEl.dataset.code}`);
+            if (shareBtn) {
+                if (cleanVal !== '') shareBtn.classList.add('visible');
+                else shareBtn.classList.remove('visible');
+            }
 
             if (cleanVal.trim() === '') {
                 currentInputCode = null;
@@ -272,8 +294,10 @@ function renderMain() {
                     if (c !== inputEl.dataset.code) {
                         const otherInput = document.getElementById(`input-${c}`);
                         const otherClear = document.getElementById(`clear-${c}`);
+                        const otherShare = document.getElementById(`share-${c}`);
                         if (otherInput) { otherInput.value = ''; otherInput.style.fontSize = '1.4rem'; }
                         if (otherClear) otherClear.classList.remove('visible');
+                        if (otherShare) otherShare.classList.remove('visible');
                     }
                 });
             } else {
@@ -317,6 +341,8 @@ function renderMain() {
             adjustFontSize(activeInput);
             const clearBtn = document.getElementById(`clear-${currentInputCode}`);
             if (clearBtn) clearBtn.classList.add('visible');
+            const shareBtn = document.getElementById(`share-${currentInputCode}`);
+            if (shareBtn) shareBtn.classList.add('visible');
         }
         recalculate(currentInputCode, currentInputValue);
     }

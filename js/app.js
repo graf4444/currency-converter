@@ -116,6 +116,7 @@ applyTheme();
 updatePWAManifest();
 setupUIEvents();
 setupKeypadEvents();
+setupShareEvents();
 setupChartEvents();
 setupManageListEvents();
 setupDragAndDropHandlers();

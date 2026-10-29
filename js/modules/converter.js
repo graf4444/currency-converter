@@ -25,8 +25,10 @@ function recalculate(activeCode, rawValue) {
             if (code !== activeCode) {
                 const input = document.getElementById(`input-${code}`);
                 const clearBtn = document.getElementById(`clear-${code}`);
+                const shareBtn = document.getElementById(`share-${code}`);
                 if (input) input.value = '';
                 if (clearBtn) clearBtn.classList.remove('visible');
+                if (shareBtn) shareBtn.classList.remove('visible');
             }
         });
         return;
@@ -59,6 +61,11 @@ function recalculate(activeCode, rawValue) {
                     if (input.value !== '') clearBtn.classList.add('visible');
                     else clearBtn.classList.remove('visible');
                 }
+                const shareBtn = document.getElementById(`share-${code}`);
+                if (shareBtn) {
+                    if (input.value !== '') shareBtn.classList.add('visible');
+                    else shareBtn.classList.remove('visible');
+                }
             }
         }
     });
@@ -79,10 +86,12 @@ function clearAllInputs(e) {
     state.favorites.forEach(c => {
         const input = document.getElementById(`input-${c}`);
         const clearBtn = document.getElementById(`clear-${c}`);
+        const shareBtn = document.getElementById(`share-${c}`);
         if (input) {
             input.value = '';
             input.style.fontSize = '1.4rem';
         }
         if (clearBtn) clearBtn.classList.remove('visible');
+        if (shareBtn) shareBtn.classList.remove('visible');
     });
 }

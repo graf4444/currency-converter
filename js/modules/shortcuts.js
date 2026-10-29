@@ -78,30 +78,39 @@ function handleAppShortcuts() {
 
         let handled = false;
 
-        // 1. Quick Currency Pair Mode (e.g. ?from=USD&to=RUB)
+        // 1. Quick Currency Pair Mode (e.g. ?from=USD&to=RUB) or Deep Link (?from=USD&amount=100)
         if (from) {
             const fromCode = from.toUpperCase().trim();
             const toCode = to ? to.toUpperCase().trim() : null;
 
             if (typeof currencyDb !== 'undefined' && currencyDb[fromCode]) {
-                // Activate Quick Mode
-                isQuickMode = true;
-                if (!Array.isArray(permanentFavorites) || permanentFavorites.length === 0) {
-                    permanentFavorites = [...state.favorites];
-                }
-
-                // Show only the requested pair in Quick Mode
-                const pairList = [fromCode];
                 if (toCode && currencyDb[toCode] && toCode !== fromCode) {
-                    pairList.push(toCode);
+                    // Quick Currency Pair Mode (e.g. PWA shortcut)
+                    isQuickMode = true;
+                    if (!Array.isArray(permanentFavorites) || permanentFavorites.length === 0) {
+                        permanentFavorites = [...state.favorites];
+                    }
+                    state.favorites = [fromCode, toCode];
+                    renderQuickModeControls();
+                } else {
+                    // Deep Link with base currency & amount:
+                    // Keep user's favorite currencies, but ensure fromCode is at the top
+                    if (isQuickMode && Array.isArray(permanentFavorites) && permanentFavorites.length > 0) {
+                        state.favorites = [...permanentFavorites];
+                        isQuickMode = false;
+                    }
+                    if (!state.favorites.includes(fromCode)) {
+                        state.favorites.unshift(fromCode);
+                    } else if (state.favorites[0] !== fromCode) {
+                        state.favorites = [fromCode, ...state.favorites.filter(c => c !== fromCode)];
+                    }
+                    saveState();
                 }
-                state.favorites = pairList;
 
                 currentInputCode = fromCode;
                 currentInputValue = amount ? String(amount) : '1';
 
                 renderMain();
-                renderQuickModeControls();
 
                 const inputEl = document.getElementById(`input-${fromCode}`);
                 if (inputEl) {
