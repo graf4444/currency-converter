@@ -47,6 +47,7 @@ window.addEventListener('click', (e) => {
     if (e.target === document.getElementById('search-modal')) closeModal();
     if (e.target === document.getElementById('chart-modal')) closeChartModal();
     if (e.target === document.getElementById('install-modal')) closeInstallModal();
+    if (e.target === document.getElementById('privacy-modal') && typeof closePrivacyModal === 'function') closePrivacyModal();
 });
 
 // Escape key and physical keyboard routing
@@ -58,6 +59,8 @@ window.addEventListener('keydown', (e) => {
         if (chartModal && chartModal.style.display === 'flex') closeChartModal();
         const installModal = document.getElementById('install-modal');
         if (installModal && installModal.style.display === 'flex') closeInstallModal();
+        const privacyModal = document.getElementById('privacy-modal');
+        if (privacyModal && privacyModal.style.display === 'flex' && typeof closePrivacyModal === 'function') closePrivacyModal();
         if (document.body.classList.contains('has-keypad-open')) closeVirtualKeypad();
         return;
     }

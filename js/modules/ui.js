@@ -76,6 +76,10 @@ function applyLocalization() {
         renderInstallSteps();
     }
 
+    if (typeof renderPrivacyContent === 'function') {
+        renderPrivacyContent();
+    }
+
     renderAppVersion();
     updateLastUpdateUI();
     if (typeof updateOnlineStatusUI === 'function') {
@@ -353,6 +357,123 @@ function renderMain() {
 /**
  * Attaches language picker and theme button event listeners.
  */
+const PRIVACY_CONTENT = {
+    ru: {
+        modalTitle: "Буфер обмена и безопасность",
+        modalDesc: "Зачем приложению доступ и как защищены ваши данные",
+        footerBtn: "Приватность",
+        actionBtn: "Понятно",
+        cards: [
+            {
+                icon: "📋",
+                title: "Зачем браузер запрашивает доступ?",
+                desc: "При открытии или возвращении в приложение конвертер проверяет буфер обмена. Если там скопирована сумма (например, <b>120 $</b>, <b>49.99 EUR</b> или <b>964 889 982 UZS</b>), вверху появляется плашка с предложением сконвертировать её в 1 клик."
+            },
+            {
+                icon: "🔒",
+                title: "100% локально на вашем устройстве",
+                desc: "Конвертер работает по модели <b>Local-First (PWA)</b>. Текст из буфера анализируется исключительно в памяти вашего браузера. Данные <b>никогда не передаются на серверы</b>, в облако или третьим лицам."
+            },
+            {
+                icon: "🛡️",
+                title: "Только числа и валюты",
+                desc: "Алгоритм ищет только финансовые суммы и обозначения валют. Все остальные данные (личная переписка, пароли, ссылки) мгновенно отбрасываются и нигде не сохраняются."
+            },
+            {
+                icon: "⚡",
+                title: "Контроль всегда в ваших руках",
+                desc: "Приложение никогда не меняет поля ввода без вашего согласия. Расчёт выполнится только тогда, когда вы сами нажмёте кнопку <b>«Вставить»</b>."
+            },
+            {
+                icon: "💡",
+                title: "Почему браузер показывает системный запрос?",
+                desc: "Запрос «Разрешить сайту доступ к буферу обмена» — это встроенная защита браузера (Chrome, Safari, Edge), чтобы ни один сайт не читал буфер незаметно. Вы в любой момент можете разрешить или запретить доступ в настройках браузера."
+            }
+        ]
+    },
+    en: {
+        modalTitle: "Clipboard & Privacy",
+        modalDesc: "Why access is requested and how your data is protected",
+        footerBtn: "Privacy",
+        actionBtn: "Got it",
+        cards: [
+            {
+                icon: "📋",
+                title: "Why does the browser ask for permission?",
+                desc: "When opening or returning to the converter, it checks your clipboard. If a monetary amount is detected (e.g. <b>$120</b>, <b>49.99 EUR</b>, or <b>10,000 ₸</b>), a top banner offers instant 1-click conversion."
+            },
+            {
+                icon: "🔒",
+                title: "100% Local on Your Device",
+                desc: "The app operates as a <b>Local-First PWA</b>. Clipboard contents are parsed strictly inside your browser memory and are <b>never sent to any server</b>, cloud, or third party."
+            },
+            {
+                icon: "🛡️",
+                title: "Strict Currency Filtering",
+                desc: "The parser searches exclusively for numerical amounts and currency symbols. All other content (personal messages, passwords, URLs) is discarded immediately and never stored."
+            },
+            {
+                icon: "⚡",
+                title: "You Are in Full Control",
+                desc: "The app never overwrites your current values automatically. Conversion occurs only when you explicitly tap the <b>\"Paste\"</b> button."
+            },
+            {
+                icon: "💡",
+                title: "Browser Security Prompt",
+                desc: "The permission dialog is a standard browser security feature (Chrome, Safari, Edge) ensuring full transparency. You can grant or revoke this permission at any time in your browser settings."
+            }
+        ]
+    }
+};
+
+function renderPrivacyContent() {
+    const lang = (state && state.lang && PRIVACY_CONTENT[state.lang]) ? state.lang : 'en';
+    const content = PRIVACY_CONTENT[lang] || PRIVACY_CONTENT['en'];
+
+    const titleEl = document.getElementById('ui-privacy-modal-title');
+    if (titleEl) titleEl.textContent = content.modalTitle;
+
+    const descEl = document.getElementById('ui-privacy-modal-desc');
+    if (descEl) descEl.textContent = content.modalDesc;
+
+    const footerBtnTxt = document.getElementById('ui-footer-privacy-text');
+    if (footerBtnTxt) footerBtnTxt.textContent = content.footerBtn;
+
+    const actionBtn = document.getElementById('ui-privacy-action-btn');
+    if (actionBtn) actionBtn.textContent = content.actionBtn;
+
+    const listEl = document.getElementById('privacy-cards-list');
+    if (listEl) {
+        listEl.innerHTML = content.cards.map(card => `
+            <div class="privacy-card-item">
+                <span class="privacy-card-icon" aria-hidden="true">${card.icon}</span>
+                <div class="privacy-card-content">
+                    <div class="privacy-card-title">${card.title}</div>
+                    <div class="privacy-card-desc">${card.desc}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+function openPrivacyModal() {
+    triggerHaptic(10);
+    const modal = document.getElementById('privacy-modal');
+    if (!modal) return;
+
+    renderPrivacyContent();
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+}
+
+function closePrivacyModal() {
+    triggerHaptic(8);
+    const modal = document.getElementById('privacy-modal');
+    if (!modal) return;
+    modal.style.display = 'none';
+    modal.setAttribute('aria-hidden', 'true');
+}
+
 function setupUIEvents() {
     const langPicker = document.getElementById('lang-picker');
     if (langPicker) {
@@ -360,6 +481,7 @@ function setupUIEvents() {
             state.lang = e.target.value;
             applyLocalization();
             renderMain();
+            renderPrivacyContent();
             updatePWAManifest();
             saveState();
         });
@@ -377,6 +499,44 @@ function setupUIEvents() {
             applyTheme();
             updatePWAManifest();
             saveState();
+        });
+    }
+
+    // Privacy & Clipboard modal listeners
+    const footerPrivacyBtn = document.getElementById('ui-footer-privacy-btn');
+    if (footerPrivacyBtn) {
+        footerPrivacyBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            openPrivacyModal();
+        });
+    }
+
+    const smartPasteInfoBtn = document.getElementById('smart-paste-info');
+    if (smartPasteInfoBtn) {
+        smartPasteInfoBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (typeof smartPasteDismissTimeout !== 'undefined' && smartPasteDismissTimeout) {
+                clearTimeout(smartPasteDismissTimeout);
+                smartPasteDismissTimeout = null;
+            }
+            openPrivacyModal();
+        });
+    }
+
+    const privacyCloseBtn = document.getElementById('ui-privacy-close-btn');
+    if (privacyCloseBtn) {
+        privacyCloseBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            closePrivacyModal();
+        });
+    }
+
+    const privacyActionBtn = document.getElementById('ui-privacy-action-btn');
+    if (privacyActionBtn) {
+        privacyActionBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            closePrivacyModal();
         });
     }
 }
