@@ -515,24 +515,9 @@ function initClipboardModule() {
         }
     }
 
-    // Non-intrusive: softly dismiss banner if user scrolls or starts editing any input
-    window.addEventListener('scroll', () => {
-        if (banner && banner.classList.contains('visible') && !isSmartPasteHovered) {
-            hideSmartPasteBanner();
-        }
-    }, { passive: true });
-
-    document.addEventListener('focusin', (e) => {
-        if (e.target && e.target.classList && e.target.classList.contains('currency-input')) {
-            hideSmartPasteBanner();
-        }
-    });
-
-    document.addEventListener('click', (e) => {
-        if (banner && banner.classList.contains('visible') && !banner.contains(e.target)) {
-            hideSmartPasteBanner();
-        }
-    });
+    // Note: The banner does not dismiss on scroll or screen gestures,
+    // allowing the user to browse comfortably while keeping the paste option available.
+    // It is dismissed strictly via timer or explicit user action (apply / dismiss button).
 
     // Check clipboard when user returns to the app / window focuses
     window.addEventListener('focus', () => {

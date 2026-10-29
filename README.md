@@ -9,6 +9,7 @@
 ### 🌐 Select Language / Выберите язык документации:
 [![English Documentation](https://img.shields.io/badge/Language-English-blue?style=for-the-badge&logo=readme&logoColor=white)](#english)
 [![Русская документация](https://img.shields.io/badge/Язык-Русский-red?style=for-the-badge&logo=readme&logoColor=white)](#russian)
+[![Changelog / История версий](https://img.shields.io/badge/Changelog-v1.21.0-brightgreen?style=for-the-badge&logo=git)](CHANGELOG.md)
 
 ---
 
@@ -157,6 +158,13 @@ The build script automatically synchronizes version numbers across `package.json
 
 ---
 
+### 📜 Version History & Changelog
+Detailed release notes and functional breakdown for every release:
+* 🇬🇧 **English:** [Full Changelog (CHANGELOG.md)](CHANGELOG.md)
+* 🇷🇺 **Русский:** [История изменений (CHANGELOG.ru.md)](CHANGELOG.ru.md)
+
+---
+
 ### 🛠 Contribution
 If you find a bug, have an idea, or want to add a feature:
 * Feel free to open an [Issue](https://github.com/graf4444/currency-converter/issues).
@@ -295,6 +303,13 @@ If you find a bug, have an idea, or want to add a feature:
 * **`npm run bump:time`**: обновляет время сборки и кэш Service Worker без изменения номера версии.
 
 Скрипт сборки синхронизирует версию в `package.json`, `js/constants.js`, `index.html`, перегенерирует манифесты `manifests/*.json` и обновляет кэш в `sw.js`.
+
+---
+
+### 📜 История версий и изменений
+Подробное описание всех релизов и изменений по версиям:
+* 🇷🇺 **Русский:** [История изменений (CHANGELOG.ru.md)](CHANGELOG.ru.md)
+* 🇬🇧 **English:** [Release Changelog (CHANGELOG.md)](CHANGELOG.md)
 
 ---
 
