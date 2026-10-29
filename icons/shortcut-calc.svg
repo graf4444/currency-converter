@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="calcBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2c2c2e"/>
+      <stop offset="100%" stop-color="#161618"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#30d158"/>
+      <stop offset="100%" stop-color="#25a244"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="44" fill="url(#calcBg)"/>
+  <rect x="2" y="2" width="188" height="188" rx="42" fill="none" stroke="#3a3a3c" stroke-width="2"/>
+  
+  <!-- Calculator Body -->
+  <rect x="36" y="28" width="120" height="136" rx="20" fill="#1c1c1e" stroke="#48484a" stroke-width="3"/>
+  
+  <!-- Screen Display -->
+  <rect x="48" y="40" width="96" height="30" rx="8" fill="#000000" stroke="#333336" stroke-width="1.5"/>
+  <text x="136" y="62" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="18" font-weight="700" fill="#30d158" text-anchor="end">123.45</text>
+  
+  <!-- Keypad Grid -->
+  <!-- Row 1 -->
+  <rect x="48" y="80" width="20" height="18" rx="5" fill="#3a3a3c"/>
+  <text x="58" y="94" font-family="sans-serif" font-size="12" font-weight="600" fill="#ffffff" text-anchor="middle">7</text>
+  
+  <rect x="73" y="80" width="20" height="18" rx="5" fill="#3a3a3c"/>
+  <text x="83" y="94" font-family="sans-serif" font-size="12" font-weight="600" fill="#ffffff" text-anchor="middle">8</text>
+  
+  <rect x="98" y="80" width="20" height="18" rx="5" fill="#3a3a3c"/>
+  <text x="108" y="94" font-family="sans-serif" font-size="12" font-weight="600" fill="#ffffff" text-anchor="middle">9</text>
+  
+  <rect x="123" y="80" width="21" height="18" rx="5" fill="#ff9f0a"/>
+  <text x="133.5" y="94" font-family="sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">÷</text>
+
+  <!-- Row 2 -->
+  <rect x="48" y="104" width="20" height="18" rx="5" fill="#3a3a3c"/>
+  <text x="58" y="118" font-family="sans-serif" font-size="12" font-weight="600" fill="#ffffff" text-anchor="middle">4</text>
+  
+  <rect x="73" y="104" width="20" height="18" rx="5" fill="#3a3a3c"/>
+  <text x="83" y="118" font-family="sans-serif" font-size="12" font-weight="600" fill="#ffffff" text-anchor="middle">5</text>
+  
+  <rect x="98" y="104" width="20" height="18" rx="5" fill="#3a3a3c"/>
+  <text x="108" y="118" font-family="sans-serif" font-size="12" font-weight="600" fill="#ffffff" text-anchor="middle">6</text>
+  
+  <rect x="123" y="104" width="21" height="18" rx="5" fill="#ff9f0a"/>
+  <text x="133.5" y="118" font-family="sans-serif" font-size="13" font-weight="700" fill="#ffffff" text-anchor="middle">×</text>
+
+  <!-- Row 3 -->
+  <rect x="48" y="128" width="20" height="18" rx="5" fill="#3a3a3c"/>
+  <text x="58" y="142" font-family="sans-serif" font-size="12" font-weight="600" fill="#ffffff" text-anchor="middle">1</text>
+  
+  <rect x="73" y="128" width="20" height="18" rx="5" fill="#3a3a3c"/>
+  <text x="83" y="142" font-family="sans-serif" font-size="12" font-weight="600" fill="#ffffff" text-anchor="middle">2</text>
+  
+  <rect x="98" y="128" width="20" height="18" rx="5" fill="#3a3a3c"/>
+  <text x="108" y="142" font-family="sans-serif" font-size="12" font-weight="600" fill="#ffffff" text-anchor="middle">3</text>
+  
+  <rect x="123" y="128" width="21" height="18" rx="5" fill="url(#accentGrad)"/>
+  <text x="133.5" y="142" font-family="sans-serif" font-size="14" font-weight="700" fill="#ffffff" text-anchor="middle">=</text>
+</svg>

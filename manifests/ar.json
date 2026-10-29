@@ -5,7 +5,7 @@
   "description": "محول عملات سريع وخفيف PWA",
   "lang": "ar",
   "dir": "rtl",
-  "start_url": "../index.html",
+  "start_url": "../",
   "scope": "../",
   "display": "standalone",
   "orientation": "portrait",
@@ -27,6 +27,60 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "USD → EUR",
+      "short_name": "USD → EUR",
+      "description": "تحويل سريع من الدولار إلى اليورو",
+      "url": "../?from=USD&to=EUR",
+      "icons": [
+        {
+          "src": "../icons/shortcut-usd-eur.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "آلة حاسبة",
+      "short_name": "حاسبة",
+      "description": "فتح لوحة مفاتيح الحاسبة",
+      "url": "../?action=calc",
+      "icons": [
+        {
+          "src": "../icons/shortcut-calc.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "بحث عن عملة",
+      "short_name": "بحث",
+      "description": "البحث عن عملات وإضافتها",
+      "url": "../?action=search",
+      "icons": [
+        {
+          "src": "../icons/shortcut-search.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "EUR → USD",
+      "short_name": "EUR → USD",
+      "description": "تحويل سريع من اليورو إلى الدولار",
+      "url": "../?from=EUR&to=USD",
+      "icons": [
+        {
+          "src": "../icons/shortcut-eur-usd.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

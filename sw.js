@@ -1,5 +1,5 @@
 // Bump CACHE_NAME on every release that changes any file in ASSETS
-const CACHE_NAME = 'currency-converter-v48';
+const CACHE_NAME = 'currency-converter-v71';
 const ASSETS = [
   './',
   './index.html',
@@ -17,6 +17,9 @@ const ASSETS = [
   './js/modules/ui.js',
   './js/modules/navigation.js',
   './js/modules/install.js',
+  './js/modules/share.js',
+  './js/modules/shortcuts.js',
+  './js/modules/clipboard.js',
   './js/app.js',
   './manifest.json',
   './manifests/en.json',
@@ -37,7 +40,13 @@ const ASSETS = [
   './icons/favicon-32x32.png',
   './icons/apple-touch-icon.png',
   './icons/android-chrome-192x192.png',
-  './icons/android-chrome-512x512.png'
+  './icons/android-chrome-512x512.png',
+  './icons/shortcut-calc.png',
+  './icons/shortcut-search.png',
+  './icons/shortcut-usd-eur.png',
+  './icons/shortcut-usd-rub.png',
+  './icons/shortcut-eur-usd.png',
+  './icons/shortcut-btc.png'
 ];
 
 self.addEventListener('install', (e) => {
@@ -84,9 +93,27 @@ self.addEventListener('fetch', (e) => {
 
   // 2. Static Assets & App Shell: Cache-First strategy for instant launch
   e.respondWith((async () => {
-    // Try to get resource from cache
+    // 2.1 Navigation requests: ALWAYS serve the App Shell instantly
+    // Seamlessly handles shortcuts, query params, clean URLs (e.g. /?action=calc) without redirects
+    if (req.mode === 'navigate') {
+      const shell = await caches.match('./') || await caches.match('./index.html');
+      if (shell) {
+        // Background check to keep shell fresh without delaying user navigation
+        e.waitUntil(
+          fetch('./').then(async (netRes) => {
+            if (netRes && netRes.ok) {
+              const cache = await caches.open(CACHE_NAME);
+              await cache.put('./', netRes.clone());
+              await cache.put('./index.html', netRes);
+            }
+          }).catch(() => {})
+        );
+        return shell;
+      }
+    }
+
+    // 2.2 Try to get resource from cache
     const cachedResponse = await caches.match(req);
-    
     if (cachedResponse) {
       // Stale-While-Revalidate background cache update for fresh assets on next boot
       e.waitUntil(
@@ -101,7 +128,7 @@ self.addEventListener('fetch', (e) => {
       return cachedResponse;
     }
 
-    // Network fallback for new/uncached static resources
+    // 2.3 Network fallback for new/uncached static resources
     try {
       const netRes = await fetch(req);
       if (netRes && netRes.ok && url.origin === self.location.origin) {
@@ -113,7 +140,7 @@ self.addEventListener('fetch', (e) => {
     } catch (err) {
       // Navigation fallback to app shell
       if (req.mode === 'navigate') {
-        const shell = await caches.match('./index.html');
+        const shell = await caches.match('./') || await caches.match('./index.html');
         if (shell) return shell;
       }
       throw err;

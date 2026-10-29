@@ -52,6 +52,9 @@ function setupNavigationHistory() {
         const installModal = document.getElementById('install-modal');
         const isInstallModalOpen = installModal && (installModal.style.display === 'flex' || installModal.getAttribute('aria-hidden') === 'false');
 
+        const privacyModal = document.getElementById('privacy-modal');
+        const isPrivacyModalOpen = privacyModal && (privacyModal.style.display === 'flex' || privacyModal.getAttribute('aria-hidden') === 'false');
+
         // Priority 1: If search modal is open, close it
         if (isSearchModalOpen) {
             closeModal();
@@ -62,6 +65,13 @@ function setupNavigationHistory() {
         // Priority 2: If install modal is open, close it
         if (isInstallModalOpen) {
             closeInstallModal();
+            try { window.history.pushState({ page: 'app' }, ''); } catch (_) {}
+            return;
+        }
+
+        // Priority 2.5: If privacy modal is open, close it
+        if (isPrivacyModalOpen) {
+            if (typeof closePrivacyModal === 'function') closePrivacyModal();
             try { window.history.pushState({ page: 'app' }, ''); } catch (_) {}
             return;
         }
@@ -83,7 +93,16 @@ function setupNavigationHistory() {
             return;
         }
 
-        // Priority 5: Double back to exit from main app screen
+        // Priority 5: If in Quick Mode or Link Session, back gesture returns to full normal mode
+        if ((typeof isQuickMode !== 'undefined' && isQuickMode) || (typeof isLinkSession !== 'undefined' && isLinkSession)) {
+            if (typeof exitQuickMode === 'function') {
+                exitQuickMode();
+            }
+            try { window.history.pushState({ page: 'app' }, ''); } catch (_) {}
+            return;
+        }
+
+        // Priority 6: Double back to exit from main app screen
         const now = Date.now();
         if (now - lastBackPressTime < 2000) {
             // Second back gesture within 2 seconds: actually exit.

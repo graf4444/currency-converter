@@ -5,7 +5,7 @@
   "description": "Hızlı ve kullanışlı döviz çevirici PWA",
   "lang": "tr",
   "dir": "ltr",
-  "start_url": "../index.html",
+  "start_url": "../",
   "scope": "../",
   "display": "standalone",
   "orientation": "portrait",
@@ -27,6 +27,60 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "USD → EUR",
+      "short_name": "USD → EUR",
+      "description": "Doları hızlıca Euroya çevir",
+      "url": "../?from=USD&to=EUR",
+      "icons": [
+        {
+          "src": "../icons/shortcut-usd-eur.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Hesap Makinesi",
+      "short_name": "Hesapla",
+      "description": "Döviz hesap makinesini aç",
+      "url": "../?action=calc",
+      "icons": [
+        {
+          "src": "../icons/shortcut-calc.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Para Birimi Ara",
+      "short_name": "Ara",
+      "description": "Para birimi ara ve ekle",
+      "url": "../?action=search",
+      "icons": [
+        {
+          "src": "../icons/shortcut-search.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "EUR → USD",
+      "short_name": "EUR → USD",
+      "description": "Euroyu hızlıca Dolara çevir",
+      "url": "../?from=EUR&to=USD",
+      "icons": [
+        {
+          "src": "../icons/shortcut-eur-usd.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

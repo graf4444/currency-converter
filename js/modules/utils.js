@@ -19,6 +19,53 @@ function formatNumberString(str) {
     return formatExpression(str);
 }
 
+/**
+ * Calculates optimal decimal precision for displaying a currency conversion result.
+ * Ensures significant digits are preserved for cryptocurrencies and high-value exchange rates,
+ * avoiding truncation loss (e.g. 1 USD -> 0.0000125 BTC instead of 0.000012).
+ * 
+ * @param {number} result - Converted numerical value
+ * @param {string} code - Target currency code
+ * @returns {number} Decimal digits to display
+ */
+function getCurrencyDisplayDigits(result, code) {
+    if (!result || isNaN(result) || result === 0) return 2;
+    const abs = Math.abs(result);
+    const isCrypto = ['BTC', 'ETH', 'TON', 'SOL', 'USDT', 'DOGE', 'XRP', 'BNB'].includes(code);
+
+    if (abs >= 100) return 2;
+    if (abs >= 0.1 && !isCrypto) return 2;
+    if (abs >= 1 && isCrypto) return 4;
+
+    const str = abs.toFixed(12);
+    const decimalPart = str.split('.')[1] || '';
+    let leadingZeros = 0;
+    while (leadingZeros < decimalPart.length && decimalPart[leadingZeros] === '0') {
+        leadingZeros++;
+    }
+
+    const needed = leadingZeros + (isCrypto ? 4 : 3);
+    return Math.min(8, Math.max(2, needed));
+}
+
+/**
+ * Formats a converted currency result with dynamic precision and clean trailing zeroes.
+ * 
+ * @param {number} result 
+ * @param {string} code 
+ * @returns {string} Formatted number string ready for display
+ */
+function formatConvertedValue(result, code) {
+    if (result === 0 || isNaN(result)) return '';
+    const digits = getCurrencyDisplayDigits(result, code);
+    let formatted = result.toFixed(digits);
+
+    if (digits > 2) {
+        formatted = formatted.replace(/(\.\d*?[1-9])0+$|\.0+$/, '$1');
+    }
+    return formatNumberString(formatted);
+}
+
 function parseCleanNumber(str) {
     return str.replace(/\s/g, '');
 }

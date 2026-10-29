@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <defs>
+    <linearGradient id="bgEU" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2c2c2e"/>
+      <stop offset="100%" stop-color="#161618"/>
+    </linearGradient>
+    <linearGradient id="eurBadge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2997ff"/>
+      <stop offset="100%" stop-color="#0062cc"/>
+    </linearGradient>
+    <linearGradient id="usdBadge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#30d158"/>
+      <stop offset="100%" stop-color="#248a3d"/>
+    </linearGradient>
+  </defs>
+  <rect width="192" height="192" rx="44" fill="url(#bgEU)"/>
+  <rect x="2" y="2" width="188" height="188" rx="42" fill="none" stroke="#3a3a3c" stroke-width="2"/>
+  
+  <!-- EUR Circle -->
+  <circle cx="56" cy="96" r="32" fill="url(#eurBadge)"/>
+  <text x="56" y="108" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="36" font-weight="800" fill="#ffffff" text-anchor="middle">€</text>
+  
+  <!-- Exchange Arrow -->
+  <path d="M90,88 L104,88 L104,82 L116,92 L104,102 L104,96 L90,96 Z" fill="#ffffff" opacity="0.9"/>
+  <path d="M102,106 L88,106 L88,112 L76,102 L88,92 L88,98 L102,98 Z" fill="#8e8e93" opacity="0.6"/>
+
+  <!-- USD Circle -->
+  <circle cx="136" cy="96" r="32" fill="url(#usdBadge)"/>
+  <text x="136" y="108" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="36" font-weight="800" fill="#ffffff" text-anchor="middle">$</text>
+</svg>

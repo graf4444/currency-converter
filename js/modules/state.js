@@ -14,6 +14,12 @@ let state = {
     lastInputValue: ''
 };
 
+let isQuickMode = false;
+let isLinkSession = false;
+let permanentFavorites = null;
+let savedLastInputCode = null;
+let savedLastInputValue = '';
+
 // Active user input state storage
 let currentInputCode = null;
 let currentInputValue = '';
@@ -66,14 +72,36 @@ function initSystemSettings() {
         state.theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) ? 'light' : 'dark';
         saveState();
     }
+
+    permanentFavorites = [...state.favorites];
+    savedLastInputCode = state.lastInputCode;
+    savedLastInputValue = state.lastInputValue;
 }
 
 /**
  * Persists active state to localStorage (sanitizing favorites list).
+ * In Quick Mode or Link Sessions: preserves permanent favorites so temporary shortcuts
+ * or external shared links do not overwrite user custom lists or scrambled order,
+ * while persisting theme and language.
  */
 function saveState() { 
-    state.favorites = [...new Set(state.favorites.filter(c => typeof c === 'string' && c.trim() !== ''))];
-    state.lastInputCode = currentInputCode;
-    state.lastInputValue = currentInputValue;
-    localStorage.setItem('conv_max_state', JSON.stringify(state)); 
+    const isTemporary = (isQuickMode || isLinkSession);
+    const favsToPersist = (isTemporary && Array.isArray(permanentFavorites) && permanentFavorites.length > 0)
+        ? permanentFavorites
+        : state.favorites;
+
+    const sanitizedFavs = [...new Set(favsToPersist.filter(c => typeof c === 'string' && c.trim() !== ''))];
+    
+    const stateToSave = {
+        theme: state.theme,
+        lang: state.lang,
+        rates: state.rates,
+        favorites: sanitizedFavs,
+        lastUpdated: state.lastUpdated,
+        lastUpdatedTimestamp: state.lastUpdatedTimestamp,
+        lastInputCode: isTemporary ? savedLastInputCode : currentInputCode,
+        lastInputValue: isTemporary ? savedLastInputValue : currentInputValue
+    };
+
+    localStorage.setItem('conv_max_state', JSON.stringify(stateToSave)); 
 }

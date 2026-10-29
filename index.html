@@ -6,6 +6,16 @@
     <title>Currency Converter</title>
     <meta name="description" content="Fast, lightweight, ad-free multi-currency and cryptocurrency converter PWA with offline support.">
 
+    <!-- Open Graph & Social Preview Meta Tags -->
+    <meta property="og:title" content="Currency Converter">
+    <meta property="og:description" content="Fast, lightweight multi-currency and cryptocurrency converter PWA with offline support.">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://graf4444.github.io/currency-converter/icons/android-chrome-512x512.png">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="Currency Converter">
+    <meta name="twitter:description" content="Fast, lightweight multi-currency and cryptocurrency converter PWA with offline support.">
+    <meta name="twitter:image" content="https://graf4444.github.io/currency-converter/icons/android-chrome-512x512.png">
+
     <!-- Web App Manifest (static file for native Android WebAPK & desktop installability) -->
     <link rel="manifest" id="app-manifest" href="./manifest.json">
 
@@ -31,6 +41,12 @@
     <script src="js/pwa-init.js"></script>
 
     <!-- GoatCounter Analytics (privacy-friendly, GDPR-compliant, no cookies) -->
+    <script>
+        // Official GoatCounter setting: disable tracking outside production
+        if (window.location.hostname !== 'graf4444.github.io') {
+            window.goatcounter = { no_onload: true };
+        }
+    </script>
     <script data-goatcounter="https://currency-converter.goatcounter.com/count"
             async src="//gc.zgo.at/count.js"></script>
 
@@ -125,7 +141,7 @@
                 <div class="spinner" id="loader" aria-hidden="true"></div>
             </div>
             <div id="last-update"></div>
-            <div id="app-version" class="app-version">v1.20 (2026-10-28 21:38)</div>
+            <div id="app-version" class="app-version">v1.21.0 (2026-10-29 19:22)</div>
         </div>
 
         <div class="footer-links">
@@ -136,6 +152,12 @@
                     <line x1="12" y1="15" x2="12" y2="3"></line>
                 </svg>
                 <span id="ui-footer-install-text">Install App</span>
+            </button>
+            <button class="footer-privacy-btn" id="ui-footer-privacy-btn" type="button" aria-haspopup="dialog" aria-controls="privacy-modal">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+                <span id="ui-footer-privacy-text">Privacy</span>
             </button>
             <a href="https://github.com/graf4444/currency-converter" target="_blank" class="github-badge">
                 <svg viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
@@ -187,12 +209,40 @@
     </div>
 </div>
 
+<div class="modal" id="privacy-modal" role="dialog" aria-modal="true" aria-labelledby="ui-privacy-modal-title" aria-hidden="true">
+    <div class="modal-content install-modal-content">
+        <div class="modal-header">
+            <div class="install-modal-header-info">
+                <span class="privacy-modal-header-icon" aria-hidden="true">🛡️</span>
+                <div>
+                    <h3 id="ui-privacy-modal-title">Буфер обмена и безопасность</h3>
+                    <div class="install-modal-desc" id="ui-privacy-modal-desc">Зачем приложению доступ и как защищены ваши данные</div>
+                </div>
+            </div>
+            <button class="close-modal" id="ui-privacy-close-btn" aria-label="Close modal">✕</button>
+        </div>
+
+        <div class="privacy-cards-list" id="privacy-cards-list">
+            <!-- Populated dynamically via JS with i18n support -->
+        </div>
+
+        <button class="install-confirm-btn" id="ui-privacy-action-btn">Понятно</button>
+    </div>
+</div>
+
 
 
 <div class="keypad-container" id="virtual-keypad" aria-label="Calculator Keypad" hidden>
     <div class="keypad-header">
         <span class="keypad-title" id="keypad-active-code"></span>
         <div class="keypad-actions">
+            <button class="keypad-share-btn" id="keypad-share" title="Share Breakdown" aria-label="Share Breakdown">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                    <polyline points="16 6 12 2 8 6"></polyline>
+                    <line x1="12" y1="2" x2="12" y2="15"></line>
+                </svg>
+            </button>
             <button class="keypad-close-btn" id="keypad-close" title="Close Keypad">✕</button>
         </div>
     </div>
@@ -232,6 +282,33 @@
     </div>
 </div>
 
+<!-- Smart Clipboard Paste Floating Banner -->
+<div id="smart-paste-banner" class="smart-paste-banner" hidden>
+    <div class="smart-paste-pill">
+        <span class="smart-paste-flag" id="smart-paste-flag">💵</span>
+        <div class="smart-paste-content" id="smart-paste-content">
+            <span class="smart-paste-hint" id="smart-paste-hint">Вставить из буфера?</span>
+            <div class="smart-paste-val-row">
+                <span class="smart-paste-val" id="smart-paste-val">120</span>
+                <span class="smart-paste-badge" id="smart-paste-badge">USD</span>
+            </div>
+            <span id="smart-paste-text" hidden></span>
+        </div>
+        <div class="smart-paste-actions">
+            <button type="button" class="smart-paste-btn apply" id="smart-paste-apply">Вставить</button>
+            <button type="button" class="smart-paste-btn info" id="smart-paste-info" aria-label="О безопасности буфера обмена" title="Безопасность">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+            </button>
+            <button type="button" class="smart-paste-btn dismiss" id="smart-paste-dismiss" aria-label="Закрыть">✕</button>
+        </div>
+        <div class="smart-paste-progress" id="smart-paste-progress"></div>
+    </div>
+</div>
+
 <div id="toast" class="toast" aria-live="polite"></div>
 
 <!-- Application Modules -->
@@ -246,6 +323,9 @@
 <script src="js/modules/ui.js" defer></script>
 <script src="js/modules/navigation.js" defer></script>
 <script src="js/modules/install.js" defer></script>
+<script src="js/modules/share.js" defer></script>
+<script src="js/modules/shortcuts.js" defer></script>
+<script src="js/modules/clipboard.js" defer></script>
 <script src="js/app.js" defer></script>
 
 </body>

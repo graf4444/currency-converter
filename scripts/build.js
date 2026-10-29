@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
 /**
- * Currency Converter Build & Version Bump Utility
+ * Currency Converter Build & Version Bump Utility (SemVer: X.Y.Z)
  * 
  * Usage:
- *   node scripts/build.js             # Bumps minor by default (e.g. 1.2.0 -> 1.3.0) + updates timestamp
- *   node scripts/build.js --minor     # Bumps minor (e.g. 1.2.0 -> 1.3.0)
- *   node scripts/build.js --patch     # Bumps patch (e.g. 1.2.0 -> 1.2.1)
- *   node scripts/build.js --major     # Bumps major (e.g. 1.2.0 -> 2.0.0)
+ *   node scripts/build.js             # Bumps patch by default (e.g. 1.20.0 -> 1.20.1) for dev
+ *   node scripts/build.js --patch     # Bumps patch (e.g. 1.20.0 -> 1.20.1)
+ *   node scripts/build.js --minor     # Bumps minor (e.g. 1.20.3 -> 1.21.0) for feature release
+ *   node scripts/build.js --major     # Bumps major (e.g. 1.20.3 -> 2.0.0)
  *   node scripts/build.js --time-only # Updates timestamp only without changing version
- *   node scripts/build.js 1.4.0       # Sets specific version
+ *   node scripts/build.js 1.21.0      # Sets specific version
  */
 
 const fs = require('fs');
@@ -35,46 +35,50 @@ function getFormattedTimestamp() {
 
 // 2. Read existing version from constants.js
 function getCurrentVersion() {
-    if (!fs.existsSync(CONSTANTS_PATH)) return '1.0';
+    if (!fs.existsSync(CONSTANTS_PATH)) return '1.20.0';
     const content = fs.readFileSync(CONSTANTS_PATH, 'utf8');
     const match = content.match(/version:\s*['"]([^'"]+)['"]/);
-    return match ? match[1] : '1.0';
+    return match ? match[1] : '1.20.0';
 }
 
-// 3. Compute next version (Format: X.Y)
+// 3. Compute next version (Semantic Versioning: X.Y.Z)
 function computeNextVersion(current, mode) {
-    const match = current.match(/^(\d+)\.(\d+)(.*)$/);
-    
-    if (!match) {
+    if (mode === 'time-only') {
         return current;
     }
+    if (mode && /^\d+\.\d+(\.\d+)?/.test(mode)) {
+        const parts = mode.split('.');
+        if (parts.length === 2) return `${parts[0]}.${parts[1]}.0`;
+        return mode;
+    }
 
-    let major = parseInt(match[1], 10);
-    let minor = parseInt(match[2], 10);
-    const extra = match[3] || '';
+    const parts = current.split('.').map(n => parseInt(n, 10));
+    let major = isNaN(parts[0]) ? 1 : parts[0];
+    let minor = isNaN(parts[1]) ? 20 : parts[1];
+    let patch = isNaN(parts[2]) ? 0 : parts[2];
 
     if (mode === 'major') {
         major += 1;
         minor = 0;
-    } else if (mode === 'time-only') {
-        return current;
-    } else if (mode && /^\d+\.\d+/.test(mode)) {
-        return mode;
-    } else {
-        // default bump is minor (e.g., 1.0 -> 1.1)
+        patch = 0;
+    } else if (mode === 'minor') {
         minor += 1;
+        patch = 0;
+    } else {
+        // default bump is patch (Z) during development
+        patch += 1;
     }
 
-    return `${major}.${minor}${extra}`;
+    return `${major}.${minor}.${patch}`;
 }
 
 function run() {
     const args = process.argv.slice(2);
-    let mode = 'minor';
+    let mode = 'patch';
 
-    if (args.includes('--minor')) mode = 'minor';
-    else if (args.includes('--patch')) mode = 'minor';
-    else if (args.includes('--major')) mode = 'major';
+    if (args.includes('--major')) mode = 'major';
+    else if (args.includes('--minor')) mode = 'minor';
+    else if (args.includes('--patch')) mode = 'patch';
     else if (args.includes('--time-only')) mode = 'time-only';
     else if (args[0] && !args[0].startsWith('--')) mode = args[0];
 

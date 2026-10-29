@@ -5,7 +5,7 @@
   "description": "Fast, lightweight multi-currency converter PWA",
   "lang": "en",
   "dir": "ltr",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
@@ -27,6 +27,60 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "USD → EUR",
+      "short_name": "USD → EUR",
+      "description": "Quick convert US Dollar to Euro",
+      "url": "./?from=USD&to=EUR",
+      "icons": [
+        {
+          "src": "./icons/shortcut-usd-eur.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Calculator",
+      "short_name": "Calculator",
+      "description": "Open currency calculator keypad",
+      "url": "./?action=calc",
+      "icons": [
+        {
+          "src": "./icons/shortcut-calc.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Search Currency",
+      "short_name": "Search",
+      "description": "Search and add world currencies",
+      "url": "./?action=search",
+      "icons": [
+        {
+          "src": "./icons/shortcut-search.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "EUR → USD",
+      "short_name": "EUR → USD",
+      "description": "Quick convert Euro to US Dollar",
+      "url": "./?from=EUR&to=USD",
+      "icons": [
+        {
+          "src": "./icons/shortcut-eur-usd.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }

@@ -5,7 +5,7 @@
   "description": "高速で使いやすい通貨換算ツール PWA",
   "lang": "ja",
   "dir": "ltr",
-  "start_url": "../index.html",
+  "start_url": "../",
   "scope": "../",
   "display": "standalone",
   "orientation": "portrait",
@@ -27,6 +27,60 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "USD → EUR",
+      "short_name": "USD → EUR",
+      "description": "米ドルを素早くユーロに換算",
+      "url": "../?from=USD&to=EUR",
+      "icons": [
+        {
+          "src": "../icons/shortcut-usd-eur.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "計算機",
+      "short_name": "計算機",
+      "description": "計算機キーパッドを開く",
+      "url": "../?action=calc",
+      "icons": [
+        {
+          "src": "../icons/shortcut-calc.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "通貨を検索",
+      "short_name": "検索",
+      "description": "新しい通貨を検索して追加",
+      "url": "../?action=search",
+      "icons": [
+        {
+          "src": "../icons/shortcut-search.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "EUR → USD",
+      "short_name": "EUR → USD",
+      "description": "ユーロを素早く米ドルに換算",
+      "url": "../?from=EUR&to=USD",
+      "icons": [
+        {
+          "src": "../icons/shortcut-eur-usd.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
     }
   ]
 }
