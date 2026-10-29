@@ -100,7 +100,10 @@ function updateChartData() {
     renderSVGChart(container, dataPoints, minVal, maxVal);
 }
 
-function formatChartValue(val) {
+function formatChartValue(val, code) {
+    if (typeof formatConvertedValue === 'function') {
+        return formatConvertedValue(val, code || 'USD');
+    }
     if (val < 0.001) return val.toFixed(6);
     if (val < 0.1) return val.toFixed(4);
     return val.toFixed(2);

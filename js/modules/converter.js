@@ -48,12 +48,7 @@ function recalculate(activeCode, rawValue) {
                 }
 
                 const result = valueInUSD * state.rates[code];
-                let digits = 2;
-                if (state.rates[code] < 0.001) digits = 6;
-                else if (state.rates[code] < 0.1) digits = 4;
-                
-                const finalVal = parsedVal === 0 ? '' : Number(result.toFixed(digits));
-                input.value = finalVal === '' ? '' : formatNumberString(finalVal.toString());
+                input.value = parsedVal === 0 ? '' : formatConvertedValue(result, code);
                 
                 adjustFontSize(input);
                 

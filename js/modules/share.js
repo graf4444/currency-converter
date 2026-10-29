@@ -105,10 +105,7 @@ function generateShareText(baseCode) {
         state.favorites.forEach(c => {
             if (c !== code && state.rates[c]) {
                 const result = valInUSD * state.rates[c];
-                let digits = 2;
-                if (state.rates[c] < 0.001) digits = 6;
-                else if (state.rates[c] < 0.1) digits = 4;
-                const formattedRes = formatNumberString(result.toFixed(digits));
+                const formattedRes = formatConvertedValue(result, c);
                 const targetFlag = getCurrencyFlag(c);
                 const itemLine = targetFlag ? `• ${targetFlag} ${formattedRes} ${c}` : `• ${formattedRes} ${c}`;
                 lines.push(itemLine);
@@ -116,10 +113,11 @@ function generateShareText(baseCode) {
         });
     }
 
-    // Date formatting (DD.MM.YYYY)
+    // Date & time formatting (DD.MM.YYYY, HH:MM)
     const d = state.lastUpdatedTimestamp ? new Date(state.lastUpdatedTimestamp) : new Date();
     const pad = (n) => String(n).padStart(2, '0');
     const dateStr = `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
+    const timeStr = `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
     const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : null;
     const rateOnText = (t && t.rateOn) ? t.rateOn : (state.lang === 'ru' ? 'Курс на' : 'Rates as of');
@@ -128,7 +126,7 @@ function generateShareText(baseCode) {
     const shareUrl = getAppShareUrl(code, val, toCode);
 
     lines.push('');
-    lines.push(`📅 ${rateOnText} ${dateStr}`);
+    lines.push(`📅 ${rateOnText} ${dateStr}, ${timeStr}`);
     lines.push(`🔗 ${appTitle}:`);
     lines.push(shareUrl);
 

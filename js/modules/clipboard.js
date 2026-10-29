@@ -60,18 +60,33 @@ let smartPasteDismissTimeout = null;
 let currentSmartPasteData = null;
 
 /**
- * Helper to escape special characters for RegExp.
+ * Parses and sanitizes a string into a float, supporting both comma and dot decimal separators.
+ * 
  * @param {string} str 
- * @returns {string}
+ * @returns {number|null}
  */
-function escapeClipboardRegex(str) {
-    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function parseClipboardFloat(str) {
+    if (!str) return null;
+    let s = str.trim().replace(/\s/g, '');
+    if (s.includes(',') && s.includes('.')) {
+        if (s.lastIndexOf('.') > s.lastIndexOf(',')) {
+            s = s.replace(/,/g, '');
+        } else {
+            s = s.replace(/\./g, '').replace(',', '.');
+        }
+    } else if (s.includes(',')) {
+        s = s.replace(',', '.');
+    }
+    const val = parseFloat(s);
+    return (!isNaN(val) && val > 0 && val < 1e14) ? val : null;
 }
 
 /**
  * Parses raw text from the clipboard to detect a monetary amount and currency.
+ * Safely ignores port numbers (e.g. :55862) or path numbers in URLs.
  * 
  * Examples:
+ *   "http://localhost:55862/?from=BTC&amount=0.00001248" -> { amount: 0.00001248, currency: "BTC" }
  *   "120$" -> { amount: 120, currency: "USD" }
  *   "49.99 EUR" -> { amount: 49.99, currency: "EUR" }
  *   "5 000 руб" -> { amount: 5000, currency: "RUB" }
@@ -83,68 +98,90 @@ function escapeClipboardRegex(str) {
 function parseClipboardCurrency(rawText) {
     if (!rawText || typeof rawText !== 'string') return null;
     const text = rawText.trim();
-    if (text.length > 100) return null;
+    if (text.length > 500) return null;
 
-    // Normalize Unicode spaces
-    const norm = text.replace(/[\u00A0\u1680\u180e\u2000-\u200b\u202f\u205f\u3000\ufeff]/g, ' ');
-
-    const dbCodes = (typeof currencyDb !== 'undefined') ? Object.keys(currencyDb) : [];
-    const symbolKeys = Object.keys(CLIPBOARD_CURRENCY_SYMBOLS);
-
-    // Sort tokens by length descending so longer words match first (e.g. "рублей" before "руб")
-    const allTokens = [...symbolKeys, ...dbCodes].sort((a, b) => b.length - a.length);
-
-    let detectedCurrency = null;
-    let detectedAmount = null;
-
-    for (const token of allTokens) {
-        const isLetterCode = /^[A-Za-zА-Яа-яЁё]+$/.test(token);
-        const escaped = escapeClipboardRegex(token);
-        const pattern = isLetterCode 
-            ? new RegExp('(^|[^a-zA-Zа-яА-ЯёЁ0-9])' + escaped + '([^a-zA-Zа-яА-ЯёЁ0-9]|$)', 'i') 
-            : new RegExp(escaped, 'i');
-
-        if (pattern.test(norm)) {
-            const upperToken = token.toUpperCase();
-            let targetCode = null;
-
-            if (typeof currencyDb !== 'undefined' && currencyDb[upperToken]) {
-                targetCode = upperToken;
-            } else {
-                targetCode = CLIPBOARD_CURRENCY_SYMBOLS[token.toLowerCase()] || CLIPBOARD_CURRENCY_SYMBOLS[token];
-            }
-
-            if (targetCode) {
-                // Extract number by removing the currency token first
-                const withoutToken = norm.replace(pattern, ' ');
-                const numMatch = withoutToken.match(/(?:[0-9]{1,3}(?:[ ,][0-9]{3})+|[0-9]+)(?:[.,][0-9]{1,6})?/);
-
-                if (numMatch) {
-                    let numStr = numMatch[0].replace(/\s/g, '');
-                    if (numStr.includes(',') && numStr.includes('.')) {
-                        if (numStr.lastIndexOf('.') > numStr.lastIndexOf(',')) {
-                            numStr = numStr.replace(/,/g, '');
-                        } else {
-                            numStr = numStr.replace(/\./g, '').replace(',', '.');
-                        }
-                    } else if (numStr.includes(',')) {
-                        numStr = numStr.replace(',', '.');
-                    }
-
-                    const num = parseFloat(numStr);
-                    if (!isNaN(num) && num > 0 && num < 1e14) {
-                        detectedCurrency = targetCode;
-                        detectedAmount = num;
-                        break;
-                    }
-                }
+    // STEP 1: Check for converter deep link (e.g. ?from=BTC&amount=0.00001248)
+    const fromMatch = text.match(/[?&](?:from|code|currency)=([a-zA-Z]{3,5})/i);
+    if (fromMatch) {
+        const code = fromMatch[1].toUpperCase();
+        if (typeof currencyDb !== 'undefined' && currencyDb[code]) {
+            const amtMatch = text.match(/[?&](?:amount|val)=([0-9.]+)/i);
+            const amt = amtMatch ? parseFloat(amtMatch[1]) : 1;
+            if (!isNaN(amt) && amt > 0) {
+                return { amount: amt, currency: code };
             }
         }
     }
 
-    if (detectedCurrency && detectedAmount !== null) {
-        return { amount: detectedAmount, currency: detectedCurrency };
+    // STEP 2: Strip any URLs so port numbers (e.g. :55862) or URL paths
+    // are never mistakenly parsed as monetary amounts!
+    const cleanText = text.replace(/https?:\/\/[^\s]+/gi, ' ').trim();
+    if (!cleanText) return null;
+
+    // Normalize Unicode spaces
+    const norm = cleanText.replace(/[\u00A0\u1680\u180e\u2000-\u200b\u202f\u205f\u3000\ufeff]/g, ' ');
+
+    // STEP 3: Symbol prefix (e.g. $120, €49.99, ₿ 0.00001248, ₽ 5000)
+    const symbolPrefixMatch = norm.match(/([$€£¥₽₸₴₺₹₩₪฿₿Ξ₮💎])\s*([0-9]{1,3}(?:[ ,][0-9]{3})*|[0-9]+)(?:[.,][0-9]{1,12})?/i);
+    if (symbolPrefixMatch) {
+        const sym = symbolPrefixMatch[1];
+        const numStr = symbolPrefixMatch[0].replace(sym, '').trim();
+        const code = CLIPBOARD_CURRENCY_SYMBOLS[sym];
+        const val = parseClipboardFloat(numStr);
+        if (code && val !== null) {
+            return { amount: val, currency: code };
+        }
     }
+
+    // STEP 4: Symbol suffix (e.g. 120$, 49.99 €, 5000 ₽, 10 000 ₸, 0.00001248 ₿)
+    const symbolSuffixMatch = norm.match(/((?:[0-9]{1,3}(?:[ ,][0-9]{3})*|[0-9]+)(?:[.,][0-9]{1,12})?)\s*([$€£¥₽₸₴₺₹₩₪฿₿Ξ₮💎])/i);
+    if (symbolSuffixMatch) {
+        const sym = symbolSuffixMatch[2];
+        const numStr = symbolSuffixMatch[1];
+        const code = CLIPBOARD_CURRENCY_SYMBOLS[sym];
+        const val = parseClipboardFloat(numStr);
+        if (code && val !== null) {
+            return { amount: val, currency: code };
+        }
+    }
+
+    // STEP 5: Currency word or code suffix / prefix (e.g. 100 USD, 49.99 EUR, 5000 руб, 0.00001248 BTC)
+    const dbCodes = (typeof currencyDb !== 'undefined') ? Object.keys(currencyDb) : [];
+    const allWordTokens = [...Object.keys(CLIPBOARD_CURRENCY_SYMBOLS), ...dbCodes]
+        .filter(t => /^[A-Za-zА-Яа-яЁё.]+$/.test(t))
+        .sort((a, b) => b.length - a.length);
+
+    for (const token of allWordTokens) {
+        const escaped = escapeClipboardRegex(token);
+        // Number before token: "49.99 EUR", "5000 руб.", "0.00001248 BTC"
+        const numBeforeRegex = new RegExp('((?:[0-9]{1,3}(?:[ ,][0-9]{3})*|[0-9]+)(?:[.,][0-9]{1,12})?)\\s*(?:' + escaped + ')(?:[^a-zA-Zа-яА-ЯёЁ0-9]|$)', 'i');
+        const m1 = norm.match(numBeforeRegex);
+        if (m1) {
+            const val = parseClipboardFloat(m1[1]);
+            const upperToken = token.toUpperCase();
+            const targetCode = (typeof currencyDb !== 'undefined' && currencyDb[upperToken])
+                ? upperToken
+                : (CLIPBOARD_CURRENCY_SYMBOLS[token.toLowerCase()] || CLIPBOARD_CURRENCY_SYMBOLS[token]);
+            if (val !== null && targetCode) {
+                return { amount: val, currency: targetCode };
+            }
+        }
+
+        // Token before number: "EUR 49.99", "USD 120", "BTC 0.00001248"
+        const numAfterRegex = new RegExp('(?:^|[^a-zA-Zа-яА-ЯёЁ0-9])(?:' + escaped + ')\\s+((?:[0-9]{1,3}(?:[ ,][0-9]{3})*|[0-9]+)(?:[.,][0-9]{1,12})?)', 'i');
+        const m2 = norm.match(numAfterRegex);
+        if (m2) {
+            const val = parseClipboardFloat(m2[1]);
+            const upperToken = token.toUpperCase();
+            const targetCode = (typeof currencyDb !== 'undefined' && currencyDb[upperToken])
+                ? upperToken
+                : (CLIPBOARD_CURRENCY_SYMBOLS[token.toLowerCase()] || CLIPBOARD_CURRENCY_SYMBOLS[token]);
+            if (val !== null && targetCode) {
+                return { amount: val, currency: targetCode };
+            }
+        }
+    }
+
     return null;
 }
 
@@ -192,9 +229,9 @@ function showSmartPasteBanner(amount, currency) {
     if (flagEl) flagEl.textContent = flag;
 
     // Localized prompt: "Сконвертировать 120 USD?"
-    const formattedAmount = (typeof formatNumberString === 'function') 
-        ? formatNumberString(amount.toString()) 
-        : amount.toString();
+    const formattedAmount = (typeof formatConvertedValue === 'function') 
+        ? formatConvertedValue(amount, currency)
+        : ((typeof formatNumberString === 'function') ? formatNumberString(amount.toString()) : amount.toString());
 
     const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : null;
     let promptTemplate = (t && t.convertPrompt) 
