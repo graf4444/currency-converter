@@ -32,9 +32,9 @@ jobs:
         with:
           node-version: 20
 
-      - name: Build and stamp version
-        run: |
-          node scripts/build.js --minor
+      # - name: Build and stamp version
+      #   run: |
+      #     node scripts/build.js --minor
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
