@@ -83,8 +83,8 @@ function setupNavigationHistory() {
             return;
         }
 
-        // Priority 5: If in Quick Mode, back gesture returns to full normal mode
-        if (typeof isQuickMode !== 'undefined' && isQuickMode) {
+        // Priority 5: If in Quick Mode or Link Session, back gesture returns to full normal mode
+        if ((typeof isQuickMode !== 'undefined' && isQuickMode) || (typeof isLinkSession !== 'undefined' && isLinkSession)) {
             if (typeof exitQuickMode === 'function') {
                 exitQuickMode();
             }

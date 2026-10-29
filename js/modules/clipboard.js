@@ -278,18 +278,17 @@ function applySmartPaste(amount, currency) {
         }
     }
 
-    // Ensure currency is in favorites and brought to top
-    if (state.favorites) {
-        if (!state.favorites.includes(fromCode)) {
-            state.favorites.unshift(fromCode);
-        } else if (state.favorites[0] !== fromCode) {
-            state.favorites = [fromCode, ...state.favorites.filter(c => c !== fromCode)];
-        }
+    // Ensure permanentFavorites is backed up before session override
+    if (!Array.isArray(permanentFavorites) || permanentFavorites.length === 0) {
+        permanentFavorites = [...state.favorites];
     }
+
+    // Treat pasted conversion as a dynamic session view without corrupting localStorage
+    isLinkSession = true;
+    state.favorites = [fromCode, ...permanentFavorites.filter(c => c !== fromCode)];
 
     currentInputCode = fromCode;
     currentInputValue = strAmount;
-    saveState();
 
     if (typeof renderMain === 'function') {
         renderMain();

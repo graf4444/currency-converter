@@ -15,6 +15,7 @@ let state = {
 };
 
 let isQuickMode = false;
+let isLinkSession = false;
 let permanentFavorites = null;
 let savedLastInputCode = null;
 let savedLastInputValue = '';
@@ -79,11 +80,13 @@ function initSystemSettings() {
 
 /**
  * Persists active state to localStorage (sanitizing favorites list).
- * In Quick Mode: preserves permanent favorites so temporary shortcuts
- * do not overwrite user custom lists, while persisting theme and language.
+ * In Quick Mode or Link Sessions: preserves permanent favorites so temporary shortcuts
+ * or external shared links do not overwrite user custom lists or scrambled order,
+ * while persisting theme and language.
  */
 function saveState() { 
-    const favsToPersist = (isQuickMode && Array.isArray(permanentFavorites) && permanentFavorites.length > 0)
+    const isTemporary = (isQuickMode || isLinkSession);
+    const favsToPersist = (isTemporary && Array.isArray(permanentFavorites) && permanentFavorites.length > 0)
         ? permanentFavorites
         : state.favorites;
 
@@ -96,8 +99,8 @@ function saveState() {
         favorites: sanitizedFavs,
         lastUpdated: state.lastUpdated,
         lastUpdatedTimestamp: state.lastUpdatedTimestamp,
-        lastInputCode: isQuickMode ? savedLastInputCode : currentInputCode,
-        lastInputValue: isQuickMode ? savedLastInputValue : currentInputValue
+        lastInputCode: isTemporary ? savedLastInputCode : currentInputCode,
+        lastInputValue: isTemporary ? savedLastInputValue : currentInputValue
     };
 
     localStorage.setItem('conv_max_state', JSON.stringify(stateToSave)); 

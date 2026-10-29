@@ -15,11 +15,12 @@
 // ============================================================
 
 /**
- * Exits Quick Mode and restores the user's permanent currency list and controls.
+ * Exits Quick Mode or Link Session and restores the user's permanent currency list and controls.
  */
 function exitQuickMode() {
-    if (!isQuickMode) return;
+    if (!isQuickMode && !isLinkSession) return;
     isQuickMode = false;
+    isLinkSession = false;
 
     if (Array.isArray(permanentFavorites) && permanentFavorites.length > 0) {
         state.favorites = [...permanentFavorites];
@@ -84,27 +85,22 @@ function handleAppShortcuts() {
             const toCode = to ? to.toUpperCase().trim() : null;
 
             if (typeof currencyDb !== 'undefined' && currencyDb[fromCode]) {
+                if (!Array.isArray(permanentFavorites) || permanentFavorites.length === 0) {
+                    permanentFavorites = [...state.favorites];
+                }
+
                 if (toCode && currencyDb[toCode] && toCode !== fromCode) {
                     // Quick Currency Pair Mode (e.g. PWA shortcut)
                     isQuickMode = true;
-                    if (!Array.isArray(permanentFavorites) || permanentFavorites.length === 0) {
-                        permanentFavorites = [...state.favorites];
-                    }
+                    isLinkSession = false;
                     state.favorites = [fromCode, toCode];
                     renderQuickModeControls();
                 } else {
                     // Deep Link with base currency & amount:
-                    // Keep user's favorite currencies, but ensure fromCode is at the top
-                    if (isQuickMode && Array.isArray(permanentFavorites) && permanentFavorites.length > 0) {
-                        state.favorites = [...permanentFavorites];
-                        isQuickMode = false;
-                    }
-                    if (!state.favorites.includes(fromCode)) {
-                        state.favorites.unshift(fromCode);
-                    } else if (state.favorites[0] !== fromCode) {
-                        state.favorites = [fromCode, ...state.favorites.filter(c => c !== fromCode)];
-                    }
-                    saveState();
+                    // Display fromCode at top for this session without altering localStorage
+                    isLinkSession = true;
+                    isQuickMode = false;
+                    state.favorites = [fromCode, ...permanentFavorites.filter(c => c !== fromCode)];
                 }
 
                 currentInputCode = fromCode;

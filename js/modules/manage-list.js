@@ -11,6 +11,14 @@ function openModal(e) {
         return;
     }
     closeVirtualKeypad();
+
+    // If active view was a temporary link session, restore permanent favorites before opening customization modal
+    if (isLinkSession && Array.isArray(permanentFavorites) && permanentFavorites.length > 0) {
+        state.favorites = [...permanentFavorites];
+        isLinkSession = false;
+        renderMain();
+    }
+
     const modal = document.getElementById('search-modal');
     if (modal) {
         modal.style.display = 'flex';
@@ -40,6 +48,7 @@ function toggleFavorite(code, shouldAdd) {
         }
     }
     state.favorites = [...new Set(state.favorites.filter(Boolean))];
+    permanentFavorites = [...state.favorites];
     saveState();
     renderMain();
     filterCurrencies();
@@ -209,6 +218,7 @@ function saveNewOrder() {
     const nonVisibleFavs = state.favorites.filter(code => !visibleSet.has(code));
     
     state.favorites = [...uniqueVisibleOrder, ...nonVisibleFavs];
+    permanentFavorites = [...state.favorites];
     saveState();
     renderMain();
 }
