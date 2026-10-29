@@ -83,7 +83,16 @@ function setupNavigationHistory() {
             return;
         }
 
-        // Priority 5: Double back to exit from main app screen
+        // Priority 5: If in Quick Mode, back gesture returns to full normal mode
+        if (typeof isQuickMode !== 'undefined' && isQuickMode) {
+            if (typeof exitQuickMode === 'function') {
+                exitQuickMode();
+            }
+            try { window.history.pushState({ page: 'app' }, ''); } catch (_) {}
+            return;
+        }
+
+        // Priority 6: Double back to exit from main app screen
         const now = Date.now();
         if (now - lastBackPressTime < 2000) {
             // Second back gesture within 2 seconds: actually exit.

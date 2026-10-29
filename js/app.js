@@ -124,6 +124,7 @@ setupPWAInstall();
 
 // Instant initial render from cache
 renderMain();
+handleAppShortcuts();
 dismissSplashScreen();
 
 // Check if page was explicitly reloaded by user (Cmd+R / F5 / browser reload / pull-to-refresh)

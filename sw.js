@@ -1,5 +1,5 @@
 // Bump CACHE_NAME on every release that changes any file in ASSETS
-const CACHE_NAME = 'currency-converter-v48';
+const CACHE_NAME = 'currency-converter-v54';
 const ASSETS = [
   './',
   './index.html',
@@ -17,6 +17,7 @@ const ASSETS = [
   './js/modules/ui.js',
   './js/modules/navigation.js',
   './js/modules/install.js',
+  './js/modules/shortcuts.js',
   './js/app.js',
   './manifest.json',
   './manifests/en.json',
@@ -37,7 +38,13 @@ const ASSETS = [
   './icons/favicon-32x32.png',
   './icons/apple-touch-icon.png',
   './icons/android-chrome-192x192.png',
-  './icons/android-chrome-512x512.png'
+  './icons/android-chrome-512x512.png',
+  './icons/shortcut-calc.png',
+  './icons/shortcut-search.png',
+  './icons/shortcut-usd-eur.png',
+  './icons/shortcut-usd-rub.png',
+  './icons/shortcut-eur-usd.png',
+  './icons/shortcut-btc.png'
 ];
 
 self.addEventListener('install', (e) => {
@@ -85,7 +92,12 @@ self.addEventListener('fetch', (e) => {
   // 2. Static Assets & App Shell: Cache-First strategy for instant launch
   e.respondWith((async () => {
     // Try to get resource from cache
-    const cachedResponse = await caches.match(req);
+    let cachedResponse = await caches.match(req);
+    
+    // For navigation requests with query parameters (e.g. shortcuts like index.html?action=calc)
+    if (!cachedResponse && req.mode === 'navigate') {
+      cachedResponse = await caches.match('./index.html') || await caches.match('./');
+    }
     
     if (cachedResponse) {
       // Stale-While-Revalidate background cache update for fresh assets on next boot

@@ -54,6 +54,9 @@ function applyLocalization() {
     const hideLabel = document.getElementById('ui-keypad-hide-label');
     if (hideLabel) hideLabel.textContent = t.hideKeypad || 'Скрыть';
 
+    const exitBtn = document.getElementById('ui-exit-quick-mode-btn');
+    if (exitBtn) exitBtn.textContent = t.showAll || 'Show All Currencies';
+
     const footerInstallTxt = document.getElementById('ui-footer-install-text');
     if (footerInstallTxt) {
         footerInstallTxt.textContent = t.installApp || 'Install App';

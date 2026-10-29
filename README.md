@@ -61,6 +61,8 @@ A modern, fast, and lightweight **Open Source** web tool for converting world cu
 
 ### ✨ Key Features
 * **🎯 True Multi-Platform:** Use it as a website or install it directly onto your smartphone, tablet, or PC home screen as a standalone app (PWA).
+* **⚡ PWA Quick Actions (App Shortcuts):** Long-press the app icon on Android or right-click on Desktop/macOS to access quick actions: instant conversion (USD → EUR, USD → RUB), quick calculator keypad, and instant currency search.
+* **🔒 Smart Express Mode:** Dedicated 2-currency quick conversion without scrambling your saved favorites. Changing theme and language persists, while a clean "Show All Currencies" button or back gesture smoothly returns to the full list.
 * **🔓 100% Open Source & Free:** The source code is completely open, transparent, and free under the MIT license. No hidden tracks or paywalls.
 * **🛡️ Privacy Focused:** Lightweight, privacy-first analytics powered by [GoatCounter](https://www.goatcounter.com) (no cookies, zero personal data collection, GDPR compliant). Your financial calculations and data never leave your device.
 * **💸 No Ads & No Registration:** Start using it instantly without creating accounts or sharing your personal data.
@@ -141,6 +143,18 @@ If you want to run the project locally on your machine for development, testing,
 
 ---
 
+### 🏗️ Build & Semantic Versioning (SemVer: `X.Y.Z`)
+
+The project follows standard [Semantic Versioning](https://semver.org) (`MAJOR.MINOR.PATCH`):
+* **`npm run build`** (or `npm run bump:patch`): Bumps the patch version (`Z`) for development work (`1.20.1` → `1.20.2`).
+* **`npm run bump:minor`**: Bumps the minor version (`Y`) and resets patch to zero for feature releases (`1.20.x` → `1.21.0`).
+* **`npm run bump:major`**: Bumps the major version (`X`) for large architectural changes (`1.20.x` → `2.0.0`).
+* **`npm run bump:time`**: Updates the build timestamp and Service Worker cache without changing the version number.
+
+The build script automatically synchronizes version numbers across `package.json`, `js/constants.js`, and `index.html`, regenerates localized Web App manifests in `manifests/*.json`, and bumps the Service Worker cache in `sw.js`.
+
+---
+
 ### 🛠 Contribution
 If you find a bug, have an idea, or want to add a feature:
 * Feel free to open an [Issue](https://github.com/graf4444/currency-converter/issues).
@@ -186,6 +200,8 @@ If you find a bug, have an idea, or want to add a feature:
 
 ### ✨ Преимущества
 * **🎯 Настоящая кроссплатформенность:** Используйте как сайт или установите на главный экран смартфона, планшета или рабочий стол ПК как независимое приложение (PWA).
+* **⚡ Быстрые действия PWA (Ярлыки приложений):** Длительное нажатие на иконку на Android или правый клик мыши на ПК/macOS открывает контекстное меню быстрых действий: быстрая конвертация популярных валют (USD → RUB, USD → EUR), мгновенный запуск калькулятора и быстрый поиск валют.
+* **🔒 Умный экспресс-режим:** Специальный режим быстрой конвертации пары валют с надежной защитой сохраненных настроек: ваши избранные валюты в памяти не сбиваются, а кнопка «Показать все валюты» или свайп «Назад» моментально возвращают в обычный режим.
 * **🔓 100% Open Source и бесплатно:** Прозрачный открытый код под лицензией MIT. Никаких скрытых подписок, встроенных покупок или платных функций.
 * **🛡️ Конфиденциальность:** Этичная и открытая веб-аналитика на базе [GoatCounter](https://www.goatcounter.com) (без cookie, без сбора персональных данных, без межсайтовой слежки, соответствует GDPR). Все ваши расчеты и выбранные валюты обрабатываются строго на вашем устройстве.
 * **💸 Без рекламы и регистрации:** Только чистая конвертация и удобный интерфейс без назойливых баннеров или необходимости создавать аккаунт.
@@ -263,6 +279,18 @@ If you find a bug, have an idea, or want to add a feature:
 3. **Откройте приложение в браузере:**
    * Для Node.js / serve: `http://localhost:3000` (или порт, выведенный в терминале)
    * Для Python: `http://localhost:8000`
+
+---
+
+### 🏗️ Сборка и версионирование (SemVer: `X.Y.Z`)
+
+Проект использует классический стандарт [Semantic Versioning](https://semver.org) (`MAJOR.MINOR.PATCH`):
+* **`npm run build`** (или `npm run bump:patch`): увеличивает патч-версию (`Z`) для повседневной работы в ветке `dev` (`1.20.1` → `1.20.2`).
+* **`npm run bump:minor`**: увеличивает минорную версию (`Y`) и сбрасывает патч в ноль при релизе пачки новых фич (`1.20.x` → `1.21.0`).
+* **`npm run bump:major`**: увеличивает мажорную версию (`X`) для глобальных архитектурных релизов (`1.20.x` → `2.0.0`).
+* **`npm run bump:time`**: обновляет время сборки и кэш Service Worker без изменения номера версии.
+
+Скрипт сборки синхронизирует версию в `package.json`, `js/constants.js`, `index.html`, перегенерирует манифесты `manifests/*.json` и обновляет кэш в `sw.js`.
 
 ---
 

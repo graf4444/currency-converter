@@ -4,6 +4,7 @@
 // ============================================================
 
 function openModal(e) { 
+    if (isQuickMode) return;
     if (isClosingKeypad || (Date.now() - lastCloseKeypadTime < 420)) {
         if (e && e.preventDefault) e.preventDefault();
         if (e && e.stopPropagation) e.stopPropagation();

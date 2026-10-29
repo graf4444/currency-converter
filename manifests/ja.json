@@ -28,5 +28,59 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "USD → EUR",
+      "short_name": "USD → EUR",
+      "description": "米ドルを素早くユーロに換算",
+      "url": "../index.html?from=USD&to=EUR",
+      "icons": [
+        {
+          "src": "../icons/shortcut-usd-eur.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "計算機",
+      "short_name": "計算機",
+      "description": "計算機キーパッドを開く",
+      "url": "../index.html?action=calc",
+      "icons": [
+        {
+          "src": "../icons/shortcut-calc.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "通貨を検索",
+      "short_name": "検索",
+      "description": "新しい通貨を検索して追加",
+      "url": "../index.html?action=search",
+      "icons": [
+        {
+          "src": "../icons/shortcut-search.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "EUR → USD",
+      "short_name": "EUR → USD",
+      "description": "ユーロを素早く米ドルに換算",
+      "url": "../index.html?from=EUR&to=USD",
+      "icons": [
+        {
+          "src": "../icons/shortcut-eur-usd.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }

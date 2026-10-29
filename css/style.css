@@ -80,6 +80,8 @@ h1 { font-size: 1.5rem; font-weight: 700; }
 .clear-btn:hover { opacity: 0.7; }
 
 .add-btn { width: 100%; padding: 14px; background: var(--card); border: 1px dashed var(--accent); color: var(--accent); border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; text-align: center; margin-bottom: 20px; }
+.quick-mode-btn { border-style: solid; background: var(--card); color: var(--text); border-color: var(--border); display: flex; align-items: center; justify-content: center; gap: 8px; }
+.quick-mode-btn:active { background: var(--border); }
 footer {
     margin-top: auto;
     display: flex;

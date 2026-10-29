@@ -7,13 +7,14 @@
 
 window.__splashStartTime = Date.now();
 
-// Determine if splash screen should be skipped (e.g. pull-to-refresh or page reload)
+// Determine if splash screen should be skipped (e.g. pull-to-refresh, page reload, or PWA shortcuts)
 function shouldSkipSplashScreen() {
     try {
         const nav = performance.getEntriesByType('navigation');
         if (nav && nav[0] && nav[0].type === 'reload') return true;
         if (window.performance && window.performance.navigation && window.performance.navigation.type === 1) return true;
         if (sessionStorage.getItem('pwa_splash_shown') === 'true') return true;
+        if (window.location.search && (window.location.search.includes('action=') || window.location.search.includes('from=') || window.location.search.includes('code='))) return true;
     } catch (_) {}
     return false;
 }

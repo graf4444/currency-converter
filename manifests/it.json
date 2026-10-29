@@ -28,5 +28,59 @@
       "type": "image/png",
       "purpose": "maskable"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "EUR → USD",
+      "short_name": "EUR → USD",
+      "description": "Conversione rapida da Euro a Dollaro USA",
+      "url": "../index.html?from=EUR&to=USD",
+      "icons": [
+        {
+          "src": "../icons/shortcut-eur-usd.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Calcolatrice",
+      "short_name": "Calcolatrice",
+      "description": "Apri tastierino calcolatrice",
+      "url": "../index.html?action=calc",
+      "icons": [
+        {
+          "src": "../icons/shortcut-calc.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Cerca Valuta",
+      "short_name": "Cerca",
+      "description": "Cerca e aggiungi nuove valute",
+      "url": "../index.html?action=search",
+      "icons": [
+        {
+          "src": "../icons/shortcut-search.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "USD → EUR",
+      "short_name": "USD → EUR",
+      "description": "Conversione rapida da Dollaro a Euro",
+      "url": "../index.html?from=USD&to=EUR",
+      "icons": [
+        {
+          "src": "../icons/shortcut-usd-eur.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }
