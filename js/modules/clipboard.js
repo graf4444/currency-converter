@@ -113,8 +113,10 @@ if (typeof currencyDb !== 'undefined') {
 }
 
 let lastCheckedClipboardText = null;
+let lastDismissedClipboardText = null;
 let smartPasteDismissTimeout = null;
 let currentSmartPasteData = null;
+let isSmartPasteHovered = false;
 
 /**
  * Helper to escape special characters for RegExp.
@@ -246,7 +248,23 @@ function parseClipboardCurrency(rawText) {
 }
 
 /**
- * Hides the smart paste floating banner with a slide-up animation.
+ * Schedules auto-dismiss of the smart paste banner after the given duration.
+ * @param {number} durationMs 
+ */
+function scheduleSmartPasteDismiss(durationMs = 5500) {
+    if (smartPasteDismissTimeout) {
+        clearTimeout(smartPasteDismissTimeout);
+        smartPasteDismissTimeout = null;
+    }
+    smartPasteDismissTimeout = setTimeout(() => {
+        if (!isSmartPasteHovered) {
+            hideSmartPasteBanner();
+        }
+    }, durationMs);
+}
+
+/**
+ * Hides the smart paste floating banner with a soft, non-intrusive animation.
  */
 function hideSmartPasteBanner() {
     const banner = document.getElementById('smart-paste-banner');
@@ -257,12 +275,17 @@ function hideSmartPasteBanner() {
         smartPasteDismissTimeout = null;
     }
 
+    const progressEl = document.getElementById('smart-paste-progress');
+    if (progressEl) {
+        progressEl.style.animation = 'none';
+    }
+
     banner.classList.remove('visible');
     setTimeout(() => {
         if (!banner.classList.contains('visible')) {
             banner.hidden = true;
         }
-    }, 320);
+    }, 420);
 }
 
 /**
@@ -274,10 +297,14 @@ function hideSmartPasteBanner() {
 function showSmartPasteBanner(amount, currency) {
     const banner = document.getElementById('smart-paste-banner');
     const flagEl = document.getElementById('smart-paste-flag');
+    const hintEl = document.getElementById('smart-paste-hint');
+    const valEl = document.getElementById('smart-paste-val');
+    const badgeEl = document.getElementById('smart-paste-badge');
     const textEl = document.getElementById('smart-paste-text');
     const applyBtn = document.getElementById('smart-paste-apply');
+    const progressEl = document.getElementById('smart-paste-progress');
 
-    if (!banner || !textEl) return;
+    if (!banner) return;
 
     currentSmartPasteData = { amount, currency };
 
@@ -288,17 +315,38 @@ function showSmartPasteBanner(amount, currency) {
     }
     if (flagEl) flagEl.textContent = flag;
 
-    // Localized prompt: "Сконвертировать 120 USD?"
+    // Formatted amount with smart precision & separators (e.g. 964 889 982 or 0.00001248)
     const formattedAmount = (typeof formatConvertedValue === 'function') 
         ? formatConvertedValue(amount, currency)
         : ((typeof formatNumberString === 'function') ? formatNumberString(amount.toString()) : amount.toString());
 
     const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : null;
-    let promptTemplate = (t && t.convertPrompt) 
-        ? t.convertPrompt 
-        : (state.lang === 'ru' ? 'Сконвертировать {amount} {code}?' : 'Convert {amount} {code}?');
 
-    textEl.textContent = promptTemplate.replace('{amount}', formattedAmount).replace('{code}', currency);
+    if (hintEl) {
+        hintEl.textContent = (t && t.clipboardHint) 
+            ? t.clipboardHint 
+            : (state.lang === 'ru' ? 'Вставить из буфера?' : 'Paste from clipboard?');
+    }
+
+    if (valEl) {
+        valEl.textContent = formattedAmount;
+        // Dynamically adjust font size so long figures (like 964 889 982.00) never overflow
+        if (formattedAmount.length > 14) {
+            valEl.style.fontSize = '0.84rem';
+        } else if (formattedAmount.length > 10) {
+            valEl.style.fontSize = '0.90rem';
+        } else {
+            valEl.style.fontSize = '0.96rem';
+        }
+    }
+
+    if (badgeEl) {
+        badgeEl.textContent = currency;
+    }
+
+    if (textEl) {
+        textEl.textContent = `${formattedAmount} ${currency}`;
+    }
 
     if (applyBtn) {
         applyBtn.textContent = (t && t.pasteAction) 
@@ -306,16 +354,20 @@ function showSmartPasteBanner(amount, currency) {
             : (state.lang === 'ru' ? 'Вставить' : 'Paste');
     }
 
+    // Reset progress bar animation
+    if (progressEl) {
+        progressEl.style.animation = 'none';
+        void progressEl.offsetWidth; // Force reflow
+        progressEl.style.animation = '';
+    }
+
     banner.hidden = false;
     requestAnimationFrame(() => {
         banner.classList.add('visible');
     });
 
-    // Auto-dismiss banner after 8 seconds of inactivity
-    if (smartPasteDismissTimeout) clearTimeout(smartPasteDismissTimeout);
-    smartPasteDismissTimeout = setTimeout(() => {
-        hideSmartPasteBanner();
-    }, 8000);
+    // Auto-dismiss banner after 5.5 seconds of non-interaction
+    scheduleSmartPasteDismiss(5500);
 }
 
 /**
@@ -388,7 +440,7 @@ async function checkClipboardForCurrency() {
         }
 
         const text = await navigator.clipboard.readText();
-        if (!text || text === lastCheckedClipboardText) return;
+        if (!text || text === lastCheckedClipboardText || text === lastDismissedClipboardText) return;
         lastCheckedClipboardText = text;
 
         const parsed = parseClipboardCurrency(text);
@@ -409,6 +461,7 @@ async function checkClipboardForCurrency() {
  * Initializes listeners for Smart Clipboard Paste.
  */
 function initClipboardModule() {
+    const banner = document.getElementById('smart-paste-banner');
     const applyBtn = document.getElementById('smart-paste-apply');
     const dismissBtn = document.getElementById('smart-paste-dismiss');
 
@@ -424,9 +477,62 @@ function initClipboardModule() {
     if (dismissBtn) {
         dismissBtn.addEventListener('click', (e) => {
             e.preventDefault();
+            e.stopPropagation();
+            lastDismissedClipboardText = lastCheckedClipboardText;
             hideSmartPasteBanner();
         });
     }
+
+    // Hover and touch interaction to pause auto-dismiss timer
+    if (banner) {
+        const pill = banner.querySelector('.smart-paste-pill');
+        if (pill) {
+            pill.addEventListener('mouseenter', () => {
+                isSmartPasteHovered = true;
+                if (smartPasteDismissTimeout) {
+                    clearTimeout(smartPasteDismissTimeout);
+                    smartPasteDismissTimeout = null;
+                }
+            });
+
+            pill.addEventListener('mouseleave', () => {
+                isSmartPasteHovered = false;
+                scheduleSmartPasteDismiss(2500);
+            });
+
+            pill.addEventListener('touchstart', () => {
+                isSmartPasteHovered = true;
+                if (smartPasteDismissTimeout) {
+                    clearTimeout(smartPasteDismissTimeout);
+                    smartPasteDismissTimeout = null;
+                }
+            }, { passive: true });
+
+            pill.addEventListener('touchend', () => {
+                isSmartPasteHovered = false;
+                scheduleSmartPasteDismiss(3000);
+            }, { passive: true });
+        }
+    }
+
+    // Non-intrusive: softly dismiss banner if user scrolls or starts editing any input
+    window.addEventListener('scroll', () => {
+        if (banner && banner.classList.contains('visible') && !isSmartPasteHovered) {
+            hideSmartPasteBanner();
+        }
+    }, { passive: true });
+
+    document.addEventListener('focusin', (e) => {
+        if (e.target && e.target.classList && e.target.classList.contains('currency-input')) {
+            hideSmartPasteBanner();
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (banner && banner.classList.contains('visible') && !banner.contains(e.target)) {
+            hideSmartPasteBanner();
+        }
+    });
 
     // Check clipboard when user returns to the app / window focuses
     window.addEventListener('focus', () => {

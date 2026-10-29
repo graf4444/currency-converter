@@ -141,7 +141,7 @@
                 <div class="spinner" id="loader" aria-hidden="true"></div>
             </div>
             <div id="last-update"></div>
-            <div id="app-version" class="app-version">v1.20.9 (2026-10-29 19:11)</div>
+            <div id="app-version" class="app-version">v1.20.9 (2026-10-29 19:17)</div>
         </div>
 
         <div class="footer-links">
@@ -286,16 +286,26 @@
 <div id="smart-paste-banner" class="smart-paste-banner" hidden>
     <div class="smart-paste-pill">
         <span class="smart-paste-flag" id="smart-paste-flag">💵</span>
-        <span class="smart-paste-text" id="smart-paste-text">Сконвертировать 120 USD?</span>
-        <button type="button" class="smart-paste-btn apply" id="smart-paste-apply">Вставить</button>
-        <button type="button" class="smart-paste-btn info" id="smart-paste-info" aria-label="О безопасности буфера обмена" title="Безопасность">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <circle cx="12" cy="12" r="10"></circle>
-                <line x1="12" y1="16" x2="12" y2="12"></line>
-                <line x1="12" y1="8" x2="12.01" y2="8"></line>
-            </svg>
-        </button>
-        <button type="button" class="smart-paste-btn dismiss" id="smart-paste-dismiss" aria-label="Закрыть">✕</button>
+        <div class="smart-paste-content" id="smart-paste-content">
+            <span class="smart-paste-hint" id="smart-paste-hint">Вставить из буфера?</span>
+            <div class="smart-paste-val-row">
+                <span class="smart-paste-val" id="smart-paste-val">120</span>
+                <span class="smart-paste-badge" id="smart-paste-badge">USD</span>
+            </div>
+            <span id="smart-paste-text" hidden></span>
+        </div>
+        <div class="smart-paste-actions">
+            <button type="button" class="smart-paste-btn apply" id="smart-paste-apply">Вставить</button>
+            <button type="button" class="smart-paste-btn info" id="smart-paste-info" aria-label="О безопасности буфера обмена" title="Безопасность">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+            </button>
+            <button type="button" class="smart-paste-btn dismiss" id="smart-paste-dismiss" aria-label="Закрыть">✕</button>
+        </div>
+        <div class="smart-paste-progress" id="smart-paste-progress"></div>
     </div>
 </div>
 
