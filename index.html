@@ -41,6 +41,12 @@
     <script src="js/pwa-init.js"></script>
 
     <!-- GoatCounter Analytics (privacy-friendly, GDPR-compliant, no cookies) -->
+    <script>
+        // Official GoatCounter setting: disable tracking outside production
+        if (window.location.hostname !== 'graf4444.github.io') {
+            window.goatcounter = { no_onload: true };
+        }
+    </script>
     <script data-goatcounter="https://currency-converter.goatcounter.com/count"
             async src="//gc.zgo.at/count.js"></script>
 
@@ -135,7 +141,7 @@
                 <div class="spinner" id="loader" aria-hidden="true"></div>
             </div>
             <div id="last-update"></div>
-            <div id="app-version" class="app-version">v1.20.9 (2026-10-29 18:55)</div>
+            <div id="app-version" class="app-version">v1.20.9 (2026-10-29 19:03)</div>
         </div>
 
         <div class="footer-links">
