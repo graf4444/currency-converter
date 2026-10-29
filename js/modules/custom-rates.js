@@ -26,42 +26,219 @@ function getCustomI18n(key, fallback = '') {
 }
 
 /**
- * Populates base and target currency dropdowns cleanly.
+ * Gets sorted list of available currencies (favorites/popular first, then rest).
  */
-function populateCustomRateSelects() {
-    const baseSelect = document.getElementById('custom-base-select');
-    const targetSelect = document.getElementById('custom-target-select');
-
-    if (!baseSelect || !targetSelect || typeof currencyDb === 'undefined') return;
-
-    const currentBase = baseSelect.value || 'USD';
-    const currentTarget = targetSelect.value || (state.lang === 'ru' ? 'RUB' : 'USD');
-
-    // Popular and active favorites first
+function getSortedCurrencyCodes() {
+    if (typeof currencyDb === 'undefined') return [];
     const favSet = new Set(state.favorites || ['USD', 'EUR', 'RUB']);
     const allCodes = Object.keys(currencyDb);
-    const sortedCodes = [
+    return [
         ...allCodes.filter(c => favSet.has(c)),
         ...allCodes.filter(c => !favSet.has(c))
     ];
+}
 
-    let baseHTML = sortedCodes.map(code => {
+/**
+ * Returns flag and name info for a currency code.
+ */
+function getPickerItemMeta(code) {
+    if (code === '__NEW__') {
+        const newCodeInput = document.getElementById('new-curr-code');
+        const newNameInput = document.getElementById('new-curr-name');
+        const customCode = (newCodeInput && newCodeInput.value.trim().toUpperCase()) || 'NEW';
+        const customName = (newNameInput && newNameInput.value.trim()) || (state.lang === 'ru' ? 'Своя валюта (баллы, мили...)' : 'Other custom currency');
+        return {
+            code: customCode,
+            flag: '➕',
+            name: customName
+        };
+    }
+    const item = (typeof currencyDb !== 'undefined' && currencyDb[code]) ? currencyDb[code] : { f: '💵' };
+    const name = (item.n && (item.n[state.lang] || item.n['en'])) || code;
+    return {
+        code,
+        flag: item.f || '💵',
+        name
+    };
+}
+
+/**
+ * Selects a currency in the searchable picker and updates UI.
+ */
+function selectPickerCurrency(type, code, updateHint = true) {
+    const hiddenSelect = document.getElementById(`custom-${type}-select`);
+    if (hiddenSelect) hiddenSelect.value = code;
+
+    const flagEl = document.getElementById(`${type}-picker-flag`);
+    const codeEl = document.getElementById(`${type}-picker-code`);
+    const nameEl = document.getElementById(`${type}-picker-name`);
+
+    const meta = getPickerItemMeta(code);
+    if (flagEl) flagEl.textContent = meta.flag;
+    if (codeEl) codeEl.textContent = meta.code;
+    if (nameEl) nameEl.textContent = meta.name;
+
+    closePicker(type);
+
+    if (updateHint) {
+        updateMarketRateHint();
+    }
+}
+
+/**
+ * Renders filtered list items inside the picker dropdown.
+ */
+function renderPickerList(type, query = '') {
+    const listEl = document.getElementById(`${type}-picker-list`);
+    const hiddenSelect = document.getElementById(`custom-${type}-select`);
+    if (!listEl) return;
+
+    const currentVal = hiddenSelect ? hiddenSelect.value : (type === 'base' ? 'USD' : 'RUB');
+    const sortedCodes = getSortedCurrencyCodes();
+    const q = (query || '').toLowerCase().trim();
+
+    let itemsToRender = [];
+
+    sortedCodes.forEach(code => {
         const item = currencyDb[code];
-        const name = (item.n && (item.n[state.lang] || item.n['en'])) || code;
-        const sel = code === currentBase ? 'selected' : '';
-        return `<option value="${code}" ${sel}>${item.f || ''} ${code} — ${name}</option>`;
+        if (!item) return;
+        const nameLocal = (item.n && item.n[state.lang]) ? item.n[state.lang].toLowerCase() : '';
+        const nameEn = (item.n && item.n['en']) ? item.n['en'].toLowerCase() : '';
+        const codeLower = code.toLowerCase();
+
+        if (!q || codeLower.includes(q) || nameLocal.includes(q) || nameEn.includes(q)) {
+            itemsToRender.push(code);
+        }
+    });
+
+    let newCurrencyMatched = false;
+    if (type === 'base') {
+        if (!q || q.includes('нов') || q.includes('сво') || q.includes('new') || q.includes('cust') || q.includes('балл') || q.includes('мил') || q.includes('pts') || q.includes('point')) {
+            newCurrencyMatched = true;
+        }
+    }
+
+    if (itemsToRender.length === 0 && !newCurrencyMatched) {
+        listEl.innerHTML = `<div class="picker-empty">${state.lang === 'ru' ? 'Ничего не найдено' : 'No currencies found'}</div>`;
+        return;
+    }
+
+    let html = itemsToRender.map(code => {
+        const meta = getPickerItemMeta(code);
+        const isSelected = code === currentVal;
+        return `
+            <div class="picker-item ${isSelected ? 'is-selected' : ''}" data-code="${code}" role="option" aria-selected="${isSelected}">
+                <span class="picker-item-flag">${meta.flag}</span>
+                <span class="picker-item-code">${meta.code}</span>
+                <span class="picker-item-sep">—</span>
+                <span class="picker-item-name">${escapeHTML(meta.name)}</span>
+                ${isSelected ? '<span class="picker-item-check">✓</span>' : ''}
+            </div>
+        `;
     }).join('');
 
-    // Append custom currency option at the bottom
-    const newOptionText = state.lang === 'ru' ? '➕ Другая своя валюта (баллы, мили...)' : '➕ Other custom currency (points, miles...)';
-    baseHTML += `<option value="__NEW__" ${currentBase === '__NEW__' ? 'selected' : ''}>${newOptionText}</option>`;
+    if (newCurrencyMatched) {
+        const isSelected = currentVal === '__NEW__';
+        const meta = getPickerItemMeta('__NEW__');
+        html += `
+            <div class="picker-item ${isSelected ? 'is-selected' : ''}" data-code="__NEW__" role="option" aria-selected="${isSelected}">
+                <span class="picker-item-flag">${meta.flag}</span>
+                <span class="picker-item-code">${meta.code}</span>
+                <span class="picker-item-sep">—</span>
+                <span class="picker-item-name">${escapeHTML(meta.name)}</span>
+                ${isSelected ? '<span class="picker-item-check">✓</span>' : ''}
+            </div>
+        `;
+    }
 
-    const targetHTML = sortedCodes.map(code => {
-        const item = currencyDb[code];
-        const name = (item.n && (item.n[state.lang] || item.n['en'])) || code;
-        const sel = code === currentTarget ? 'selected' : '';
-        return `<option value="${code}" ${sel}>${item.f || ''} ${code} — ${name}</option>`;
-    }).join('');
+    listEl.innerHTML = html;
+
+    listEl.querySelectorAll('.picker-item').forEach(el => {
+        el.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const code = el.dataset.code;
+            selectPickerCurrency(type, code);
+            triggerHaptic(10);
+            if (type === 'base' && code === '__NEW__') {
+                const newCodeInput = document.getElementById('new-curr-code');
+                if (newCodeInput) newCodeInput.focus();
+            }
+        });
+    });
+}
+
+/**
+ * Opens picker dropdown with autofocus on search input.
+ */
+function openPicker(type) {
+    const otherType = type === 'base' ? 'target' : 'base';
+    closePicker(otherType);
+
+    const dropdown = document.getElementById(`${type}-picker-dropdown`);
+    const btn = document.getElementById(`custom-${type}-btn`);
+    const searchInput = document.getElementById(`${type}-picker-search`);
+
+    if (!dropdown || !btn) return;
+
+    dropdown.hidden = false;
+    btn.setAttribute('aria-expanded', 'true');
+
+    if (searchInput) {
+        searchInput.value = '';
+    }
+    renderPickerList(type, '');
+
+    setTimeout(() => {
+        if (searchInput) searchInput.focus();
+        const selectedItem = dropdown.querySelector('.picker-item.is-selected');
+        if (selectedItem) {
+            selectedItem.scrollIntoView({ block: 'nearest' });
+        }
+    }, 40);
+}
+
+/**
+ * Closes picker dropdown.
+ */
+function closePicker(type) {
+    if (!type) {
+        closePicker('base');
+        closePicker('target');
+        return;
+    }
+    const dropdown = document.getElementById(`${type}-picker-dropdown`);
+    const btn = document.getElementById(`custom-${type}-btn`);
+    if (dropdown) dropdown.hidden = true;
+    if (btn) btn.setAttribute('aria-expanded', 'false');
+}
+
+/**
+ * Toggles picker dropdown open/closed.
+ */
+function togglePicker(type) {
+    const dropdown = document.getElementById(`${type}-picker-dropdown`);
+    if (!dropdown) return;
+    if (dropdown.hidden) {
+        openPicker(type);
+    } else {
+        closePicker(type);
+    }
+}
+
+/**
+ * Populates base and target currency dropdowns cleanly.
+ */
+function populateCustomRateSelects() {
+    const sortedCodes = getSortedCurrencyCodes();
+    const baseSelect = document.getElementById('custom-base-select');
+    const targetSelect = document.getElementById('custom-target-select');
+
+    if (!baseSelect || !targetSelect) return;
+
+    let baseHTML = sortedCodes.map(code => `<option value="${code}">${code}</option>`).join('');
+    baseHTML += `<option value="__NEW__">NEW</option>`;
+
+    let targetHTML = sortedCodes.map(code => `<option value="${code}">${code}</option>`).join('');
 
     baseSelect.innerHTML = baseHTML;
     targetSelect.innerHTML = targetHTML;
@@ -86,6 +263,9 @@ function updateMarketRateHint() {
     const hintRow = document.getElementById('rate-market-hint-row');
     const hintText = document.getElementById('custom-market-hint-text');
     const baseBadge = document.getElementById('rate-base-code-badge');
+    const baseFlag = document.getElementById('rate-base-flag');
+    const targetBadge = document.getElementById('rate-target-code-badge');
+    const targetFlag = document.getElementById('rate-target-flag');
     const extraFields = document.getElementById('custom-currency-extra-fields');
 
     if (!baseSelect || !targetSelect) return;
@@ -93,18 +273,29 @@ function updateMarketRateHint() {
     const base = baseSelect.value || 'USD';
     const target = targetSelect.value || 'RUB';
 
+    // Target emoji & badge in equation row
+    if (targetBadge) targetBadge.textContent = target;
+    if (targetFlag) {
+        const targetMeta = (typeof currencyDb !== 'undefined' && currencyDb[target]) ? currencyDb[target] : { f: '💵' };
+        targetFlag.textContent = targetMeta.f || '💵';
+    }
+
     if (base === '__NEW__') {
         if (extraFields) extraFields.style.display = 'grid';
-        if (baseBadge) {
-            const codeInput = document.getElementById('new-curr-code');
-            baseBadge.textContent = (codeInput && codeInput.value.trim().toUpperCase()) || 'NEW';
-        }
+        const codeInput = document.getElementById('new-curr-code');
+        const codeVal = (codeInput && codeInput.value.trim().toUpperCase()) || 'NEW';
+        if (baseBadge) baseBadge.textContent = codeVal;
+        if (baseFlag) baseFlag.textContent = '🏷️';
         if (hintRow) hintRow.style.display = 'none';
         return;
     }
 
     if (extraFields) extraFields.style.display = 'none';
     if (baseBadge) baseBadge.textContent = base;
+    if (baseFlag) {
+        const baseMeta = (typeof currencyDb !== 'undefined' && currencyDb[base]) ? currencyDb[base] : { f: '💵' };
+        baseFlag.textContent = baseMeta.f || '💵';
+    }
     if (hintRow) hintRow.style.display = 'flex';
 
     const baseRateUSD = state.rates ? (state.rates[base] || 1) : 1;
@@ -149,6 +340,7 @@ function openCustomRateModal({ baseCode, editId } = {}) {
     if (typeof closeVirtualKeypad === 'function') closeVirtualKeypad();
 
     currentEditCustomId = editId || null;
+    closePicker();
     populateCustomRateSelects();
 
     const modal = document.getElementById('custom-rate-modal');
@@ -156,14 +348,15 @@ function openCustomRateModal({ baseCode, editId } = {}) {
     const deleteBtn = document.getElementById('btn-delete-custom');
     const saveBtn = document.getElementById('btn-save-custom');
 
-    const baseSelect = document.getElementById('custom-base-select');
-    const targetSelect = document.getElementById('custom-target-select');
     const rateInput = document.getElementById('custom-rate-val');
     const noteInput = document.getElementById('custom-note-input');
 
     const newCodeInput = document.getElementById('new-curr-code');
     const newNameInput = document.getElementById('new-curr-name');
     const extraFields = document.getElementById('custom-currency-extra-fields');
+
+    let initialBase = 'USD';
+    let initialTarget = 'RUB';
 
     if (editId && state.customCurrencies && state.customCurrencies[editId]) {
         const item = state.customCurrencies[editId];
@@ -172,16 +365,16 @@ function openCustomRateModal({ baseCode, editId } = {}) {
         if (saveBtn) saveBtn.textContent = state.lang === 'ru' ? 'Сохранить' : 'Save';
 
         if (item.baseCode) {
-            if (baseSelect) baseSelect.value = item.baseCode;
+            initialBase = item.baseCode;
             if (extraFields) extraFields.style.display = 'none';
         } else {
-            if (baseSelect) baseSelect.value = '__NEW__';
+            initialBase = '__NEW__';
             if (extraFields) extraFields.style.display = 'grid';
             if (newCodeInput) newCodeInput.value = item.code || '';
             if (newNameInput) newNameInput.value = item.name || '';
         }
 
-        if (targetSelect) targetSelect.value = item.rateCurrency || 'RUB';
+        initialTarget = item.rateCurrency || 'RUB';
         if (rateInput) rateInput.value = item.rateValue || '';
         if (noteInput) noteInput.value = item.note || '';
     } else {
@@ -189,11 +382,10 @@ function openCustomRateModal({ baseCode, editId } = {}) {
         if (deleteBtn) deleteBtn.style.display = 'none';
         if (saveBtn) saveBtn.textContent = state.lang === 'ru' ? 'Сохранить' : 'Save';
 
-        const initialBase = baseCode || (state.favorites && state.favorites[0]) || 'USD';
-        if (baseSelect) baseSelect.value = initialBase;
-        if (extraFields) extraFields.style.display = 'none';
+        initialBase = baseCode || (state.favorites && state.favorites[0]) || 'USD';
+        initialTarget = getSmartDefaultTarget(initialBase);
 
-        if (targetSelect) targetSelect.value = getSmartDefaultTarget(initialBase);
+        if (extraFields) extraFields.style.display = 'none';
         if (rateInput) rateInput.value = '';
         if (noteInput) noteInput.value = '';
 
@@ -201,12 +393,18 @@ function openCustomRateModal({ baseCode, editId } = {}) {
         if (newNameInput) newNameInput.value = '';
     }
 
+    selectPickerCurrency('base', initialBase, false);
+    selectPickerCurrency('target', initialTarget, false);
     updateMarketRateHint();
 
     if (modal) {
         modal.style.display = 'flex';
         modal.setAttribute('aria-hidden', 'false');
     }
+
+    setTimeout(() => {
+        if (rateInput && !editId) rateInput.focus();
+    }, 50);
 }
 
 /**
@@ -355,10 +553,17 @@ function setupCustomRateEvents() {
     const saveBtn = document.getElementById('btn-save-custom');
     const deleteBtn = document.getElementById('btn-delete-custom');
 
-    const baseSelect = document.getElementById('custom-base-select');
-    const targetSelect = document.getElementById('custom-target-select');
+    const baseBtn = document.getElementById('custom-base-btn');
+    const targetBtn = document.getElementById('custom-target-btn');
+    const baseSearch = document.getElementById('base-picker-search');
+    const targetSearch = document.getElementById('target-picker-search');
+
+    const leftBadge = document.getElementById('rate-eq-left-badge');
+    const rightBadge = document.getElementById('rate-eq-right-badge');
+
     const useMarketBtn = document.getElementById('btn-use-market-rate');
     const newCodeInput = document.getElementById('new-curr-code');
+    const newNameInput = document.getElementById('new-curr-name');
     const baseBadge = document.getElementById('rate-base-code-badge');
 
     if (closeBtn) closeBtn.addEventListener('click', closeCustomRateModal);
@@ -366,14 +571,59 @@ function setupCustomRateEvents() {
     if (saveBtn) saveBtn.addEventListener('click', saveCustomRate);
     if (deleteBtn) deleteBtn.addEventListener('click', () => deleteCustomRate());
 
-    if (baseSelect) baseSelect.addEventListener('change', updateMarketRateHint);
-    if (targetSelect) targetSelect.addEventListener('change', updateMarketRateHint);
+    if (baseBtn) baseBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePicker('base'); });
+    if (targetBtn) targetBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePicker('target'); });
+
+    if (leftBadge) leftBadge.addEventListener('click', (e) => { e.stopPropagation(); openPicker('base'); });
+    if (rightBadge) rightBadge.addEventListener('click', (e) => { e.stopPropagation(); openPicker('target'); });
+
+    if (baseSearch) {
+        baseSearch.addEventListener('input', (e) => renderPickerList('base', e.target.value));
+        baseSearch.addEventListener('click', (e) => e.stopPropagation());
+    }
+    if (targetSearch) {
+        targetSearch.addEventListener('input', (e) => renderPickerList('target', e.target.value));
+        targetSearch.addEventListener('click', (e) => e.stopPropagation());
+    }
+
     if (useMarketBtn) useMarketBtn.addEventListener('click', applyMarketRate);
 
-    if (newCodeInput && baseBadge) {
+    if (newCodeInput) {
         newCodeInput.addEventListener('input', () => {
             const val = newCodeInput.value.trim().toUpperCase();
-            baseBadge.textContent = val || 'NEW';
+            if (baseBadge) baseBadge.textContent = val || 'NEW';
+            const basePickerCode = document.getElementById('base-picker-code');
+            if (basePickerCode) basePickerCode.textContent = val || 'NEW';
         });
     }
+
+    if (newNameInput) {
+        newNameInput.addEventListener('input', () => {
+            const val = newNameInput.value.trim();
+            const basePickerName = document.getElementById('base-picker-name');
+            if (basePickerName) basePickerName.textContent = val || (state.lang === 'ru' ? 'Своя валюта' : 'Custom Currency');
+        });
+    }
+
+    // Close pickers on outside click
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#picker-base-container')) {
+            closePicker('base');
+        }
+        if (!e.target.closest('#picker-target-container')) {
+            closePicker('target');
+        }
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            const baseDropdown = document.getElementById('base-picker-dropdown');
+            const targetDropdown = document.getElementById('target-picker-dropdown');
+            if ((baseDropdown && !baseDropdown.hidden) || (targetDropdown && !targetDropdown.hidden)) {
+                e.stopPropagation();
+                closePicker();
+            }
+        }
+    });
 }

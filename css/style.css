@@ -1408,6 +1408,217 @@ footer {
     letter-spacing: 1px;
 }
 
+/* Custom Searchable Currency Pickers */
+.custom-picker-container {
+    position: relative;
+    width: 100%;
+}
+
+.custom-picker-btn {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.95rem;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+    user-select: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+
+.custom-picker-btn:hover {
+    border-color: var(--accent);
+}
+
+.custom-picker-btn:focus-visible,
+.custom-picker-btn[aria-expanded="true"] {
+    border-color: var(--accent);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.15);
+}
+
+[data-theme="dark"] .custom-picker-btn:focus-visible,
+[data-theme="dark"] .custom-picker-btn[aria-expanded="true"] {
+    box-shadow: 0 0 0 2px rgba(41, 151, 255, 0.25);
+}
+
+.picker-flag {
+    font-size: 1.15rem;
+    margin-right: 8px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.picker-code {
+    font-weight: 700;
+    margin-right: 6px;
+    letter-spacing: 0.3px;
+    flex-shrink: 0;
+}
+
+.picker-sep {
+    color: var(--text-muted);
+    margin-right: 6px;
+    flex-shrink: 0;
+    font-weight: 400;
+}
+
+.picker-name {
+    color: var(--text-muted);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.9rem;
+}
+
+.picker-arrow {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    margin-left: 8px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.custom-picker-btn[aria-expanded="true"] .picker-arrow {
+    transform: rotate(180deg);
+    color: var(--accent);
+}
+
+.custom-picker-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    z-index: 120;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22);
+    display: flex;
+    flex-direction: column;
+    max-height: 240px;
+    overflow: hidden;
+    animation: pickerSlideDown 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.custom-picker-dropdown[hidden] {
+    display: none !important;
+}
+
+@keyframes pickerSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.picker-search-wrap {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+}
+
+.picker-search-input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 0.88rem;
+    color: var(--text);
+    box-sizing: border-box;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.picker-search-input:focus {
+    border-color: var(--accent);
+}
+
+.picker-list {
+    flex: 1;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 4px;
+}
+
+.picker-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: background 0.12s ease;
+    user-select: none;
+}
+
+.picker-item:hover,
+.picker-item:focus {
+    background: var(--bg);
+}
+
+.picker-item.is-selected {
+    background: rgba(0, 113, 227, 0.08);
+    font-weight: 600;
+}
+
+[data-theme="dark"] .picker-item.is-selected {
+    background: rgba(41, 151, 255, 0.14);
+}
+
+.picker-item-flag {
+    margin-right: 8px;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.picker-item-code {
+    font-weight: 700;
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.picker-item-sep {
+    color: var(--text-muted);
+    margin-right: 6px;
+    flex-shrink: 0;
+}
+
+.picker-item-name {
+    color: var(--text-muted);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.85rem;
+}
+
+.picker-item-check {
+    color: var(--accent);
+    font-weight: 700;
+    margin-left: 6px;
+    font-size: 0.88rem;
+    flex-shrink: 0;
+}
+
+.picker-empty {
+    padding: 16px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
 .form-row-2 {
     display: grid;
     grid-template-columns: 1fr 1.6fr;
@@ -1421,22 +1632,44 @@ footer {
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 10px;
-    padding: 6px 10px;
+    padding: 6px 12px;
     gap: 8px;
 }
 
-.rate-eq-left {
+.rate-eq-left,
+.rate-eq-right {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 5px;
     font-weight: 600;
     font-size: 0.95rem;
     color: var(--text);
     white-space: nowrap;
+    cursor: pointer;
+    border-radius: 6px;
+    padding: 3px 6px;
+    transition: background 0.15s ease;
+    user-select: none;
+}
+
+.rate-eq-left:hover,
+.rate-eq-right:hover {
+    background: rgba(0, 113, 227, 0.09);
+}
+
+[data-theme="dark"] .rate-eq-left:hover,
+[data-theme="dark"] .rate-eq-right:hover {
+    background: rgba(41, 151, 255, 0.15);
 }
 
 .rate-eq-qty {
     color: var(--text-muted);
+    font-weight: 500;
+}
+
+.rate-eq-flag {
+    font-size: 1.05rem;
+    line-height: 1;
 }
 
 .rate-eq-code {
@@ -1452,6 +1685,7 @@ footer {
     font-size: 1.1rem;
     color: var(--text-muted);
     user-select: none;
+    margin-left: 2px;
 }
 
 .rate-eq-input-wrap {
@@ -1462,31 +1696,17 @@ footer {
 .rate-input {
     background: transparent;
     border: none;
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: var(--text);
     width: 100%;
     text-align: right;
-    padding: 4px 0;
+    padding: 4px 6px;
     font-variant-numeric: tabular-nums;
 }
 
 .rate-input:focus {
     outline: none;
-}
-
-.rate-eq-target-wrap {
-    width: auto;
-    max-width: 110px;
-    flex-shrink: 0;
-}
-
-.rate-eq-target-wrap .custom-select {
-    padding: 5px 8px;
-    font-size: 0.88rem;
-    font-weight: 600;
-    border-radius: 8px;
-    background: var(--card);
 }
 
 .rate-market-hint-row {

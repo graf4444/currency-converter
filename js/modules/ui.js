@@ -97,6 +97,15 @@ function applyLocalization() {
     const lblBase = document.getElementById('ui-lbl-base-curr');
     if (lblBase) lblBase.textContent = state.lang === 'ru' ? 'Валюта' : 'Currency';
 
+    const lblTarget = document.getElementById('ui-lbl-target-curr');
+    if (lblTarget) lblTarget.textContent = state.lang === 'ru' ? 'К какой валюте' : 'Target Currency';
+
+    const baseSearch = document.getElementById('base-picker-search');
+    if (baseSearch) baseSearch.placeholder = state.lang === 'ru' ? 'Поиск по коду или названию...' : 'Search code or name...';
+
+    const targetSearch = document.getElementById('target-picker-search');
+    if (targetSearch) targetSearch.placeholder = state.lang === 'ru' ? 'Поиск по коду или названию...' : 'Search code or name...';
+
     const lblRate = document.getElementById('ui-lbl-rate-calc');
     if (lblRate) lblRate.textContent = state.lang === 'ru' ? 'Курс покупки' : 'Purchase Rate';
 

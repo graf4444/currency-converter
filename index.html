@@ -243,10 +243,23 @@
 
         <div class="custom-modal-scrollable">
             <div class="form-group">
-                <label for="custom-base-select" class="form-label" id="ui-lbl-base-curr">Валюта</label>
-                <div class="select-wrapper">
-                    <select id="custom-base-select" class="custom-select"></select>
+                <label class="form-label" id="ui-lbl-base-curr">Валюта</label>
+                <div class="custom-picker-container" id="picker-base-container">
+                    <button type="button" class="custom-picker-btn" id="custom-base-btn" aria-haspopup="listbox" aria-expanded="false">
+                        <span class="picker-flag" id="base-picker-flag">🇺🇸</span>
+                        <span class="picker-code" id="base-picker-code">USD</span>
+                        <span class="picker-sep">—</span>
+                        <span class="picker-name" id="base-picker-name">Доллар США</span>
+                        <span class="picker-arrow">▾</span>
+                    </button>
+                    <div class="custom-picker-dropdown" id="base-picker-dropdown" hidden>
+                        <div class="picker-search-wrap">
+                            <input type="text" class="picker-search-input" id="base-picker-search" placeholder="Поиск по коду или названию..." autocomplete="off">
+                        </div>
+                        <div class="picker-list" id="base-picker-list" role="listbox"></div>
+                    </div>
                 </div>
+                <select id="custom-base-select" style="display:none;"></select>
             </div>
 
             <!-- Optional: shows only when user chooses "+ Своя валюта" -->
@@ -262,18 +275,40 @@
             </div>
 
             <div class="form-group">
+                <label class="form-label" id="ui-lbl-target-curr">К какой валюте</label>
+                <div class="custom-picker-container" id="picker-target-container">
+                    <button type="button" class="custom-picker-btn" id="custom-target-btn" aria-haspopup="listbox" aria-expanded="false">
+                        <span class="picker-flag" id="target-picker-flag">🇷🇺</span>
+                        <span class="picker-code" id="target-picker-code">RUB</span>
+                        <span class="picker-sep">—</span>
+                        <span class="picker-name" id="target-picker-name">Российский рубль</span>
+                        <span class="picker-arrow">▾</span>
+                    </button>
+                    <div class="custom-picker-dropdown" id="target-picker-dropdown" hidden>
+                        <div class="picker-search-wrap">
+                            <input type="text" class="picker-search-input" id="target-picker-search" placeholder="Поиск по коду или названию..." autocomplete="off">
+                        </div>
+                        <div class="picker-list" id="target-picker-list" role="listbox"></div>
+                    </div>
+                </div>
+                <select id="custom-target-select" style="display:none;"></select>
+            </div>
+
+            <div class="form-group">
                 <label class="form-label" id="ui-lbl-rate-calc">Курс покупки</label>
                 <div class="rate-equation-box">
-                    <div class="rate-eq-left">
+                    <div class="rate-eq-left" id="rate-eq-left-badge" title="Выбрать базовую валюту">
                         <span class="rate-eq-qty">1</span>
+                        <span class="rate-eq-flag" id="rate-base-flag">🇺🇸</span>
                         <span class="rate-eq-code" id="rate-base-code-badge">USD</span>
                         <span class="rate-eq-equals">=</span>
                     </div>
                     <div class="rate-eq-input-wrap">
                         <input type="text" inputmode="decimal" class="rate-input" id="custom-rate-val" placeholder="0.00" autocomplete="off">
                     </div>
-                    <div class="rate-eq-target-wrap">
-                        <select id="custom-target-select" class="custom-select target-select"></select>
+                    <div class="rate-eq-right" id="rate-eq-right-badge" title="Выбрать целевую валюту">
+                        <span class="rate-eq-flag" id="rate-target-flag">🇷🇺</span>
+                        <span class="rate-eq-code" id="rate-target-code-badge">RUB</span>
                     </div>
                 </div>
                 <div class="rate-market-hint-row" id="rate-market-hint-row">
