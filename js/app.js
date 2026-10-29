@@ -122,6 +122,7 @@ setupManageListEvents();
 setupDragAndDropHandlers();
 setupNavigationHistory();
 setupPWAInstall();
+if (typeof initClipboardModule === 'function') initClipboardModule();
 
 // Instant initial render from cache
 renderMain();

@@ -944,3 +944,106 @@ footer {
     0%, 100% { transform: scale(0.85); opacity: 0.5; }
     50% { transform: scale(1.2); opacity: 1; }
 }
+
+/* ============================================================
+   SMART CLIPBOARD PASTE BANNER
+   ============================================================ */
+.smart-paste-banner {
+    position: fixed;
+    top: calc(env(safe-area-inset-top, 0px) + 12px);
+    left: 50%;
+    transform: translate(-50%, -130%);
+    z-index: 10000;
+    width: calc(100% - 24px);
+    max-width: 440px;
+    display: flex;
+    justify-content: center;
+    transition: transform 0.36s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.smart-paste-banner.visible {
+    transform: translate(-50%, 0);
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.smart-paste-pill {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(36, 36, 38, 0.94);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), 0 2px 8px rgba(0, 0, 0, 0.25);
+    border-radius: 999px;
+    padding: 8px 10px 8px 14px;
+}
+
+[data-theme="light"] .smart-paste-pill {
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.smart-paste-flag {
+    font-size: 1.35rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.smart-paste-text {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.smart-paste-btn.apply {
+    background: var(--accent, #0071e3);
+    color: #ffffff;
+    border: none;
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: transform 0.15s ease, filter 0.15s ease;
+    flex-shrink: 0;
+}
+
+.smart-paste-btn.apply:active {
+    transform: scale(0.96);
+    filter: brightness(0.9);
+}
+
+.smart-paste-btn.dismiss {
+    background: transparent;
+    border: none;
+    color: var(--text-muted, #86868b);
+    font-size: 1.1rem;
+    line-height: 1;
+    padding: 6px 8px;
+    cursor: pointer;
+    border-radius: 50%;
+    opacity: 0.7;
+    transition: opacity 0.15s ease, transform 0.15s ease;
+    flex-shrink: 0;
+}
+
+.smart-paste-btn.dismiss:hover {
+    opacity: 1;
+}
+
+.smart-paste-btn.dismiss:active {
+    transform: scale(0.9);
+}
