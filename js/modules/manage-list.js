@@ -56,10 +56,20 @@ function toggleFavorite(code, shouldAdd) {
 
 function matchesQuery(code, dbItem, query) {
     if (!query) return true;
-    if (code.toLowerCase().includes(query)) return true;
+    const q = query.toLowerCase();
+    if (code.toLowerCase().includes(q)) return true;
+    if (typeof state !== 'undefined' && state.customCurrencies && state.customCurrencies[code]) {
+        const c = state.customCurrencies[code];
+        if (c.code && c.code.toLowerCase().includes(q)) return true;
+        if (c.baseCode && c.baseCode.toLowerCase().includes(q)) return true;
+        if (c.name && c.name.toLowerCase().includes(q)) return true;
+        if (c.note && c.note.toLowerCase().includes(q)) return true;
+        if (c.rateValue && String(c.rateValue).includes(q)) return true;
+        if (c.rateCurrency && c.rateCurrency.toLowerCase().includes(q)) return true;
+    }
     if (dbItem && dbItem.n) {
         for (const lang in dbItem.n) {
-            if (dbItem.n[lang].toLowerCase().includes(query)) return true;
+            if (dbItem.n[lang].toLowerCase().includes(q)) return true;
         }
     }
     return false;
@@ -81,28 +91,73 @@ function filterCurrencies() {
     state.favorites = [...new Set(state.favorites.filter(Boolean))];
 
     state.favorites.forEach(code => {
-        const dbItem = currencyDb[code];
-        if (!dbItem) return;
-        const nameLocal = getCurrencyName(code);
+        const isCustom = Boolean(state.customCurrencies && state.customCurrencies[code]);
+        const customItem = isCustom ? state.customCurrencies[code] : null;
+
+        const dbItem = isCustom 
+            ? { f: customItem.flag || '🏷️' } 
+            : (currencyDb[code] || { f: "🏳️" });
+
         if (!matchesQuery(code, dbItem, query)) return;
 
         const item = document.createElement('div');
-        item.className = 'search-item';
+        item.className = `search-item ${isCustom ? 'custom-search-item' : ''}`;
         item.dataset.code = code;
-        item.draggable = true; 
-        item.innerHTML = `
-            <div class="search-item-left">
-                <span class="drag-handle">☰</span>
-                <div class="currency-meta" style="flex-grow:1;">
-                    <span class="flag">${dbItem.f}</span>
-                    <div class="code-name">
-                        <span class="c-code">${code}</span>
-                        <span class="c-name">${nameLocal}</span>
+        item.draggable = true;
+
+        if (isCustom) {
+            const displayCode = customItem.baseCode || customItem.code || 'CUSTOM';
+            const nameLocal = getCurrencyName(code);
+            const targetSymbol = typeof getCurrencySymbol === 'function' 
+                ? getCurrencySymbol(customItem.rateCurrency || 'USD') 
+                : (customItem.rateCurrency || 'USD');
+            const rateText = customItem.rateDirection === 'reverse'
+                ? `1 ${targetSymbol} = ${customItem.rateValue} ${displayCode}`
+                : `${customItem.rateValue} ${targetSymbol}`;
+            const noteText = customItem.note ? ` • ${customItem.note}` : '';
+
+            item.innerHTML = `
+                <div class="search-item-left">
+                    <span class="drag-handle">☰</span>
+                    <div class="currency-meta" style="flex-grow:1;">
+                        <span class="flag">${customItem.flag || '🏷️'}</span>
+                        <div class="code-name">
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <span class="c-code">${displayCode}</span>
+                                <span class="custom-list-pill">${rateText}</span>
+                            </div>
+                            <span class="c-name">${nameLocal}${escapeHTML(noteText)}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <span class="action-icon" style="color:#ff453a; user-select:none;">−</span>
-        `;
+                <div class="search-item-actions">
+                    <button type="button" class="search-item-btn edit-custom-btn" title="${state.lang === 'ru' ? 'Редактировать курс' : 'Edit rate'}">✎</button>
+                    <span class="action-icon" style="color:#ff453a; user-select:none;">−</span>
+                </div>
+            `;
+            item.querySelector('.edit-custom-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (typeof openCustomRateModal === 'function') {
+                    openCustomRateModal({ editId: code });
+                }
+            });
+        } else {
+            const nameLocal = getCurrencyName(code);
+            item.innerHTML = `
+                <div class="search-item-left">
+                    <span class="drag-handle">☰</span>
+                    <div class="currency-meta" style="flex-grow:1;">
+                        <span class="flag">${dbItem.f}</span>
+                        <div class="code-name">
+                            <span class="c-code">${code}</span>
+                            <span class="c-name">${nameLocal}</span>
+                        </div>
+                    </div>
+                </div>
+                <span class="action-icon" style="color:#ff453a; user-select:none;">−</span>
+            `;
+        }
+
         item.querySelector('.action-icon').addEventListener('click', (e) => {
             e.stopPropagation();
             toggleFavorite(code, false);
@@ -110,6 +165,59 @@ function filterCurrencies() {
         addedFragment.appendChild(item);
     });
 
+    // Custom currencies that are not currently in favorites
+    if (state.customCurrencies) {
+        Object.keys(state.customCurrencies).forEach(id => {
+            if (state.favorites.includes(id)) return;
+            const customItem = state.customCurrencies[id];
+            if (!customItem) return;
+
+            const dbItem = { f: customItem.flag || '🏷️' };
+            if (!matchesQuery(id, dbItem, query)) return;
+
+            const displayCode = customItem.baseCode || customItem.code || 'CUSTOM';
+            const nameLocal = getCurrencyName(id);
+            const targetSymbol = typeof getCurrencySymbol === 'function' 
+                ? getCurrencySymbol(customItem.rateCurrency || 'USD') 
+                : (customItem.rateCurrency || 'USD');
+            const rateText = customItem.rateDirection === 'reverse'
+                ? `1 ${targetSymbol} = ${customItem.rateValue} ${displayCode}`
+                : `${customItem.rateValue} ${targetSymbol}`;
+            const noteText = customItem.note ? ` • ${customItem.note}` : '';
+
+            const item = document.createElement('div');
+            item.className = 'search-item clickable custom-search-item';
+            item.innerHTML = `
+                <div class="currency-meta">
+                    <span class="flag">${customItem.flag || '🏷️'}</span>
+                    <div class="code-name">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span class="c-code">${displayCode}</span>
+                            <span class="custom-list-pill">${rateText}</span>
+                        </div>
+                        <span class="c-name">${nameLocal}${escapeHTML(noteText)}</span>
+                    </div>
+                </div>
+                <div class="search-item-actions">
+                    <button type="button" class="search-item-btn edit-custom-btn" title="${state.lang === 'ru' ? 'Редактировать курс' : 'Edit rate'}">✎</button>
+                    <span class="action-icon" style="color:var(--accent);">+</span>
+                </div>
+            `;
+            item.querySelector('.edit-custom-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (typeof openCustomRateModal === 'function') {
+                    openCustomRateModal({ editId: id });
+                }
+            });
+            item.addEventListener('click', (e) => {
+                if (e.target.closest('.edit-custom-btn')) return;
+                toggleFavorite(id, true);
+            });
+            availableFragment.appendChild(item);
+        });
+    }
+
+    // Standard currencies from currencyDb
     Object.keys(currencyDb).forEach(code => {
         if (state.favorites.includes(code)) return; 
         const dbItem = currencyDb[code];
@@ -244,4 +352,14 @@ function setupManageListEvents() {
 
     const searchBar = document.getElementById('search-bar');
     if (searchBar) searchBar.addEventListener('input', filterCurrencies);
+
+    const customRateBtn = document.getElementById('btn-open-custom-rate');
+    if (customRateBtn) {
+        customRateBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (typeof openCustomRateModal === 'function') {
+                openCustomRateModal();
+            }
+        });
+    }
 }

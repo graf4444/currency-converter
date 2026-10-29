@@ -141,7 +141,7 @@
                 <div class="spinner" id="loader" aria-hidden="true"></div>
             </div>
             <div id="last-update"></div>
-            <div id="app-version" class="app-version">v1.21.0 (2026-10-29 19:22)</div>
+            <div id="app-version" class="app-version">v1.21.1 (2026-10-29 22:15)</div>
         </div>
 
         <div class="footer-links">
@@ -176,6 +176,10 @@
         <input type="text" class="search-input" id="search-bar" placeholder="Search code or name..." aria-label="Search currency by code or name">
 
         <div class="search-results">
+            <button type="button" class="btn-add-custom-currency" id="btn-open-custom-rate">
+                <span class="btn-add-custom-icon">🏷️</span>
+                <span id="ui-btn-custom-title">Зафиксировать свой курс</span>
+            </button>
             <div id="added-section">
                 <div class="section-title" id="ui-section-added">Your Currencies</div>
                 <div class="section-block" id="added-container"></div>
@@ -227,6 +231,74 @@
         </div>
 
         <button class="install-confirm-btn" id="ui-privacy-action-btn">Понятно</button>
+    </div>
+</div>
+
+<div class="modal" id="custom-rate-modal" role="dialog" aria-modal="true" aria-labelledby="ui-custom-modal-title" aria-hidden="true">
+    <div class="modal-content custom-rate-modal-content">
+        <div class="modal-header">
+            <h3 id="ui-custom-modal-title">Фиксация курса</h3>
+            <button class="close-modal" id="ui-custom-close-btn" aria-label="Закрыть">✕</button>
+        </div>
+
+        <div class="custom-modal-scrollable">
+            <div class="form-group">
+                <label for="custom-base-select" class="form-label" id="ui-lbl-base-curr">Валюта</label>
+                <div class="select-wrapper">
+                    <select id="custom-base-select" class="custom-select"></select>
+                </div>
+            </div>
+
+            <!-- Optional: shows only when user chooses "+ Своя валюта" -->
+            <div id="custom-currency-extra-fields" class="form-row-2" style="display:none;">
+                <div class="form-group">
+                    <label for="new-curr-code" class="form-label" id="ui-lbl-new-code">Код</label>
+                    <input type="text" class="custom-text-input uppercase" id="new-curr-code" placeholder="PTS" maxlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="new-curr-name" class="form-label" id="ui-lbl-new-name">Название</label>
+                    <input type="text" class="custom-text-input" id="new-curr-name" placeholder="Бонусные баллы" maxlength="30">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" id="ui-lbl-rate-calc">Курс покупки</label>
+                <div class="rate-equation-box">
+                    <div class="rate-eq-left">
+                        <span class="rate-eq-qty">1</span>
+                        <span class="rate-eq-code" id="rate-base-code-badge">USD</span>
+                        <span class="rate-eq-equals">=</span>
+                    </div>
+                    <div class="rate-eq-input-wrap">
+                        <input type="text" inputmode="decimal" class="rate-input" id="custom-rate-val" placeholder="0.00" autocomplete="off">
+                    </div>
+                    <div class="rate-eq-target-wrap">
+                        <select id="custom-target-select" class="custom-select target-select"></select>
+                    </div>
+                </div>
+                <div class="rate-market-hint-row" id="rate-market-hint-row">
+                    <span id="custom-market-hint-text">Биржевой: 95.20 ₽</span>
+                    <button type="button" class="btn-use-market" id="btn-use-market-rate">Подставить</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="custom-note-input" class="form-label" id="ui-lbl-note">Примечание</label>
+                <input type="text" class="custom-text-input" id="custom-note-input" placeholder="Например: Наличные для отпуска" maxlength="50">
+            </div>
+
+            <div class="custom-footer-note">
+                <span id="ui-notice-local-desc">🔒 Сохраняется только на этом устройстве</span>
+            </div>
+        </div>
+
+        <div class="custom-modal-actions">
+            <button type="button" class="btn-delete-custom" id="btn-delete-custom" style="display:none;">Удалить</button>
+            <div class="custom-modal-actions-right">
+                <button type="button" class="btn-cancel-custom" id="btn-cancel-custom">Отмена</button>
+                <button type="button" class="btn-save-custom" id="btn-save-custom">Сохранить</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -317,6 +389,7 @@
 <script src="js/modules/calculator.js" defer></script>
 <script src="js/modules/rates.js" defer></script>
 <script src="js/modules/converter.js" defer></script>
+<script src="js/modules/custom-rates.js" defer></script>
 <script src="js/modules/keypad.js" defer></script>
 <script src="js/modules/chart.js" defer></script>
 <script src="js/modules/manage-list.js" defer></script>

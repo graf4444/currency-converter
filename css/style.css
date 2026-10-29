@@ -1241,3 +1241,353 @@ footer {
 .privacy-card-desc strong {
     color: var(--text);
 }
+
+/* ============================================================
+   CUSTOM / PURCHASED RATE STYLES (LIGHTWEIGHT)
+   ============================================================ */
+
+.custom-rate-pill {
+    display: inline-flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.05);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 2px 7px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+}
+
+.custom-rate-pill:hover {
+    background: rgba(0, 113, 227, 0.1);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.custom-rate-pill:active {
+    transform: scale(0.95);
+}
+
+[data-theme="dark"] .custom-rate-pill {
+    background: rgba(255, 255, 255, 0.07);
+    border-color: var(--border);
+    color: var(--text-muted);
+}
+
+[data-theme="dark"] .custom-rate-pill:hover {
+    background: rgba(41, 151, 255, 0.15);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.custom-note-text {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+/* Manage List top action button */
+.btn-add-custom-currency {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    background: var(--bg);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 10px 14px;
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 16px;
+    transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+}
+
+.btn-add-custom-currency:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0, 113, 227, 0.04);
+}
+
+[data-theme="dark"] .btn-add-custom-currency:hover {
+    background: rgba(41, 151, 255, 0.06);
+}
+
+.btn-add-custom-icon {
+    font-size: 1rem;
+}
+
+/* Search Items buttons & custom pills */
+.search-item-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.search-item-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.search-item-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.search-item-btn:active {
+    transform: scale(0.92);
+}
+
+.custom-list-pill {
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--border);
+    color: var(--text-muted);
+}
+
+/* Custom Rate Modal */
+.custom-rate-modal-content {
+    max-width: 440px;
+    padding: 20px 20px 22px 20px;
+}
+
+.custom-modal-scrollable {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.form-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.custom-select, .custom-text-input {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 0.95rem;
+    color: var(--text);
+    width: 100%;
+    transition: border-color 0.2s ease;
+}
+
+.custom-select:focus, .custom-text-input:focus {
+    border-color: var(--accent);
+    outline: none;
+}
+
+.custom-text-input.uppercase {
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1.6fr;
+    gap: 10px;
+}
+
+/* Rate equation box */
+.rate-equation-box {
+    display: flex;
+    align-items: center;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 6px 10px;
+    gap: 8px;
+}
+
+.rate-eq-left {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+.rate-eq-qty {
+    color: var(--text-muted);
+}
+
+.rate-eq-code {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
+.rate-eq-equals {
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    user-select: none;
+}
+
+.rate-eq-input-wrap {
+    flex: 1;
+    min-width: 0;
+}
+
+.rate-input {
+    background: transparent;
+    border: none;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text);
+    width: 100%;
+    text-align: right;
+    padding: 4px 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.rate-input:focus {
+    outline: none;
+}
+
+.rate-eq-target-wrap {
+    width: auto;
+    max-width: 110px;
+    flex-shrink: 0;
+}
+
+.rate-eq-target-wrap .custom-select {
+    padding: 5px 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    border-radius: 8px;
+    background: var(--card);
+}
+
+.rate-market-hint-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    padding: 2px 2px 0 2px;
+}
+
+.btn-use-market {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    padding: 0;
+}
+
+.btn-use-market:hover {
+    opacity: 0.8;
+}
+
+.custom-footer-note {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+/* Modal action buttons */
+.custom-modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    gap: 10px;
+}
+
+.custom-modal-actions-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.btn-save-custom {
+    background: var(--accent);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 0.92rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s ease, transform 0.1s ease;
+}
+
+.btn-save-custom:hover {
+    opacity: 0.9;
+}
+
+.btn-save-custom:active {
+    transform: scale(0.97);
+}
+
+.btn-cancel-custom {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-cancel-custom:hover {
+    background: var(--border);
+}
+
+.btn-delete-custom {
+    background: none;
+    color: #ff453a;
+    border: 1px solid rgba(255, 69, 58, 0.3);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.88rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-delete-custom:hover {
+    background: rgba(255, 69, 58, 0.1);
+}
+
+

@@ -163,6 +163,7 @@ async function updateRates(forceUpdate = false) {
 
         // ONLY update timestamp & rates when actual network fetch succeeds
         state.rates = newRates;
+        recomputeCustomRates();
         state.lastUpdatedTimestamp = Date.now();
         state.lastUpdated = new Date().toLocaleString();
         
@@ -170,6 +171,7 @@ async function updateRates(forceUpdate = false) {
         updateLastUpdateUI();
     } catch (e) {
         console.error("Exchange rates update failed, preserving previous cache:", e);
+        recomputeCustomRates();
         // Previous cache & timestamp remain intact
     } finally {
         isUpdatingRates = false;
@@ -186,4 +188,32 @@ async function updateRates(forceUpdate = false) {
             recalculate(currentInputCode, currentInputValue);
         }
     }
+}
+
+/**
+ * Dynamically computes rates for all custom currencies in state.customCurrencies
+ * relative to the latest market exchange rates.
+ */
+function recomputeCustomRates() {
+    if (!state || !state.customCurrencies || typeof state.customCurrencies !== 'object') {
+        return;
+    }
+    if (!state.rates) state.rates = {};
+    if (!state.rates['USD']) state.rates['USD'] = 1;
+
+    Object.values(state.customCurrencies).forEach(custom => {
+        if (!custom || !custom.id) return;
+        const targetCurrency = custom.rateCurrency || 'USD';
+        const targetRate = state.rates[targetCurrency] || 1;
+        const val = parseFloat(custom.rateValue);
+        if (isNaN(val) || val <= 0) return;
+
+        if (custom.rateDirection === 'reverse') {
+            // 1 targetCurrency = val customUnits
+            state.rates[custom.id] = targetRate * val;
+        } else {
+            // 1 customUnit = val targetCurrency (direct)
+            state.rates[custom.id] = targetRate / val;
+        }
+    });
 }

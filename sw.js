@@ -1,5 +1,5 @@
 // Bump CACHE_NAME on every release that changes any file in ASSETS
-const CACHE_NAME = 'currency-converter-v71';
+const CACHE_NAME = 'currency-converter-v76';
 const ASSETS = [
   './',
   './index.html',
@@ -11,6 +11,7 @@ const ASSETS = [
   './js/modules/calculator.js',
   './js/modules/rates.js',
   './js/modules/converter.js',
+  './js/modules/custom-rates.js',
   './js/modules/keypad.js',
   './js/modules/chart.js',
   './js/modules/manage-list.js',

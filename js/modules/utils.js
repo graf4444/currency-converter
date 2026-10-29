@@ -160,3 +160,41 @@ function isPageReload() {
     } catch (_) {}
     return false;
 }
+
+/**
+ * Escapes unsafe HTML characters to prevent XSS.
+ */
+function escapeHTML(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+/**
+ * Returns commonly recognized currency symbol for compact display.
+ */
+function getCurrencySymbol(code) {
+    const symbols = {
+        USD: '$', EUR: '€', RUB: '₽', GBP: '£', JPY: '¥', CNY: '¥',
+        KZT: '₸', UAH: '₴', BYN: 'Br', GEL: '₾', AMD: '֏', TRY: '₺',
+        ILS: '₪', INR: '₹', BRL: 'R$', KRW: '₩', CHF: 'Fr', UZS: 'soʻm'
+    };
+    return symbols[code] || code;
+}
+
+/**
+ * Returns flag emoji or symbol for a given currency code.
+ */
+function getCurrencyFlag(code) {
+    if (typeof state !== 'undefined' && state.customCurrencies && state.customCurrencies[code]) {
+        return state.customCurrencies[code].flag || '🏷️';
+    }
+    if (typeof currencyDb !== 'undefined' && currencyDb[code] && currencyDb[code].f) {
+        return currencyDb[code].f;
+    }
+    return '🏳️';
+}

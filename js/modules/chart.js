@@ -30,15 +30,21 @@ async function openChartModal(code) {
     const modal = document.getElementById('chart-modal');
     if (!modal) return;
     
-    const dbItem = (typeof currencyDb !== 'undefined' && currencyDb[code]) ? currencyDb[code] : { f: "🏳️" };
+    let displayCode = code;
+    if (typeof state !== 'undefined' && state.customCurrencies && state.customCurrencies[code]) {
+        const item = state.customCurrencies[code];
+        displayCode = item.baseCode || item.code || code;
+    }
+
+    const flag = typeof getCurrencyFlag === 'function' ? getCurrencyFlag(code) : ((typeof currencyDb !== 'undefined' && currencyDb[code]) ? currencyDb[code].f : "🏳️");
     const nameLocal = getCurrencyName(code);
     
     const flagEl = document.getElementById('chart-currency-flag');
     const titleEl = document.getElementById('chart-currency-title');
     const subtitleEl = document.getElementById('chart-currency-subtitle');
     
-    if (flagEl) flagEl.textContent = dbItem.f;
-    if (titleEl) titleEl.textContent = `${code} / USD`;
+    if (flagEl) flagEl.textContent = flag;
+    if (titleEl) titleEl.textContent = `${displayCode} / USD`;
     if (subtitleEl) subtitleEl.textContent = nameLocal;
     
     const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : i18n['en'];

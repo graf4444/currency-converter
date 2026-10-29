@@ -11,7 +11,8 @@ let state = {
     lastUpdated: '',
     lastUpdatedTimestamp: 0,
     lastInputCode: null,
-    lastInputValue: ''
+    lastInputValue: '',
+    customCurrencies: {}
 };
 
 let isQuickMode = false;
@@ -54,6 +55,7 @@ function initSystemSettings() {
         if (state.theme !== 'dark' && state.theme !== 'light') state.theme = 'dark';
         if (!Array.isArray(state.favorites)) state.favorites = ['USD', 'EUR', 'RUB', 'UZS', 'BTC'];
         if (!state.rates || typeof state.rates !== 'object') state.rates = {};
+        if (!state.customCurrencies || typeof state.customCurrencies !== 'object') state.customCurrencies = {};
         if (typeof state.lastUpdatedTimestamp !== 'number') state.lastUpdatedTimestamp = 0;
         if (state.lastInputCode && state.favorites.includes(state.lastInputCode) && typeof state.lastInputValue === 'string' && state.lastInputValue.trim() !== '') {
             currentInputCode = state.lastInputCode;
@@ -100,7 +102,8 @@ function saveState() {
         lastUpdated: state.lastUpdated,
         lastUpdatedTimestamp: state.lastUpdatedTimestamp,
         lastInputCode: isTemporary ? savedLastInputCode : currentInputCode,
-        lastInputValue: isTemporary ? savedLastInputValue : currentInputValue
+        lastInputValue: isTemporary ? savedLastInputValue : currentInputValue,
+        customCurrencies: state.customCurrencies || {}
     };
 
     localStorage.setItem('conv_max_state', JSON.stringify(stateToSave)); 

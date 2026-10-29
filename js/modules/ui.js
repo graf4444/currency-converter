@@ -4,6 +4,14 @@
 // ============================================================
 
 function getCurrencyName(code) {
+    if (typeof state !== 'undefined' && state.customCurrencies && state.customCurrencies[code]) {
+        const item = state.customCurrencies[code];
+        if (item.baseCode && typeof currencyDb !== 'undefined' && currencyDb[item.baseCode]) {
+            const baseItem = currencyDb[item.baseCode];
+            return (baseItem.n && (baseItem.n[state.lang] || baseItem.n['en'])) || item.baseCode;
+        }
+        return item.name || item.code || code;
+    }
     if (typeof currencyDb === 'undefined' || !currencyDb[code]) return code;
     const item = currencyDb[code];
     return item.n[state.lang] || item.n['en'] || code;
@@ -80,6 +88,42 @@ function applyLocalization() {
         renderPrivacyContent();
     }
 
+    const btnCustomTitle = document.getElementById('ui-btn-custom-title');
+    if (btnCustomTitle) btnCustomTitle.textContent = state.lang === 'ru' ? 'Зафиксировать свой курс' : 'Lock custom rate';
+
+    const modalCustomTitle = document.getElementById('ui-custom-modal-title');
+    if (modalCustomTitle && !currentEditCustomId) modalCustomTitle.textContent = state.lang === 'ru' ? 'Фиксация курса' : 'Lock Exchange Rate';
+
+    const lblBase = document.getElementById('ui-lbl-base-curr');
+    if (lblBase) lblBase.textContent = state.lang === 'ru' ? 'Валюта' : 'Currency';
+
+    const lblRate = document.getElementById('ui-lbl-rate-calc');
+    if (lblRate) lblRate.textContent = state.lang === 'ru' ? 'Курс покупки' : 'Purchase Rate';
+
+    const lblNote = document.getElementById('ui-lbl-note');
+    if (lblNote) lblNote.textContent = state.lang === 'ru' ? 'Примечание' : 'Note';
+
+    const inputNote = document.getElementById('custom-note-input');
+    if (inputNote) inputNote.placeholder = state.lang === 'ru' ? 'Например: Наличные для отпуска' : 'e.g., Vacation cash';
+
+    const lblNewCode = document.getElementById('ui-lbl-new-code');
+    if (lblNewCode) lblNewCode.textContent = state.lang === 'ru' ? 'Код' : 'Code';
+
+    const lblNewName = document.getElementById('ui-lbl-new-name');
+    if (lblNewName) lblNewName.textContent = state.lang === 'ru' ? 'Название' : 'Name';
+
+    const noticeLocalDesc = document.getElementById('ui-notice-local-desc');
+    if (noticeLocalDesc) noticeLocalDesc.textContent = state.lang === 'ru' ? '🔒 Сохраняется только на этом устройстве' : '🔒 Saved only on this device';
+
+    const btnSaveCustom = document.getElementById('btn-save-custom');
+    if (btnSaveCustom) btnSaveCustom.textContent = state.lang === 'ru' ? 'Сохранить' : 'Save';
+
+    const btnDeleteCustom = document.getElementById('btn-delete-custom');
+    if (btnDeleteCustom) btnDeleteCustom.textContent = state.lang === 'ru' ? 'Удалить' : 'Delete';
+
+    const btnCancelCustom = document.getElementById('btn-cancel-custom');
+    if (btnCancelCustom) btnCancelCustom.textContent = state.lang === 'ru' ? 'Отмена' : 'Cancel';
+
     renderAppVersion();
     updateLastUpdateUI();
     if (typeof updateOnlineStatusUI === 'function') {
@@ -132,24 +176,61 @@ function renderMain() {
     const fragment = document.createDocumentFragment();
 
     state.favorites.forEach(code => {
-        const dbItem = (typeof currencyDb !== 'undefined' && currencyDb[code]) ? currencyDb[code] : { f: "🏳️" };
-        const nameLocal = getCurrencyName(code);
+        const isCustom = Boolean(state.customCurrencies && state.customCurrencies[code]);
+        const customItem = isCustom ? state.customCurrencies[code] : null;
+
+        let dbItem;
+        let displayCode;
+        let nameLocal;
+        let subtitleHTML;
+        let customPillHTML = '';
+
+        if (isCustom) {
+            displayCode = customItem.baseCode || customItem.code || 'CUSTOM';
+            dbItem = { f: customItem.flag || '🏷️' };
+            nameLocal = getCurrencyName(code);
+
+            const targetSymbol = typeof getCurrencySymbol === 'function' 
+                ? getCurrencySymbol(customItem.rateCurrency || 'USD') 
+                : (customItem.rateCurrency || 'USD');
+            const formattedRate = typeof formatNumberString === 'function' 
+                ? formatNumberString(String(customItem.rateValue)) 
+                : String(customItem.rateValue);
+            
+            const ratePillText = `${formattedRate} ${targetSymbol}`;
+
+            const noteSnippet = customItem.note 
+                ? ` • <span class="custom-note-text">${escapeHTML(customItem.note)}</span>` 
+                : '';
+
+            subtitleHTML = `<span class="c-name">${escapeHTML(nameLocal)}${noteSnippet}</span>`;
+            customPillHTML = `
+                <button type="button" class="custom-rate-pill" data-edit-id="${code}" title="${state.lang === 'ru' ? 'Нажмите для изменения курса' : 'Tap to edit rate'}" aria-label="Edit custom rate">
+                    <span class="custom-rate-pill-val">${ratePillText}</span>
+                </button>
+            `;
+        } else {
+            displayCode = code;
+            dbItem = (typeof currencyDb !== 'undefined' && currencyDb[code]) ? currencyDb[code] : { f: "🏳️" };
+            nameLocal = getCurrencyName(code);
+            subtitleHTML = `<span class="c-name">${escapeHTML(nameLocal)}</span>`;
+        }
+
         const card = document.createElement('div');
         card.className = 'currency-card';
         
         const hasRate = !!state.rates[code];
         const placeholderText = hasRate ? '0' : (state.lang === 'ru' ? 'Нет курса' : 'No rate');
-        const trendBadgeHTML = '';
 
         card.innerHTML = `
             <div class="currency-meta">
                 <span class="flag">${dbItem.f}</span>
                 <div class="code-name">
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <span class="c-code">${code}</span>
-                        ${trendBadgeHTML}
+                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                        <span class="c-code">${displayCode}</span>
+                        ${customPillHTML}
                     </div>
-                    <span class="c-name">${nameLocal}</span>
+                    ${subtitleHTML}
                 </div>
             </div>
             <div class="right-block">
@@ -167,7 +248,19 @@ function renderMain() {
             </div>
         `;
         fragment.appendChild(card);
-        card.querySelector('.clear-btn').addEventListener('click', clearAllInputs);
+
+        const customPill = card.querySelector('.custom-rate-pill');
+        if (customPill) {
+            customPill.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (typeof openCustomRateModal === 'function') {
+                    openCustomRateModal({ editId: code });
+                }
+            });
+        }
+
+        const clearBtn = card.querySelector('.clear-btn');
+        if (clearBtn) clearBtn.addEventListener('click', clearAllInputs);
         const cardShareBtn = card.querySelector('.share-btn');
         if (cardShareBtn) {
             cardShareBtn.addEventListener('click', (e) => {
@@ -178,7 +271,7 @@ function renderMain() {
         }
 
         card.addEventListener('click', (e) => {
-            if (e.target.closest('.clear-btn') || e.target.closest('.share-btn') || e.target.closest('.currency-input')) return;
+            if (e.target.closest('.clear-btn') || e.target.closest('.share-btn') || e.target.closest('.currency-input') || e.target.closest('.custom-rate-pill')) return;
             const input = card.querySelector('.currency-input');
             if (!input || input.disabled) return;
 

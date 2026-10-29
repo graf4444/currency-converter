@@ -48,6 +48,7 @@ window.addEventListener('click', (e) => {
     if (e.target === document.getElementById('chart-modal')) closeChartModal();
     if (e.target === document.getElementById('install-modal')) closeInstallModal();
     if (e.target === document.getElementById('privacy-modal') && typeof closePrivacyModal === 'function') closePrivacyModal();
+    if (e.target === document.getElementById('custom-rate-modal') && typeof closeCustomRateModal === 'function') closeCustomRateModal();
 });
 
 // Escape key and physical keyboard routing
@@ -61,6 +62,8 @@ window.addEventListener('keydown', (e) => {
         if (installModal && installModal.style.display === 'flex') closeInstallModal();
         const privacyModal = document.getElementById('privacy-modal');
         if (privacyModal && privacyModal.style.display === 'flex' && typeof closePrivacyModal === 'function') closePrivacyModal();
+        const customModal = document.getElementById('custom-rate-modal');
+        if (customModal && customModal.style.display === 'flex' && typeof closeCustomRateModal === 'function') closeCustomRateModal();
         if (document.body.classList.contains('has-keypad-open')) closeVirtualKeypad();
         return;
     }
@@ -114,6 +117,7 @@ window.addEventListener('focus', () => {
 // ============================================================
 
 initSystemSettings();
+if (typeof recomputeCustomRates === 'function') recomputeCustomRates();
 applyLocalization();
 applyTheme();
 updatePWAManifest();
@@ -122,6 +126,7 @@ setupKeypadEvents();
 setupShareEvents();
 setupChartEvents();
 setupManageListEvents();
+if (typeof setupCustomRateEvents === 'function') setupCustomRateEvents();
 setupDragAndDropHandlers();
 setupNavigationHistory();
 setupPWAInstall();
