@@ -33,28 +33,28 @@ const shortcutsData = {
             name: "USD → EUR",
             short_name: "USD → EUR",
             description: "Quick convert US Dollar to Euro",
-            url: "index.html?from=USD&to=EUR",
+            url: "?from=USD&to=EUR",
             icon: "shortcut-usd-eur.png"
         },
         {
             name: "Calculator",
             short_name: "Calculator",
             description: "Open currency calculator keypad",
-            url: "index.html?action=calc",
+            url: "?action=calc",
             icon: "shortcut-calc.png"
         },
         {
             name: "Search Currency",
             short_name: "Search",
             description: "Search and add world currencies",
-            url: "index.html?action=search",
+            url: "?action=search",
             icon: "shortcut-search.png"
         },
         {
             name: "EUR → USD",
             short_name: "EUR → USD",
             description: "Quick convert Euro to US Dollar",
-            url: "index.html?from=EUR&to=USD",
+            url: "?from=EUR&to=USD",
             icon: "shortcut-eur-usd.png"
         }
     ],
@@ -63,28 +63,28 @@ const shortcutsData = {
             name: "USD → RUB",
             short_name: "USD → RUB",
             description: "Быстрая конвертация долларов в рубли",
-            url: "index.html?from=USD&to=RUB",
+            url: "?from=USD&to=RUB",
             icon: "shortcut-usd-rub.png"
         },
         {
             name: "USD → EUR",
             short_name: "USD → EUR",
             description: "Быстрая конвертация долларов в евро",
-            url: "index.html?from=USD&to=EUR",
+            url: "?from=USD&to=EUR",
             icon: "shortcut-usd-eur.png"
         },
         {
             name: "Калькулятор",
             short_name: "Калькулятор",
             description: "Открыть встроенный калькулятор",
-            url: "index.html?action=calc",
+            url: "?action=calc",
             icon: "shortcut-calc.png"
         },
         {
             name: "Поиск валюты",
             short_name: "Поиск",
             description: "Найти и добавить новую валюту",
-            url: "index.html?action=search",
+            url: "?action=search",
             icon: "shortcut-search.png"
         }
     ],
@@ -93,28 +93,28 @@ const shortcutsData = {
             name: "USD → EUR",
             short_name: "USD → EUR",
             description: "Conversión rápida de dólares a euros",
-            url: "index.html?from=USD&to=EUR",
+            url: "?from=USD&to=EUR",
             icon: "shortcut-usd-eur.png"
         },
         {
             name: "Calculadora",
             short_name: "Calculadora",
             description: "Abrir calculadora de divisas",
-            url: "index.html?action=calc",
+            url: "?action=calc",
             icon: "shortcut-calc.png"
         },
         {
             name: "Buscar Divisa",
             short_name: "Buscar",
             description: "Buscar y añadir nuevas divisas",
-            url: "index.html?action=search",
+            url: "?action=search",
             icon: "shortcut-search.png"
         },
         {
             name: "EUR → USD",
             short_name: "EUR → USD",
             description: "Conversión rápida de euros a dólares",
-            url: "index.html?from=EUR&to=USD",
+            url: "?from=EUR&to=USD",
             icon: "shortcut-eur-usd.png"
         }
     ],
@@ -123,28 +123,28 @@ const shortcutsData = {
             name: "USD → EUR",
             short_name: "USD → EUR",
             description: "Conversion rapide de dollars en euros",
-            url: "index.html?from=USD&to=EUR",
+            url: "?from=USD&to=EUR",
             icon: "shortcut-usd-eur.png"
         },
         {
             name: "Calculatrice",
             short_name: "Calculatrice",
             description: "Ouvrir la calculatrice de devises",
-            url: "index.html?action=calc",
+            url: "?action=calc",
             icon: "shortcut-calc.png"
         },
         {
             name: "Rechercher Devise",
             short_name: "Rechercher",
             description: "Rechercher et ajouter des devises",
-            url: "index.html?action=search",
+            url: "?action=search",
             icon: "shortcut-search.png"
         },
         {
             name: "EUR → USD",
             short_name: "EUR → USD",
             description: "Conversion rapide d'euros en dollars",
-            url: "index.html?from=EUR&to=USD",
+            url: "?from=EUR&to=USD",
             icon: "shortcut-eur-usd.png"
         }
     ],
@@ -153,28 +153,28 @@ const shortcutsData = {
             name: "EUR → USD",
             short_name: "EUR → USD",
             description: "Schnell Euro in US-Dollar umrechnen",
-            url: "index.html?from=EUR&to=USD",
+            url: "?from=EUR&to=USD",
             icon: "shortcut-eur-usd.png"
         },
         {
             name: "Währungsrechner",
             short_name: "Rechner",
             description: "Währungsrechner-Tastatur öffnen",
-            url: "index.html?action=calc",
+            url: "?action=calc",
             icon: "shortcut-calc.png"
         },
         {
             name: "Währung suchen",
             short_name: "Suchen",
             description: "Währungen suchen und hinzufügen",
-            url: "index.html?action=search",
+            url: "?action=search",
             icon: "shortcut-search.png"
         },
         {
             name: "USD → EUR",
             short_name: "USD → EUR",
             description: "Schnell US-Dollar in Euro umrechnen",
-            url: "index.html?from=USD&to=EUR",
+            url: "?from=USD&to=EUR",
             icon: "shortcut-usd-eur.png"
         }
     ],
@@ -183,28 +183,28 @@ const shortcutsData = {
             name: "EUR → USD",
             short_name: "EUR → USD",
             description: "Conversione rapida da Euro a Dollaro USA",
-            url: "index.html?from=EUR&to=USD",
+            url: "?from=EUR&to=USD",
             icon: "shortcut-eur-usd.png"
         },
         {
             name: "Calcolatrice",
             short_name: "Calcolatrice",
             description: "Apri tastierino calcolatrice",
-            url: "index.html?action=calc",
+            url: "?action=calc",
             icon: "shortcut-calc.png"
         },
         {
             name: "Cerca Valuta",
             short_name: "Cerca",
             description: "Cerca e aggiungi nuove valute",
-            url: "index.html?action=search",
+            url: "?action=search",
             icon: "shortcut-search.png"
         },
         {
             name: "USD → EUR",
             short_name: "USD → EUR",
             description: "Conversione rapida da Dollaro a Euro",
-            url: "index.html?from=USD&to=EUR",
+            url: "?from=USD&to=EUR",
             icon: "shortcut-usd-eur.png"
         }
     ],
@@ -213,28 +213,28 @@ const shortcutsData = {
             name: "USD → EUR",
             short_name: "USD → EUR",
             description: "Conversão rápida de Dólar para Euro",
-            url: "index.html?from=USD&to=EUR",
+            url: "?from=USD&to=EUR",
             icon: "shortcut-usd-eur.png"
         },
         {
             name: "Calculadora",
             short_name: "Calculadora",
             description: "Abrir teclado de calculadora",
-            url: "index.html?action=calc",
+            url: "?action=calc",
             icon: "shortcut-calc.png"
         },
         {
             name: "Buscar Moeda",
             short_name: "Buscar",
             description: "Buscar e adicionar moedas",
-            url: "index.html?action=search",
+            url: "?action=search",
             icon: "shortcut-search.png"
         },
         {
             name: "EUR → USD",
             short_name: "EUR → USD",
             description: "Conversão rápida de Euro para Dólar",
-            url: "index.html?from=EUR&to=USD",
+            url: "?from=EUR&to=USD",
             icon: "shortcut-eur-usd.png"
         }
     ],
@@ -243,28 +243,28 @@ const shortcutsData = {
             name: "USD → EUR",
             short_name: "USD → EUR",
             description: "Doları hızlıca Euroya çevir",
-            url: "index.html?from=USD&to=EUR",
+            url: "?from=USD&to=EUR",
             icon: "shortcut-usd-eur.png"
         },
         {
             name: "Hesap Makinesi",
             short_name: "Hesapla",
             description: "Döviz hesap makinesini aç",
-            url: "index.html?action=calc",
+            url: "?action=calc",
             icon: "shortcut-calc.png"
         },
         {
             name: "Para Birimi Ara",
             short_name: "Ara",
             description: "Para birimi ara ve ekle",
-            url: "index.html?action=search",
+            url: "?action=search",
             icon: "shortcut-search.png"
         },
         {
             name: "EUR → USD",
             short_name: "EUR → USD",
             description: "Euroyu hızlıca Dolara çevir",
-            url: "index.html?from=EUR&to=USD",
+            url: "?from=EUR&to=USD",
             icon: "shortcut-eur-usd.png"
         }
     ],
@@ -273,28 +273,28 @@ const shortcutsData = {
             name: "USD → EUR",
             short_name: "USD → EUR",
             description: "快速将美元兑换为欧元",
-            url: "index.html?from=USD&to=EUR",
+            url: "?from=USD&to=EUR",
             icon: "shortcut-usd-eur.png"
         },
         {
             name: "计算器",
             short_name: "计算器",
             description: "打开实时汇率计算器键盘",
-            url: "index.html?action=calc",
+            url: "?action=calc",
             icon: "shortcut-calc.png"
         },
         {
             name: "搜索货币",
             short_name: "搜索",
             description: "搜索并添加全球货币",
-            url: "index.html?action=search",
+            url: "?action=search",
             icon: "shortcut-search.png"
         },
         {
             name: "EUR → USD",
             short_name: "EUR → USD",
             description: "快速将欧元兑换为美元",
-            url: "index.html?from=EUR&to=USD",
+            url: "?from=EUR&to=USD",
             icon: "shortcut-eur-usd.png"
         }
     ],
@@ -303,28 +303,28 @@ const shortcutsData = {
             name: "USD → EUR",
             short_name: "USD → EUR",
             description: "米ドルを素早くユーロに換算",
-            url: "index.html?from=USD&to=EUR",
+            url: "?from=USD&to=EUR",
             icon: "shortcut-usd-eur.png"
         },
         {
             name: "計算機",
             short_name: "計算機",
             description: "計算機キーパッドを開く",
-            url: "index.html?action=calc",
+            url: "?action=calc",
             icon: "shortcut-calc.png"
         },
         {
             name: "通貨を検索",
             short_name: "検索",
             description: "新しい通貨を検索して追加",
-            url: "index.html?action=search",
+            url: "?action=search",
             icon: "shortcut-search.png"
         },
         {
             name: "EUR → USD",
             short_name: "EUR → USD",
             description: "ユーロを素早く米ドルに換算",
-            url: "index.html?from=EUR&to=USD",
+            url: "?from=EUR&to=USD",
             icon: "shortcut-eur-usd.png"
         }
     ],
@@ -333,28 +333,28 @@ const shortcutsData = {
             name: "USD → EUR",
             short_name: "USD → EUR",
             description: "미국 달러를 유로로 빠른 환산",
-            url: "index.html?from=USD&to=EUR",
+            url: "?from=USD&to=EUR",
             icon: "shortcut-usd-eur.png"
         },
         {
             name: "계산기",
             short_name: "계산기",
             description: "환율 계산기 키패드 열기",
-            url: "index.html?action=calc",
+            url: "?action=calc",
             icon: "shortcut-calc.png"
         },
         {
             name: "통화 검색",
             short_name: "검색",
             description: "새 통화 검색 및 추가",
-            url: "index.html?action=search",
+            url: "?action=search",
             icon: "shortcut-search.png"
         },
         {
             name: "EUR → USD",
             short_name: "EUR → USD",
             description: "유로를 미국 달러로 빠른 환산",
-            url: "index.html?from=EUR&to=USD",
+            url: "?from=EUR&to=USD",
             icon: "shortcut-eur-usd.png"
         }
     ],
@@ -363,28 +363,28 @@ const shortcutsData = {
             name: "USD → EUR",
             short_name: "USD → EUR",
             description: "अमेरिकी डॉलर को तुरंत यूरो में बदलें",
-            url: "index.html?from=USD&to=EUR",
+            url: "?from=USD&to=EUR",
             icon: "shortcut-usd-eur.png"
         },
         {
             name: "कैलकुलेटर",
             short_name: "कैलकुलेटर",
             description: "मुद्रा कैलकुलेटर कीपैड खोलें",
-            url: "index.html?action=calc",
+            url: "?action=calc",
             icon: "shortcut-calc.png"
         },
         {
             name: "मुद्रा खोजें",
             short_name: "खोजें",
             description: "नई मुद्रा खोजें और जोड़ें",
-            url: "index.html?action=search",
+            url: "?action=search",
             icon: "shortcut-search.png"
         },
         {
             name: "EUR → USD",
             short_name: "EUR → USD",
             description: "यूरो को तुरंत अमेरिकी डॉलर में बदलें",
-            url: "index.html?from=EUR&to=USD",
+            url: "?from=EUR&to=USD",
             icon: "shortcut-eur-usd.png"
         }
     ],
@@ -393,28 +393,28 @@ const shortcutsData = {
             name: "USD → EUR",
             short_name: "USD → EUR",
             description: "تحويل سريع من الدولار إلى اليورو",
-            url: "index.html?from=USD&to=EUR",
+            url: "?from=USD&to=EUR",
             icon: "shortcut-usd-eur.png"
         },
         {
             name: "آلة حاسبة",
             short_name: "حاسبة",
             description: "فتح لوحة مفاتيح الحاسبة",
-            url: "index.html?action=calc",
+            url: "?action=calc",
             icon: "shortcut-calc.png"
         },
         {
             name: "بحث عن عملة",
             short_name: "بحث",
             description: "البحث عن عملات وإضافتها",
-            url: "index.html?action=search",
+            url: "?action=search",
             icon: "shortcut-search.png"
         },
         {
             name: "EUR → USD",
             short_name: "EUR → USD",
             description: "تحويل سريع من اليورو إلى الدولار",
-            url: "index.html?from=EUR&to=USD",
+            url: "?from=EUR&to=USD",
             icon: "shortcut-eur-usd.png"
         }
     ]
@@ -446,7 +446,7 @@ function createManifest(lang, isRoot = false) {
         description: data.desc,
         lang: lang,
         dir: lang === 'ar' ? 'rtl' : 'ltr',
-        start_url: `${prefix}index.html`,
+        start_url: prefix,
         scope: prefix,
         display: "standalone",
         orientation: "portrait",

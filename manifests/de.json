@@ -5,7 +5,7 @@
   "description": "Schneller und leichter Währungsrechner PWA",
   "lang": "de",
   "dir": "ltr",
-  "start_url": "../index.html",
+  "start_url": "../",
   "scope": "../",
   "display": "standalone",
   "orientation": "portrait",
@@ -34,7 +34,7 @@
       "name": "EUR → USD",
       "short_name": "EUR → USD",
       "description": "Schnell Euro in US-Dollar umrechnen",
-      "url": "../index.html?from=EUR&to=USD",
+      "url": "../?from=EUR&to=USD",
       "icons": [
         {
           "src": "../icons/shortcut-eur-usd.png",
@@ -47,7 +47,7 @@
       "name": "Währungsrechner",
       "short_name": "Rechner",
       "description": "Währungsrechner-Tastatur öffnen",
-      "url": "../index.html?action=calc",
+      "url": "../?action=calc",
       "icons": [
         {
           "src": "../icons/shortcut-calc.png",
@@ -60,7 +60,7 @@
       "name": "Währung suchen",
       "short_name": "Suchen",
       "description": "Währungen suchen und hinzufügen",
-      "url": "../index.html?action=search",
+      "url": "../?action=search",
       "icons": [
         {
           "src": "../icons/shortcut-search.png",
@@ -73,7 +73,7 @@
       "name": "USD → EUR",
       "short_name": "USD → EUR",
       "description": "Schnell US-Dollar in Euro umrechnen",
-      "url": "../index.html?from=USD&to=EUR",
+      "url": "../?from=USD&to=EUR",
       "icons": [
         {
           "src": "../icons/shortcut-usd-eur.png",

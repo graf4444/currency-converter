@@ -5,7 +5,7 @@
   "description": "त्वरित और सरल मुद्रा परिवर्तक PWA",
   "lang": "hi",
   "dir": "ltr",
-  "start_url": "../index.html",
+  "start_url": "../",
   "scope": "../",
   "display": "standalone",
   "orientation": "portrait",
@@ -34,7 +34,7 @@
       "name": "USD → EUR",
       "short_name": "USD → EUR",
       "description": "अमेरिकी डॉलर को तुरंत यूरो में बदलें",
-      "url": "../index.html?from=USD&to=EUR",
+      "url": "../?from=USD&to=EUR",
       "icons": [
         {
           "src": "../icons/shortcut-usd-eur.png",
@@ -47,7 +47,7 @@
       "name": "कैलकुलेटर",
       "short_name": "कैलकुलेटर",
       "description": "मुद्रा कैलकुलेटर कीपैड खोलें",
-      "url": "../index.html?action=calc",
+      "url": "../?action=calc",
       "icons": [
         {
           "src": "../icons/shortcut-calc.png",
@@ -60,7 +60,7 @@
       "name": "मुद्रा खोजें",
       "short_name": "खोजें",
       "description": "नई मुद्रा खोजें और जोड़ें",
-      "url": "../index.html?action=search",
+      "url": "../?action=search",
       "icons": [
         {
           "src": "../icons/shortcut-search.png",
@@ -73,7 +73,7 @@
       "name": "EUR → USD",
       "short_name": "EUR → USD",
       "description": "यूरो को तुरंत अमेरिकी डॉलर में बदलें",
-      "url": "../index.html?from=EUR&to=USD",
+      "url": "../?from=EUR&to=USD",
       "icons": [
         {
           "src": "../icons/shortcut-eur-usd.png",

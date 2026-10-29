@@ -5,7 +5,7 @@
   "description": "Быстрый и удобный конвертер валют PWA",
   "lang": "ru",
   "dir": "ltr",
-  "start_url": "../index.html",
+  "start_url": "../",
   "scope": "../",
   "display": "standalone",
   "orientation": "portrait",
@@ -34,7 +34,7 @@
       "name": "USD → RUB",
       "short_name": "USD → RUB",
       "description": "Быстрая конвертация долларов в рубли",
-      "url": "../index.html?from=USD&to=RUB",
+      "url": "../?from=USD&to=RUB",
       "icons": [
         {
           "src": "../icons/shortcut-usd-rub.png",
@@ -47,7 +47,7 @@
       "name": "USD → EUR",
       "short_name": "USD → EUR",
       "description": "Быстрая конвертация долларов в евро",
-      "url": "../index.html?from=USD&to=EUR",
+      "url": "../?from=USD&to=EUR",
       "icons": [
         {
           "src": "../icons/shortcut-usd-eur.png",
@@ -60,7 +60,7 @@
       "name": "Калькулятор",
       "short_name": "Калькулятор",
       "description": "Открыть встроенный калькулятор",
-      "url": "../index.html?action=calc",
+      "url": "../?action=calc",
       "icons": [
         {
           "src": "../icons/shortcut-calc.png",
@@ -73,7 +73,7 @@
       "name": "Поиск валюты",
       "short_name": "Поиск",
       "description": "Найти и добавить новую валюту",
-      "url": "../index.html?action=search",
+      "url": "../?action=search",
       "icons": [
         {
           "src": "../icons/shortcut-search.png",

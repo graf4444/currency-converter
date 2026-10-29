@@ -5,7 +5,7 @@
   "description": "Convertitore di valuta rapido PWA",
   "lang": "it",
   "dir": "ltr",
-  "start_url": "../index.html",
+  "start_url": "../",
   "scope": "../",
   "display": "standalone",
   "orientation": "portrait",
@@ -34,7 +34,7 @@
       "name": "EUR → USD",
       "short_name": "EUR → USD",
       "description": "Conversione rapida da Euro a Dollaro USA",
-      "url": "../index.html?from=EUR&to=USD",
+      "url": "../?from=EUR&to=USD",
       "icons": [
         {
           "src": "../icons/shortcut-eur-usd.png",
@@ -47,7 +47,7 @@
       "name": "Calcolatrice",
       "short_name": "Calcolatrice",
       "description": "Apri tastierino calcolatrice",
-      "url": "../index.html?action=calc",
+      "url": "../?action=calc",
       "icons": [
         {
           "src": "../icons/shortcut-calc.png",
@@ -60,7 +60,7 @@
       "name": "Cerca Valuta",
       "short_name": "Cerca",
       "description": "Cerca e aggiungi nuove valute",
-      "url": "../index.html?action=search",
+      "url": "../?action=search",
       "icons": [
         {
           "src": "../icons/shortcut-search.png",
@@ -73,7 +73,7 @@
       "name": "USD → EUR",
       "short_name": "USD → EUR",
       "description": "Conversione rapida da Dollaro a Euro",
-      "url": "../index.html?from=USD&to=EUR",
+      "url": "../?from=USD&to=EUR",
       "icons": [
         {
           "src": "../icons/shortcut-usd-eur.png",
