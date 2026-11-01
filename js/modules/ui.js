@@ -4,6 +4,14 @@
 // ============================================================
 
 function getCurrencyName(code) {
+    if (typeof state !== 'undefined' && state.customCurrencies && state.customCurrencies[code]) {
+        const item = state.customCurrencies[code];
+        if (item.baseCode && typeof currencyDb !== 'undefined' && currencyDb[item.baseCode]) {
+            const baseItem = currencyDb[item.baseCode];
+            return (baseItem.n && (baseItem.n[state.lang] || baseItem.n['en'])) || item.baseCode;
+        }
+        return item.name || item.code || code;
+    }
     if (typeof currencyDb === 'undefined' || !currencyDb[code]) return code;
     const item = currencyDb[code];
     return item.n[state.lang] || item.n['en'] || code;
@@ -30,6 +38,22 @@ function applyLocalization() {
     const metaAppName = document.querySelector('meta[name="application-name"]');
     if (metaAppName) metaAppName.setAttribute("content", t.title);
 
+    const langPicker = document.getElementById('lang-picker');
+    if (langPicker) {
+        langPicker.value = state.lang;
+        langPicker.setAttribute('aria-label', t.selectLanguage || 'Select Language');
+    }
+
+    const themeToggle = document.getElementById('theme-btn') || document.getElementById('theme-toggle');
+    if (themeToggle) {
+        themeToggle.setAttribute('aria-label', t.toggleTheme || 'Toggle theme');
+    }
+
+    const githubLink = document.querySelector('.github-link');
+    if (githubLink) {
+        githubLink.setAttribute('aria-label', state.lang === 'ru' ? 'Исходный код на GitHub' : 'View source on GitHub');
+    }
+
     const btnAdd = document.getElementById('ui-add-btn');
     if (btnAdd) btnAdd.textContent = t.add;
     
@@ -40,10 +64,10 @@ function applyLocalization() {
     if (btnClose) btnClose.textContent = t.close;
     
     const searchBar = document.getElementById('search-bar');
-    if (searchBar) searchBar.placeholder = t.searchPlaceholder;
-    
-    const langPicker = document.getElementById('lang-picker');
-    if (langPicker) langPicker.value = state.lang;
+    if (searchBar) {
+        searchBar.placeholder = t.searchPlaceholder;
+        searchBar.setAttribute('aria-label', t.searchPlaceholder);
+    }
     
     const secAdded = document.getElementById('ui-section-added');
     if (secAdded) secAdded.textContent = t.secAdded;
@@ -79,6 +103,118 @@ function applyLocalization() {
     if (typeof renderPrivacyContent === 'function') {
         renderPrivacyContent();
     }
+
+    // Modal close buttons
+    document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.setAttribute('aria-label', t.closeModal || (state.lang === 'ru' ? 'Закрыть' : 'Close'));
+    });
+
+    const btnCustomTitle = document.getElementById('ui-btn-custom-title');
+    if (btnCustomTitle) btnCustomTitle.textContent = t.customRateCardTitle || (state.lang === 'ru' ? 'Добавить свой курс' : 'Add custom rate');
+
+    const btnCustomSub = document.getElementById('ui-btn-custom-sub');
+    if (btnCustomSub) btnCustomSub.textContent = t.customRateCardSub || (state.lang === 'ru' 
+        ? 'Курс покупки в обменнике, банке или своя валюта' 
+        : 'Cash purchase, bank exchange or custom currency');
+
+    const modalCustomTitle = document.getElementById('ui-custom-modal-title');
+    if (modalCustomTitle && !currentEditCustomId) {
+        modalCustomTitle.textContent = t.customRateTitle || (state.lang === 'ru' ? 'Фиксация курса' : 'Lock Exchange Rate');
+    }
+
+    const customBaseBtn = document.getElementById('custom-base-btn');
+    if (customBaseBtn) customBaseBtn.setAttribute('title', t.baseCurrency || 'Base Currency');
+
+    const customTargetBtn = document.getElementById('custom-target-btn');
+    if (customTargetBtn) customTargetBtn.setAttribute('title', t.targetCurrency || 'Target Currency');
+
+    const baseSearch = document.getElementById('base-picker-search');
+    if (baseSearch) baseSearch.placeholder = t.searchPlaceholder || 'Search...';
+
+    const targetSearch = document.getElementById('target-picker-search');
+    if (targetSearch) targetSearch.placeholder = t.searchPlaceholder || 'Search...';
+
+    const lblRate = document.getElementById('ui-lbl-rate-calc');
+    if (lblRate) lblRate.textContent = t.exchangeRate || (state.lang === 'ru' ? 'Ваш курс' : 'Your Rate');
+
+    const btnUseMarket = document.getElementById('btn-use-market-rate');
+    if (btnUseMarket) btnUseMarket.textContent = t.useMarket || (state.lang === 'ru' ? 'Подставить' : 'Use Market');
+
+    const lblNote = document.getElementById('ui-lbl-note');
+    if (lblNote) lblNote.textContent = t.noteLabel || (state.lang === 'ru' ? 'Примечание' : 'Note');
+
+    const inputNote = document.getElementById('custom-note-input');
+    if (inputNote) inputNote.placeholder = t.notePlaceholder || (state.lang === 'ru' ? 'Например: Наличные для отпуска' : 'e.g., Vacation cash');
+
+    const noteChips = document.querySelectorAll('.note-chip');
+    const chipPresets = t.noteChips || (state.lang === 'ru' 
+        ? ['Отпуск', 'Обменник', 'Банк', 'Зарплата'] 
+        : ['Vacation', 'Exchange', 'Bank', 'Salary']);
+    noteChips.forEach((chip, idx) => {
+        if (chipPresets[idx]) {
+            chip.textContent = chipPresets[idx];
+            chip.dataset.note = chipPresets[idx];
+        }
+    });
+
+    const lblNewCode = document.getElementById('ui-lbl-new-code');
+    if (lblNewCode) lblNewCode.textContent = t.newCode || (state.lang === 'ru' ? 'Код' : 'Code');
+
+    const lblNewName = document.getElementById('ui-lbl-new-name');
+    if (lblNewName) lblNewName.textContent = t.newName || (state.lang === 'ru' ? 'Название' : 'Name');
+
+    const newCurrNameInput = document.getElementById('new-curr-name');
+    if (newCurrNameInput) newCurrNameInput.placeholder = t.newCurrPlaceholder || (state.lang === 'ru' ? 'Бонусные баллы' : 'e.g., Points / Miles');
+
+    const noticeLocalDesc = document.getElementById('ui-notice-local-desc');
+    if (noticeLocalDesc) noticeLocalDesc.textContent = t.noticeLocalDesc || (state.lang === 'ru' ? '🔒 Сохраняется только на этом устройстве' : '🔒 Saved only on this device');
+
+    const btnSaveCustom = document.getElementById('btn-save-custom');
+    if (btnSaveCustom) btnSaveCustom.textContent = t.saveRate || (state.lang === 'ru' ? 'Сохранить' : 'Save');
+
+    const btnDeleteCustom = document.getElementById('btn-delete-custom');
+    if (btnDeleteCustom) btnDeleteCustom.textContent = t.deleteRate || (state.lang === 'ru' ? 'Удалить' : 'Delete');
+
+    const btnCancelCustom = document.getElementById('btn-cancel-custom');
+    if (btnCancelCustom) btnCancelCustom.textContent = t.cancel || (state.lang === 'ru' ? 'Отмена' : 'Cancel');
+
+    const btnVariantAddText = document.getElementById('btn-variant-add-text');
+    if (btnVariantAddText) btnVariantAddText.textContent = t.btnVariantAddCustom || (state.lang === 'ru' ? 'Добавить свой курс...' : 'Add custom rate...');
+
+    // Virtual Keypad elements
+    const keypad = document.getElementById('virtual-keypad');
+    if (keypad) keypad.setAttribute('aria-label', t.calculatorKeypad || 'Calculator keypad');
+
+    const keypadShare = document.getElementById('keypad-share');
+    if (keypadShare) {
+        keypadShare.setAttribute('title', t.shareBreakdown || 'Share Breakdown');
+        keypadShare.setAttribute('aria-label', t.shareBreakdown || 'Share Breakdown');
+    }
+
+    const keypadClose = document.getElementById('keypad-close');
+    if (keypadClose) keypadClose.setAttribute('title', t.closeModal || 'Close Keypad');
+
+    const keypadHideBtn = document.getElementById('keypad-hide-btn');
+    if (keypadHideBtn) keypadHideBtn.setAttribute('title', t.hideKeypadTitle || 'Hide keypad');
+
+    const backspaceKey = document.querySelector('.key-btn[data-key="BACKSPACE"]');
+    if (backspaceKey) backspaceKey.setAttribute('title', t.clear || 'Clear');
+
+    // Smart paste banner
+    const smartPasteHint = document.getElementById('smart-paste-hint');
+    if (smartPasteHint) smartPasteHint.textContent = t.clipboardHint || 'Paste from clipboard?';
+
+    const smartPasteApply = document.getElementById('smart-paste-apply');
+    if (smartPasteApply) smartPasteApply.textContent = t.pasteAction || 'Paste';
+
+    const smartPasteInfo = document.getElementById('smart-paste-info');
+    if (smartPasteInfo) {
+        smartPasteInfo.setAttribute('title', t.clipboardSecurity || 'Security');
+        smartPasteInfo.setAttribute('aria-label', t.clipboardSecurityAria || 'About clipboard security');
+    }
+
+    const smartPasteDismiss = document.getElementById('smart-paste-dismiss');
+    if (smartPasteDismiss) smartPasteDismiss.setAttribute('aria-label', t.closeModal || 'Close');
 
     renderAppVersion();
     updateLastUpdateUI();
@@ -129,45 +265,127 @@ function renderMain() {
     const container = document.getElementById('favorites-container');
     if (!container) return;
     
+    const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : i18n['en'];
     const fragment = document.createDocumentFragment();
 
     state.favorites.forEach(code => {
-        const dbItem = (typeof currencyDb !== 'undefined' && currencyDb[code]) ? currencyDb[code] : { f: "🏳️" };
-        const nameLocal = getCurrencyName(code);
+        const isCustom = Boolean(state.customCurrencies && state.customCurrencies[code]);
+        const customItem = isCustom ? state.customCurrencies[code] : null;
+
+        const rootCode = typeof getCurrencyRootCode === 'function' ? getCurrencyRootCode(code) : code;
+        const variants = typeof getCurrencyVariants === 'function' ? getCurrencyVariants(rootCode) : [];
+        const hasMultipleVariants = variants.length > 1;
+
+        let dbItem;
+        let displayCode;
+        let nameLocal;
+        let subtitleHTML;
+        let customPillHTML = '';
+
+        if (isCustom) {
+            displayCode = customItem.baseCode || customItem.code || 'CUSTOM';
+            dbItem = { f: customItem.flag || '🏷️' };
+            nameLocal = getCurrencyName(code);
+
+            const baseSymbol = typeof getCurrencySymbol === 'function' 
+                ? getCurrencySymbol(displayCode) 
+                : displayCode;
+            const targetSymbol = typeof getCurrencySymbol === 'function' 
+                ? getCurrencySymbol(customItem.rateCurrency || 'USD') 
+                : (customItem.rateCurrency || 'USD');
+            const formattedRate = typeof formatNumberString === 'function' 
+                ? formatNumberString(String(customItem.rateValue)) 
+                : String(customItem.rateValue);
+            
+            const pillPrefix = customItem.rateDirection === 'reverse'
+                ? `1 ${targetSymbol} = `
+                : `1 ${baseSymbol} = `;
+            const pillVal = customItem.rateDirection === 'reverse'
+                ? `${formattedRate} ${baseSymbol}`
+                : `${formattedRate} ${targetSymbol}`;
+            const ratePillText = `${pillPrefix}${pillVal}`;
+
+            const pillTooltip = `${t.customTag || 'Custom'}: ${ratePillText} (${state.lang === 'ru' ? 'нажмите для выбора варианта или редактирования' : 'tap to select variant or edit'})`;
+
+            if (customItem.note) {
+                subtitleHTML = `<span class="c-name"><span class="custom-card-note">${escapeHTML(customItem.note)}</span><span class="custom-card-subname"> • ${escapeHTML(nameLocal)}</span></span>`;
+            } else {
+                subtitleHTML = `<span class="c-name">${escapeHTML(nameLocal)}</span>`;
+            }
+
+            customPillHTML = `
+                <button type="button" class="custom-rate-pill" data-variant-root="${rootCode}" data-edit-id="${code}" title="${escapeHTML(pillTooltip)}" aria-label="${escapeHTML(t.switchVariant || 'Switch rate variant')}">
+                    <span class="custom-rate-pill-prefix">${escapeHTML(pillPrefix)}</span><span class="custom-rate-pill-val">${escapeHTML(pillVal)}</span>
+                    <span class="custom-rate-pill-arrow">▾</span>
+                </button>
+            `;
+        } else {
+            displayCode = code;
+            dbItem = (typeof currencyDb !== 'undefined' && currencyDb[code]) ? currencyDb[code] : { f: "🏳️" };
+            nameLocal = getCurrencyName(code);
+            subtitleHTML = `<span class="c-name">${escapeHTML(nameLocal)}</span>`;
+
+            if (hasMultipleVariants) {
+                const marketLabel = t.marketTag || (state.lang === 'ru' ? 'Биржевой' : 'Market');
+                const pillTooltip = `${t.marketRateTitle || 'Market'} (${state.lang === 'ru' ? 'нажмите для выбора своего курса' : 'tap to switch to custom rate'})`;
+                customPillHTML = `
+                    <button type="button" class="custom-rate-pill market-pill" data-variant-root="${rootCode}" title="${escapeHTML(pillTooltip)}" aria-label="${escapeHTML(t.switchVariant || 'Switch rate variant')}">
+                        <span class="custom-rate-pill-val">${escapeHTML(marketLabel)}</span>
+                        <span class="custom-rate-pill-arrow">▾</span>
+                    </button>
+                `;
+            }
+        }
+
         const card = document.createElement('div');
         card.className = 'currency-card';
         
         const hasRate = !!state.rates[code];
-        const placeholderText = hasRate ? '0' : (state.lang === 'ru' ? 'Нет курса' : 'No rate');
-        const trendBadgeHTML = '';
+        const placeholderText = hasRate ? '0' : (t.noRate || (state.lang === 'ru' ? 'Нет курса' : 'No rate'));
 
         card.innerHTML = `
             <div class="currency-meta">
                 <span class="flag">${dbItem.f}</span>
                 <div class="code-name">
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <span class="c-code">${code}</span>
-                        ${trendBadgeHTML}
+                    <div class="c-code-row">
+                        <span class="c-code">${displayCode}</span>
+                        ${customPillHTML}
                     </div>
-                    <span class="c-name">${nameLocal}</span>
+                    ${subtitleHTML}
                 </div>
             </div>
             <div class="right-block">
                 <input type="text" ${isTouchDevice() ? 'inputmode="none"' : 'inputmode="decimal"'} class="currency-input" id="input-${code}" placeholder="${placeholderText}" data-code="${code}" autocomplete="off" ${!hasRate ? 'disabled' : ''}>
                 <div class="card-action-btns">
-                    <button type="button" class="share-btn" id="share-${code}" title="Share Breakdown" aria-label="Share conversion">
+                    <button type="button" class="share-btn" id="share-${code}" title="${escapeHTML(t.shareBreakdown || 'Share Breakdown')}" aria-label="${escapeHTML(t.shareBreakdown || 'Share conversion')}">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
                             <polyline points="16 6 12 2 8 6"></polyline>
                             <line x1="12" y1="2" x2="12" y2="15"></line>
                         </svg>
                     </button>
-                    <button type="button" class="clear-btn" id="clear-${code}" title="Clear">×</button>
+                    <button type="button" class="clear-btn" id="clear-${code}" title="${escapeHTML(t.clear || 'Clear')}">×</button>
                 </div>
             </div>
         `;
         fragment.appendChild(card);
-        card.querySelector('.clear-btn').addEventListener('click', clearAllInputs);
+
+        const customPill = card.querySelector('.custom-rate-pill');
+        if (customPill) {
+            customPill.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const variantRoot = customPill.dataset.variantRoot;
+                if (variantRoot && typeof openVariantSelectorModal === 'function') {
+                    openVariantSelectorModal(variantRoot);
+                } else if (typeof openCustomRateModal === 'function') {
+                    const editId = customPill.dataset.editId || code;
+                    openCustomRateModal({ editId });
+                }
+            });
+        }
+
+        const clearBtn = card.querySelector('.clear-btn');
+        if (clearBtn) clearBtn.addEventListener('click', clearAllInputs);
         const cardShareBtn = card.querySelector('.share-btn');
         if (cardShareBtn) {
             cardShareBtn.addEventListener('click', (e) => {
@@ -178,7 +396,7 @@ function renderMain() {
         }
 
         card.addEventListener('click', (e) => {
-            if (e.target.closest('.clear-btn') || e.target.closest('.share-btn') || e.target.closest('.currency-input')) return;
+            if (e.target.closest('.clear-btn') || e.target.closest('.share-btn') || e.target.closest('.currency-input') || e.target.closest('.custom-rate-pill')) return;
             const input = card.querySelector('.currency-input');
             if (!input || input.disabled) return;
 
@@ -539,4 +757,13 @@ function setupUIEvents() {
             closePrivacyModal();
         });
     }
+
+    // Responsive font recalculation on window resize / orientation change
+    window.addEventListener('resize', () => {
+        document.querySelectorAll('.currency-input').forEach(input => {
+            if (typeof adjustFontSize === 'function') {
+                adjustFontSize(input);
+            }
+        });
+    });
 }

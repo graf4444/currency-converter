@@ -26,6 +26,20 @@ function exitQuickMode() {
         state.favorites = [...permanentFavorites];
     }
 
+    // Clean up temporary shared session custom currencies if any
+    if (state.customCurrencies) {
+        let changed = false;
+        Object.keys(state.customCurrencies).forEach(id => {
+            if (state.customCurrencies[id] && state.customCurrencies[id].isSharedSession) {
+                delete state.customCurrencies[id];
+                changed = true;
+            }
+        });
+        if (changed && typeof recomputeCustomRates === 'function') {
+            recomputeCustomRates();
+        }
+    }
+
     const addBtn = document.getElementById('ui-add-btn');
     if (addBtn) addBtn.style.display = '';
 
@@ -81,34 +95,116 @@ function handleAppShortcuts() {
 
         // 1. Quick Currency Pair Mode (e.g. ?from=USD&to=RUB) or Deep Link (?from=USD&amount=100)
         if (from) {
-            const fromCode = from.toUpperCase().trim();
+            const rawFrom = from.trim();
+            const fromUpper = rawFrom.toUpperCase();
             const toCode = to ? to.toUpperCase().trim() : null;
 
-            if (typeof currencyDb !== 'undefined' && currencyDb[fromCode]) {
+            // Check if from matches an existing custom currency in user's state
+            let matchedCustomId = null;
+            if (state.customCurrencies) {
+                if (state.customCurrencies[rawFrom]) {
+                    matchedCustomId = rawFrom;
+                } else {
+                    matchedCustomId = Object.keys(state.customCurrencies).find(id => id.toUpperCase() === fromUpper) || null;
+                }
+            }
+
+            // Check for custom rate in URL params
+            const paramRate = params.get('rate') || params.get('customRate');
+            const paramRateTo = (params.get('rateTo') || params.get('target') || 'RUB').toUpperCase().trim();
+            const paramNote = params.get('note') || '';
+            const paramName = params.get('name') || '';
+            const paramDir = params.get('dir') || 'direct';
+            const paramFlag = params.get('flag') || '';
+
+            let effectiveFromCode = null;
+
+            if (matchedCustomId) {
+                effectiveFromCode = matchedCustomId;
+            } else if (paramRate && !isNaN(parseFloat(paramRate)) && parseFloat(paramRate) > 0) {
+                // Shared custom rate via URL
+                const rateVal = parseFloat(paramRate);
+                const codeName = fromUpper;
+                const isKnown = typeof currencyDb !== 'undefined' && currencyDb[codeName];
+
+                // See if user already has an identical custom rate
+                let existingId = null;
+                if (state.customCurrencies) {
+                    existingId = Object.keys(state.customCurrencies).find(id => {
+                        const c = state.customCurrencies[id];
+                        return (c.baseCode === codeName || c.code === codeName) &&
+                               Math.abs(parseFloat(c.rateValue) - rateVal) < 0.0001 &&
+                               (c.rateCurrency || '').toUpperCase() === paramRateTo;
+                    });
+                }
+
+                if (existingId) {
+                    effectiveFromCode = existingId;
+                } else {
+                    const tempId = `cust_shared_${codeName}_${Date.now().toString(36)}`;
+                    if (!state.customCurrencies) state.customCurrencies = {};
+                    const baseItem = isKnown ? currencyDb[codeName] : { f: paramFlag || '🏷️' };
+                    state.customCurrencies[tempId] = {
+                        id: tempId,
+                        baseCode: isKnown ? codeName : null,
+                        code: codeName,
+                        flag: paramFlag || baseItem.f || '🏷️',
+                        name: paramName || ((isKnown && typeof getCurrencyName === 'function') ? getCurrencyName(codeName) : codeName),
+                        note: paramNote,
+                        rateValue: rateVal,
+                        rateCurrency: paramRateTo,
+                        rateDirection: paramDir,
+                        isCustom: true,
+                        isSharedSession: true,
+                        updatedAt: Date.now()
+                    };
+                    if (typeof recomputeCustomRates === 'function') {
+                        recomputeCustomRates();
+                    }
+                    effectiveFromCode = tempId;
+                }
+            } else if (typeof currencyDb !== 'undefined' && currencyDb[fromUpper]) {
+                effectiveFromCode = fromUpper;
+            } else if (rawFrom.startsWith('cust_')) {
+                // Fallback for raw cust_... ID if custom currency is missing: extract base code e.g. cust_USD_... -> USD
+                const m = rawFrom.match(/^cust_(?:new_)?([a-zA-Z0-9]+)/);
+                if (m) {
+                    const parsed = m[1].toUpperCase();
+                    if (typeof currencyDb !== 'undefined' && currencyDb[parsed]) {
+                        effectiveFromCode = parsed;
+                    }
+                }
+            }
+
+            if (effectiveFromCode) {
                 if (!Array.isArray(permanentFavorites) || permanentFavorites.length === 0) {
                     permanentFavorites = [...state.favorites];
                 }
 
-                if (toCode && currencyDb[toCode] && toCode !== fromCode) {
+                if (toCode && (currencyDb[toCode] || (state.customCurrencies && state.customCurrencies[toCode])) && toCode !== effectiveFromCode) {
                     // Quick Currency Pair Mode (e.g. PWA shortcut)
                     isQuickMode = true;
                     isLinkSession = false;
-                    state.favorites = [fromCode, toCode];
+                    state.favorites = [effectiveFromCode, toCode];
                     renderQuickModeControls();
                 } else {
                     // Deep Link with base currency & amount:
-                    // Display fromCode at top for this session without altering localStorage
+                    // Display effectiveFromCode at top for this session without altering localStorage
                     isLinkSession = true;
                     isQuickMode = false;
-                    state.favorites = [fromCode, ...permanentFavorites.filter(c => c !== fromCode)];
+                    state.favorites = [effectiveFromCode, ...permanentFavorites.filter(c => c !== effectiveFromCode)];
+                    renderQuickModeControls();
                 }
 
-                currentInputCode = fromCode;
+                currentInputCode = effectiveFromCode;
                 currentInputValue = amount ? String(amount) : '1';
 
                 renderMain();
+                if (typeof recalculate === 'function') {
+                    recalculate(effectiveFromCode, currentInputValue);
+                }
 
-                const inputEl = document.getElementById(`input-${fromCode}`);
+                const inputEl = document.getElementById(`input-${effectiveFromCode}`);
                 if (inputEl) {
                     if (isTouchDevice()) {
                         openVirtualKeypad(inputEl);

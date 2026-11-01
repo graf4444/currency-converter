@@ -39,11 +39,75 @@ function getAppShareUrl(fromCode, amount, toCode) {
     }
 
     const params = new URLSearchParams();
-    if (fromCode) params.set('from', fromCode);
-    if (toCode) params.set('to', toCode);
+
+    let cleanFrom = fromCode;
+    let customItem = null;
+    if (typeof state !== 'undefined' && state.customCurrencies && state.customCurrencies[fromCode]) {
+        customItem = state.customCurrencies[fromCode];
+        cleanFrom = customItem.baseCode || customItem.code || fromCode;
+    }
+
+    let cleanTo = toCode;
+    if (toCode && typeof state !== 'undefined' && state.customCurrencies && state.customCurrencies[toCode]) {
+        const targetCustom = state.customCurrencies[toCode];
+        cleanTo = targetCustom.baseCode || targetCustom.code || toCode;
+    }
+
+    if (cleanFrom) params.set('from', cleanFrom);
+    if (cleanTo) params.set('to', cleanTo);
     if (amount) params.set('amount', amount);
+
+    if (customItem) {
+        if (customItem.rateValue) params.set('rate', customItem.rateValue);
+        if (customItem.rateCurrency) params.set('rateTo', customItem.rateCurrency);
+        if (customItem.note) params.set('note', customItem.note);
+        if (!customItem.baseCode && customItem.name && customItem.name !== customItem.code) {
+            params.set('name', customItem.name);
+        }
+        if (customItem.rateDirection && customItem.rateDirection !== 'direct') {
+            params.set('dir', customItem.rateDirection);
+        }
+        if (customItem.flag && customItem.flag !== '🏷️' && customItem.flag !== '💵' && (!currencyDb || customItem.flag !== currencyDb[cleanFrom]?.f)) {
+            params.set('flag', customItem.flag);
+        }
+    }
+
     const qs = params.toString();
     return qs ? `${baseUrl}?${qs}` : baseUrl;
+}
+
+/**
+ * Returns human-friendly display label for currency sharing text and titles.
+ * Resolves custom currencies cleanly (e.g. "USD (Наличные)", "USD (Свой курс)", "BONUS (Бонусы)")
+ * avoiding internal technical IDs (e.g. "cust_USD_mvtt7y4h").
+ * 
+ * @param {string} code - Currency code or custom ID
+ * @returns {string} Human-readable label
+ */
+function getCurrencyShareLabel(code) {
+    if (typeof state !== 'undefined' && state.customCurrencies && state.customCurrencies[code]) {
+        const item = state.customCurrencies[code];
+        const displayCode = item.baseCode || item.code || 'CUSTOM';
+        const note = item.note ? item.note.trim() : '';
+
+        if (note) {
+            return `${displayCode} (${note})`;
+        }
+
+        if (item.baseCode) {
+            const customTag = (typeof i18n !== 'undefined' && state.lang && i18n[state.lang] && i18n[state.lang].customTag)
+                ? i18n[state.lang].customTag
+                : (state.lang === 'ru' ? 'Свой курс' : 'Custom Rate');
+            return `${displayCode} (${customTag})`;
+        }
+
+        if (item.name && item.name.trim() !== displayCode) {
+            return `${displayCode} (${item.name.trim()})`;
+        }
+
+        return displayCode;
+    }
+    return code;
 }
 
 /**
@@ -53,10 +117,13 @@ function getAppShareUrl(fromCode, amount, toCode) {
  * @returns {string} Flag emoji or empty string
  */
 function getCurrencyFlag(code) {
+    if (typeof state !== 'undefined' && state.customCurrencies && state.customCurrencies[code]) {
+        return state.customCurrencies[code].flag || '🏷️';
+    }
     if (typeof currencyDb !== 'undefined' && currencyDb[code] && currencyDb[code].f) {
         return currencyDb[code].f;
     }
-    return '';
+    return '🏳️';
 }
 
 /**
@@ -89,9 +156,10 @@ function generateShareText(baseCode) {
         val = 1;
     }
 
+    const displayLabel = getCurrencyShareLabel(code);
     const baseFlag = getCurrencyFlag(code);
     const formattedBaseVal = formatNumberString(val.toString());
-    const baseHeader = baseFlag ? `${baseFlag} ${formattedBaseVal} ${code} =` : `${formattedBaseVal} ${code} =`;
+    const baseHeader = baseFlag ? `${baseFlag} ${formattedBaseVal} ${displayLabel} =` : `${formattedBaseVal} ${displayLabel} =`;
     const lines = [baseHeader];
 
     let toCode = null;
@@ -107,7 +175,8 @@ function generateShareText(baseCode) {
                 const result = valInUSD * state.rates[c];
                 const formattedRes = formatConvertedValue(result, c);
                 const targetFlag = getCurrencyFlag(c);
-                const itemLine = targetFlag ? `• ${targetFlag} ${formattedRes} ${c}` : `• ${formattedRes} ${c}`;
+                const targetLabel = getCurrencyShareLabel(c);
+                const itemLine = targetFlag ? `• ${targetFlag} ${formattedRes} ${targetLabel}` : `• ${formattedRes} ${targetLabel}`;
                 lines.push(itemLine);
             }
         });
@@ -149,7 +218,8 @@ async function shareBreakdown(baseCode, e) {
 
     const code = baseCode || currentInputCode || (state.favorites && state.favorites[0]) || 'USD';
     const shareText = generateShareText(code);
-    const title = `${code} Exchange Breakdown`;
+    const displayLabel = getCurrencyShareLabel(code);
+    const title = `${displayLabel} Exchange Breakdown`;
 
     const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : null;
     const copiedMsg = (t && t.copiedToClipboard) 

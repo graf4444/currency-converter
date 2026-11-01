@@ -9,7 +9,7 @@
 ### 🌐 Select Language / Выберите язык документации:
 [![English Documentation](https://img.shields.io/badge/Language-English-blue?style=for-the-badge&logo=readme&logoColor=white)](#english)
 [![Русская документация](https://img.shields.io/badge/Язык-Русский-red?style=for-the-badge&logo=readme&logoColor=white)](#russian)
-[![Changelog / История версий](https://img.shields.io/badge/Changelog-v1.21.0-brightgreen?style=for-the-badge&logo=git)](CHANGELOG.md)
+[![Changelog / История версий](https://img.shields.io/badge/Changelog-v1.22.0-brightgreen?style=for-the-badge&logo=git)](CHANGELOG.md)
 
 ---
 
@@ -62,6 +62,7 @@ A modern, fast, and lightweight **Open Source** web tool for converting world cu
 
 ### ✨ Key Features
 * **🎯 True Multi-Platform:** Use it as a website or install it directly onto your smartphone, tablet, or PC home screen as a standalone app (PWA).
+* **🏷️ Custom & Fixed Exchange Rates:** Lock in your own real-world rates (bank, exchange booth, P2P commissions), add notes and quick chips (Vacation, Bank, Crypto), switch variants smoothly in an accordion menu, and share custom rate calculations via direct links.
 * **⚡ PWA Quick Actions (App Shortcuts):** Long-press the app icon on Android or right-click on Desktop/macOS to access quick actions: instant conversion (USD → EUR, USD → RUB), quick calculator keypad, and instant currency search.
 * **🔒 Smart Express Mode:** Dedicated 2-currency quick conversion without scrambling your saved favorites. Changing theme and language persists, while a clean "Show All Currencies" button or back gesture smoothly returns to the full list.
 * **📤 Share Calculation (Share Breakdown):** One-tap button next to inputs and inside the calculator keypad exports a beautifully styled exchange summary with country flags, calculation date and time, and an interactive direct link to the app (via clipboard or native system share dialog).
@@ -210,6 +211,7 @@ If you find a bug, have an idea, or want to add a feature:
 
 ### ✨ Преимущества
 * **🎯 Настоящая кроссплатформенность:** Используйте как сайт или установите на главный экран смартфона, планшета или рабочий стол ПК как независимое приложение (PWA).
+* **🏷️ Свои курсы обмена и фиксация курса:** Задавайте собственные реальные курсы (покупка в банке или обменнике, P2P-переводы с комиссией), добавляйте удобные заметки и быстрые метки («Отпуск», «Банк», «Обменник»), группируйте варианты валют и делитесь расчетами с зафиксированным курсом по прямой ссылке.
 * **⚡ Быстрые действия PWA (Ярлыки приложений):** Длительное нажатие на иконку на Android или правый клик мыши на ПК/macOS открывает контекстное меню быстрых действий: быстрая конвертация популярных валют (USD → RUB, USD → EUR), мгновенный запуск калькулятора и быстрый поиск валют.
 * **🔒 Умный экспресс-режим:** Специальный режим быстрой конвертации пары валют с надежной защитой сохраненных настроек: ваши избранные валюты в памяти не сбиваются, а кнопка «Показать все валюты» или свайп «Назад» моментально возвращают в обычный режим.
 * **📤 Экспорт и «Поделиться расчётом» (Share Breakdown):** Кнопка в один клик рядом с каждым полем ввода и в шапке калькулятора формирует красивую сводку с флагами стран, датой и временем обновления курса и интерактивной ссылкой на приложение прямо в буфер обмена или системное меню «Поделиться» (Telegram, WhatsApp, SMS).

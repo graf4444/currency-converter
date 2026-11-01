@@ -9,6 +9,7 @@ The project adheres to [Semantic Versioning (SemVer)](https://semver.org/).
 
 ## 📑 Table of Contents
 
+- [v1.22.0 (2026-11-01) — Custom Exchange Rates, Mobile UI Fixes & Smooth Drag and Drop](#v1220-2026-11-01)
 - [v1.21.0 (2026-10-29) — Major Release: App Shortcuts, Smart Clipboard, Share Breakdown & Privacy](#v1210-2026-10-29)
 - [v1.20.0 (2026-10-28) — Synchronous Header Slide & Active Input Viewport](#v1200-2026-10-28)
 - [v1.19.0 (2026-10-28) — Sticky Header Pinning & Active Row Tracking](#v1190-2026-10-28)
@@ -17,6 +18,42 @@ The project adheres to [Semantic Versioning (SemVer)](https://semver.org/).
 - [v1.13.0 – v1.9.0 — Custom Keypad, Splash Screen & Themes](#v1130--v190)
 - [v1.6.0 (2026-10-25) — PWA Installation Modal & Private Analytics](#v160-2026-10-25)
 - [v1.0.0 (2026-10-21) — Initial Stable Release](#v100-2026-10-21)
+
+---
+
+## [v1.22.0] — 2026-11-01
+
+This release brings custom exchange rate locking, mobile interface stabilization during keyboard input, and a completely re-engineered, rock-solid currency list reordering (Drag & Drop).
+
+### 🏷️ 1. Custom Exchange Rates & Fixed Quotes
+Set your own real-world exchange rates independent of interbank market rates:
+- **Custom Exchange Rates:** Define custom buy or sell rates for specific banks, physical exchange booths, or P2P transfers with actual spreads and fees.
+- **Two Flexible Formats:**
+  - Direct exchange rate (e.g., `1 USD = 98.5 RUB`);
+  - Multiplier / inverse rate (e.g., `1 RUB = 0.01015 USD`).
+- **Quick Tags & Notes:** Add notes or select ready-to-use tag chips (`Bank`, `Exchange Booth`, `Vacation`, `Crypto`, `P2P`) to easily track where each rate came from.
+- **Fast Currency Search:** Redesigned picker with instant search by code or name and country flags.
+- **Variant Grouping:** In "Manage Currency List", multiple rates for the same currency neatly collapse under an accordion. Switch between market rates and your custom rates with one tap, or edit and remove them anytime.
+- **Share Rates via URL:** Share calculations with custom rates via a direct link (`?custom=...`) — recipients will immediately see the exact conversion using your custom rate.
+
+---
+
+### 📱 2. Mobile Improvements & Keyboard Stabilization
+- **Smooth Keyboard Opening:** Fixed an issue where opening the "Custom Rate" modal on smartphones and focusing an input caused the screen to jump, jerk, or redraw erratically.
+- **Adaptive Card Layout:** Fine-tuned spacing, badges, and text wrapping so currency codes, names, and long numbers fit cleanly without clipping on small phone screens.
+
+---
+
+### ✋ 3. Smooth & Reliable Drag & Drop
+- **Natural Grab Point:** Dragging now anchors directly to where your finger or cursor touched the card, rather than snapping awkwardly to the center.
+- **Stable Reordering:** Completely resolved list flickering and jitter during drag operations. Cards move cleanly and predictably into position.
+- **Touch-Friendly on Mobile:** Grabbing the `☰` handle no longer conflicts with page scrolling or system swipe gestures, while scrolling the list outside the handle remains smooth.
+- **Polished Animations & Haptics:** Subtle slot highlight, a gentle spring settle effect on drop, and crisp tactile vibration feedback.
+
+---
+
+### 🌐 4. Complete Localization Across 13 Languages
+- Audited and translated all new modal dialogues, buttons, tags, notes, and empty search states across all 13 supported languages.
 
 ---
 

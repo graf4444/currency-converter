@@ -64,8 +64,17 @@ function openVirtualKeypad(input) {
     
     if (keypad) {
         if (titleEl) {
+            let displayCode = code;
+            let noteSnippet = '';
+            if (typeof state !== 'undefined' && state.customCurrencies && state.customCurrencies[code]) {
+                const item = state.customCurrencies[code];
+                displayCode = item.baseCode || item.code || code;
+                if (item.note) {
+                    noteSnippet = ` • ${item.note}`;
+                }
+            }
             const name = getCurrencyName(code);
-            titleEl.textContent = `${code} - ${name}`;
+            titleEl.textContent = `${displayCode} - ${name}${noteSnippet}`;
         }
         
         // Highlight active card
