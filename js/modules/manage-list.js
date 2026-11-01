@@ -577,15 +577,74 @@ function setupDragAndDropHandlers() {
     
     let dragEl = null;
     let activeTouchEl = null;
+    let lastPointerX = 0;
+    let lastPointerY = 0;
+
+    // Track the pointer/touch coordinates where the drag was initiated
+    container.addEventListener('pointerdown', (e) => {
+        lastPointerX = e.clientX;
+        lastPointerY = e.clientY;
+    }, { passive: true });
+
+    container.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches[0]) {
+            lastPointerX = e.touches[0].clientX;
+            lastPointerY = e.touches[0].clientY;
+        }
+        if (e.target.closest('.drag-handle')) {
+            const item = e.target.closest('.search-item');
+            if (item) {
+                activeTouchEl = item;
+                setTimeout(() => {
+                    if (activeTouchEl) activeTouchEl.classList.add('dragging');
+                }, 50);
+            }
+        }
+    }, { passive: true });
 
     container.addEventListener('dragstart', (e) => {
         const item = e.target.closest('.search-item');
-        if (item) { dragEl = item; setTimeout(() => item.classList.add('dragging'), 0); }
+        if (!item) return;
+
+        dragEl = item;
+
+        if (e.dataTransfer) {
+            e.dataTransfer.effectAllowed = 'move';
+            try {
+                e.dataTransfer.setData('text/plain', item.dataset.code || '');
+            } catch (_) {}
+
+            const rect = item.getBoundingClientRect();
+            const pointerX = (e.clientX && e.clientX > 0) ? e.clientX : lastPointerX;
+            const pointerY = (e.clientY && e.clientY > 0) ? e.clientY : lastPointerY;
+
+            let offsetX = pointerX - rect.left;
+            let offsetY = pointerY - rect.top;
+
+            // Ensure offset is strictly within item boundaries
+            if (isNaN(offsetX) || offsetX < 0 || offsetX > rect.width) {
+                offsetX = 20; // Default anchor near drag handle on the left
+            }
+            if (isNaN(offsetY) || offsetY < 0 || offsetY > rect.height) {
+                offsetY = rect.height / 2;
+            }
+
+            try {
+                if (typeof e.dataTransfer.setDragImage === 'function') {
+                    e.dataTransfer.setDragImage(item, offsetX, offsetY);
+                }
+            } catch (_) {}
+        }
+
+        setTimeout(() => {
+            if (item) item.classList.add('dragging');
+        }, 0);
     });
 
     container.addEventListener('dragend', (e) => {
         const item = e.target.closest('.search-item');
         if (item) { item.classList.remove('dragging'); saveNewOrder(); }
+        dragEl = null;
     });
 
     container.addEventListener('dragover', (e) => {
@@ -596,13 +655,6 @@ function setupDragAndDropHandlers() {
         else container.insertBefore(dragEl, afterElement);
     });
 
-    container.addEventListener('touchstart', (e) => {
-        if (e.target.classList.contains('drag-handle')) {
-            const item = e.target.closest('.search-item');
-            if (item) { activeTouchEl = item; item.classList.add('dragging'); }
-        }
-    }, { passive: true });
-
     container.addEventListener('touchmove', (e) => {
         if (!activeTouchEl) return;
         e.preventDefault(); 
@@ -612,9 +664,16 @@ function setupDragAndDropHandlers() {
         else container.insertBefore(activeTouchEl, afterElement);
     }, { passive: false });
 
-    container.addEventListener('touchend', () => {
-        if (activeTouchEl) { activeTouchEl.classList.remove('dragging'); activeTouchEl = null; saveNewOrder(); }
-    });
+    const handleTouchEnd = () => {
+        if (activeTouchEl) {
+            activeTouchEl.classList.remove('dragging');
+            activeTouchEl = null;
+            saveNewOrder();
+        }
+    };
+
+    container.addEventListener('touchend', handleTouchEnd);
+    container.addEventListener('touchcancel', handleTouchEnd);
 }
 
 function getDragAfterElement(container, y) {

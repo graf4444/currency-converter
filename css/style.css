@@ -66,18 +66,6 @@ h1 { font-size: 1.5rem; font-weight: 700; }
     box-shadow: 0 4px 6px rgba(0,0,0,0.01);
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.currency-card {
-    background: var(--card);
-    padding: 11px 14px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border: 1px solid var(--border);
-    box-shadow: 0 4px 6px rgba(0,0,0,0.01);
-    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-    gap: 8px;
-}
 .currency-meta {
     display: flex;
     align-items: center;
@@ -3047,21 +3035,18 @@ footer {
 /* ============================================================
    RESPONSIVE DESIGN (BREAKPOINTS: <= 440px, <= 350px, <= 320px)
    Prevents number cutoff, header overflow, and layout clipping
+   Only adapts inner elements without changing card size or paddings
    ============================================================ */
 
 @media (max-width: 440px) {
-    body {
-        padding: 10px 10px;
-    }
-
     header {
-        margin-bottom: 14px;
+        margin-bottom: 16px;
         padding: 6px 0;
         gap: 8px;
     }
 
     h1 {
-        font-size: 1.25rem;
+        font-size: 1.35rem;
         line-height: 1.15;
         min-width: 0;
     }
@@ -3093,53 +3078,12 @@ footer {
         padding: 0;
     }
 
-    .currency-list {
-        gap: 8px;
-        margin-bottom: 16px;
-    }
-
-    .currency-card {
-        padding: 10px 11px;
-        border-radius: 13px;
-        gap: 8px;
-    }
-
-    .currency-card > .currency-meta {
-        gap: 8px;
-        margin-right: 0;
-    }
-
-    .flag {
-        font-size: 1.45rem;
-        width: 27px;
-    }
-
-    .c-code {
-        font-size: 1rem;
-    }
-
-    .c-name {
-        font-size: 0.74rem;
-    }
-
     .currency-card .custom-card-subname {
         display: none;
     }
 
     .custom-rate-pill {
-        padding: 1.5px 6px;
-        font-size: 0.72rem;
         white-space: nowrap !important;
-    }
-
-    .currency-card > .right-block {
-        gap: 4px;
-        max-width: 65%;
-    }
-
-    .currency-input {
-        font-size: 1.25rem;
-        padding: 2px 0;
     }
 
     .share-btn {
@@ -3156,13 +3100,6 @@ footer {
         padding: 0 2px;
     }
 
-    .add-btn {
-        padding: 12px 14px;
-        font-size: 0.9rem;
-        border-radius: 13px;
-        margin-bottom: 16px;
-    }
-
     .footer-links {
         gap: 6px;
     }
@@ -3176,12 +3113,8 @@ footer {
 }
 
 @media (max-width: 350px) {
-    body {
-        padding: 8px 6px;
-    }
-
     h1 {
-        font-size: 1.15rem;
+        font-size: 1.2rem;
     }
 
     .lang-select {
@@ -3197,43 +3130,6 @@ footer {
         font-size: 1.05rem;
     }
 
-    .currency-card {
-        padding: 8px 8px;
-        gap: 4px;
-    }
-
-    .currency-card > .currency-meta {
-        gap: 6px;
-        margin-right: 0;
-    }
-
-    .flag {
-        font-size: 1.3rem;
-        width: 24px;
-    }
-
-    .c-code {
-        font-size: 0.94rem;
-    }
-
-    .c-name {
-        font-size: 0.7rem;
-    }
-
-    .custom-rate-pill {
-        padding: 1px 5px;
-        font-size: 0.68rem;
-    }
-
-    .currency-card > .right-block {
-        gap: 2px;
-        max-width: 65%;
-    }
-
-    .currency-input {
-        font-size: 1.15rem;
-    }
-
     .share-btn {
         padding: 1px;
     }
@@ -3246,11 +3142,6 @@ footer {
     .clear-btn {
         font-size: 1.05rem;
         padding: 0 1px;
-    }
-
-    .add-btn {
-        padding: 11px 12px;
-        font-size: 0.85rem;
     }
 }
 
