@@ -89,7 +89,12 @@ function applyLocalization() {
     }
 
     const btnCustomTitle = document.getElementById('ui-btn-custom-title');
-    if (btnCustomTitle) btnCustomTitle.textContent = state.lang === 'ru' ? 'Зафиксировать свой курс' : 'Lock custom rate';
+    if (btnCustomTitle) btnCustomTitle.textContent = state.lang === 'ru' ? 'Добавить свой курс' : 'Add custom rate';
+
+    const btnCustomSub = document.getElementById('ui-btn-custom-sub');
+    if (btnCustomSub) btnCustomSub.textContent = state.lang === 'ru' 
+        ? 'Курс покупки в обменнике, банке или своя валюта' 
+        : 'Cash purchase, bank exchange or custom currency';
 
     const modalCustomTitle = document.getElementById('ui-custom-modal-title');
     if (modalCustomTitle && !currentEditCustomId) modalCustomTitle.textContent = state.lang === 'ru' ? 'Фиксация курса' : 'Lock Exchange Rate';

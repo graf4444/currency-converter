@@ -141,7 +141,7 @@
                 <div class="spinner" id="loader" aria-hidden="true"></div>
             </div>
             <div id="last-update"></div>
-            <div id="app-version" class="app-version">v1.21.2 (2026-11-01 18:23)</div>
+            <div id="app-version" class="app-version">v1.21.3 (2026-11-01 18:41)</div>
         </div>
 
         <div class="footer-links">
@@ -177,8 +177,14 @@
 
         <div class="search-results">
             <button type="button" class="btn-add-custom-currency" id="btn-open-custom-rate">
-                <span class="btn-add-custom-icon">🏷️</span>
-                <span id="ui-btn-custom-title">Зафиксировать свой курс</span>
+                <span class="btn-add-custom-icon-wrap">
+                    <span class="btn-add-custom-icon">+</span>
+                </span>
+                <div class="btn-add-custom-texts">
+                    <span class="btn-add-custom-title" id="ui-btn-custom-title">Добавить свой курс</span>
+                    <span class="btn-add-custom-sub" id="ui-btn-custom-sub">Курс покупки в обменнике, банке или своя валюта</span>
+                </div>
+                <span class="btn-add-custom-arrow">›</span>
             </button>
             <div id="added-section">
                 <div class="section-title" id="ui-section-added">Your Currencies</div>
@@ -356,8 +362,8 @@
 
         <div class="variant-modal-footer">
             <button type="button" class="btn-variant-add-new" id="btn-variant-add-new">
-                <span class="btn-variant-add-icon">➕</span>
-                <span id="btn-variant-add-text">Зафиксировать свой курс...</span>
+                <span class="btn-variant-add-icon">+</span>
+                <span id="btn-variant-add-text">Добавить свой курс...</span>
             </button>
         </div>
     </div>

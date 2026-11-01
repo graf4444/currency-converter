@@ -268,10 +268,12 @@ function filterCurrencies() {
                 </div>
                 <div class="currency-subgroup" role="radiogroup" aria-label="${escapeHTML(variantsAriaLabel)}">
                     ${variantsHTML}
-                    <button type="button" class="subgroup-btn-add" data-base-code="${rootCode}">
-                        <span>➕</span>
-                        <span>${state.lang === 'ru' ? 'Зафиксировать ещё курс...' : 'Lock another rate...'}</span>
-                    </button>
+                    <div class="subgroup-add-row">
+                        <button type="button" class="subgroup-btn-add" data-base-code="${rootCode}">
+                            <span class="subgroup-btn-add-icon">+</span>
+                            <span>${state.lang === 'ru' ? `Добавить курс ${rootCode}` : `Add ${rootCode} rate`}</span>
+                        </button>
+                    </div>
                 </div>
             `;
 

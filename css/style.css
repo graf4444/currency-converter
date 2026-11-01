@@ -1427,37 +1427,101 @@ footer {
     font-size: 0.8rem;
 }
 
-/* Manage List top action button */
+/* Manage List top action button (Action Card) */
 .btn-add-custom-currency {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
+    gap: 12px;
     width: 100%;
     background: var(--bg);
-    border: 1px dashed var(--border);
-    border-radius: 12px;
-    padding: 10px 14px;
-    color: var(--text-muted);
-    font-size: 0.88rem;
-    font-weight: 500;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 11px 14px;
+    color: var(--text);
     cursor: pointer;
     margin-bottom: 16px;
-    transition: border-color 0.15s ease, color 0.15s ease, background-color 0.15s ease;
+    text-align: left;
+    transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    box-sizing: border-box;
 }
 
 .btn-add-custom-currency:hover {
     border-color: var(--accent);
-    color: var(--accent);
     background: rgba(0, 113, 227, 0.04);
+    box-shadow: 0 4px 14px rgba(0, 113, 227, 0.08);
 }
 
 [data-theme="dark"] .btn-add-custom-currency:hover {
-    background: rgba(41, 151, 255, 0.06);
+    background: rgba(41, 151, 255, 0.08);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.btn-add-custom-currency:active {
+    transform: scale(0.985);
+}
+
+.btn-add-custom-icon-wrap {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(0, 113, 227, 0.1);
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+[data-theme="dark"] .btn-add-custom-icon-wrap {
+    background: rgba(41, 151, 255, 0.16);
+}
+
+.btn-add-custom-currency:hover .btn-add-custom-icon-wrap {
+    transform: scale(1.05);
 }
 
 .btn-add-custom-icon {
-    font-size: 1rem;
+    font-size: 1.25rem;
+    line-height: 1;
+    font-weight: 500;
+}
+
+.btn-add-custom-texts {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.btn-add-custom-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.1px;
+}
+
+.btn-add-custom-sub {
+    font-size: 0.74rem;
+    color: var(--text-muted);
+    line-height: 1.25;
+}
+
+.btn-add-custom-arrow {
+    color: var(--text-muted);
+    font-size: 1.25rem;
+    line-height: 1;
+    font-weight: 400;
+    flex-shrink: 0;
+    transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.btn-add-custom-currency:hover .btn-add-custom-arrow {
+    transform: translateX(2px);
+    color: var(--accent);
 }
 
 /* Search Items buttons & custom pills */
@@ -2332,21 +2396,28 @@ footer {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    background: var(--bg);
-    border: 1.5px dashed var(--border);
+    background: rgba(0, 113, 227, 0.08);
+    border: 1px solid rgba(0, 113, 227, 0.2);
     border-radius: 12px;
-    padding: 11px;
-    font-size: 0.92rem;
+    padding: 10px 14px;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--accent);
     cursor: pointer;
     transition: all 0.15s ease;
     user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+[data-theme="dark"] .btn-variant-add-new {
+    background: rgba(41, 151, 255, 0.12);
+    border-color: rgba(41, 151, 255, 0.25);
 }
 
 .btn-variant-add-new:hover {
     border-color: var(--accent);
-    background: rgba(0, 113, 227, 0.05);
+    background: rgba(0, 113, 227, 0.15);
+    transform: translateY(-0.5px);
 }
 
 .btn-variant-add-new:active {
@@ -2643,34 +2714,49 @@ footer {
     transform: scale(0.92);
 }
 
-.subgroup-btn-add {
+.subgroup-add-row {
+    padding: 7px 12px 9px 34px;
+    border-top: 1px solid var(--border);
     display: flex;
     align-items: center;
+}
+
+.subgroup-btn-add {
+    display: inline-flex;
+    align-items: center;
     gap: 6px;
-    padding: 8px 12px 8px 34px;
-    background: transparent;
-    border: none;
-    border-top: 1px dashed var(--border);
+    padding: 4px 10px;
+    background: rgba(0, 113, 227, 0.08);
+    border: 1px solid rgba(0, 113, 227, 0.16);
+    border-radius: 20px;
     color: var(--accent);
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     font-weight: 600;
     cursor: pointer;
-    width: 100%;
-    text-align: left;
-    transition: background-color 0.15s ease;
+    transition: all 0.15s ease;
     user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+[data-theme="dark"] .subgroup-btn-add {
+    background: rgba(41, 151, 255, 0.14);
+    border-color: rgba(41, 151, 255, 0.25);
 }
 
 .subgroup-btn-add:hover {
-    background: rgba(0, 113, 227, 0.05);
-}
-
-[data-theme="dark"] .subgroup-btn-add:hover {
-    background: rgba(41, 151, 255, 0.08);
+    background: rgba(0, 113, 227, 0.15);
+    border-color: var(--accent);
+    transform: translateY(-0.5px);
 }
 
 .subgroup-btn-add:active {
-    opacity: 0.7;
+    transform: scale(0.96);
+}
+
+.subgroup-btn-add-icon {
+    font-size: 0.95rem;
+    line-height: 1;
+    font-weight: 700;
 }
 
 .available-custom-badge {
