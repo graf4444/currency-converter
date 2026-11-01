@@ -107,13 +107,27 @@ function applyLocalization() {
     if (targetSearch) targetSearch.placeholder = state.lang === 'ru' ? 'Поиск по коду или названию...' : 'Search code or name...';
 
     const lblRate = document.getElementById('ui-lbl-rate-calc');
-    if (lblRate) lblRate.textContent = state.lang === 'ru' ? 'Курс покупки' : 'Purchase Rate';
+    if (lblRate) lblRate.textContent = state.lang === 'ru' ? 'Ваш курс' : 'Your Rate';
+
+    const btnUseMarket = document.getElementById('btn-use-market-rate');
+    if (btnUseMarket) btnUseMarket.textContent = state.lang === 'ru' ? 'Подставить' : 'Use Market';
 
     const lblNote = document.getElementById('ui-lbl-note');
     if (lblNote) lblNote.textContent = state.lang === 'ru' ? 'Примечание' : 'Note';
 
     const inputNote = document.getElementById('custom-note-input');
     if (inputNote) inputNote.placeholder = state.lang === 'ru' ? 'Например: Наличные для отпуска' : 'e.g., Vacation cash';
+
+    const noteChips = document.querySelectorAll('.note-chip');
+    const chipPresets = state.lang === 'ru' 
+        ? ['Отпуск', 'Обменник', 'Банк', 'Зарплата'] 
+        : ['Vacation', 'Exchange', 'Bank', 'Salary'];
+    noteChips.forEach((chip, idx) => {
+        if (chipPresets[idx]) {
+            chip.textContent = chipPresets[idx];
+            chip.dataset.note = chipPresets[idx];
+        }
+    });
 
     const lblNewCode = document.getElementById('ui-lbl-new-code');
     if (lblNewCode) lblNewCode.textContent = state.lang === 'ru' ? 'Код' : 'Code';
@@ -188,6 +202,10 @@ function renderMain() {
         const isCustom = Boolean(state.customCurrencies && state.customCurrencies[code]);
         const customItem = isCustom ? state.customCurrencies[code] : null;
 
+        const rootCode = typeof getCurrencyRootCode === 'function' ? getCurrencyRootCode(code) : code;
+        const variants = typeof getCurrencyVariants === 'function' ? getCurrencyVariants(rootCode) : [];
+        const hasMultipleVariants = variants.length > 1;
+
         let dbItem;
         let displayCode;
         let nameLocal;
@@ -199,6 +217,9 @@ function renderMain() {
             dbItem = { f: customItem.flag || '🏷️' };
             nameLocal = getCurrencyName(code);
 
+            const baseSymbol = typeof getCurrencySymbol === 'function' 
+                ? getCurrencySymbol(displayCode) 
+                : displayCode;
             const targetSymbol = typeof getCurrencySymbol === 'function' 
                 ? getCurrencySymbol(customItem.rateCurrency || 'USD') 
                 : (customItem.rateCurrency || 'USD');
@@ -206,16 +227,24 @@ function renderMain() {
                 ? formatNumberString(String(customItem.rateValue)) 
                 : String(customItem.rateValue);
             
-            const ratePillText = `${formattedRate} ${targetSymbol}`;
+            const ratePillText = customItem.rateDirection === 'reverse'
+                ? `1 ${targetSymbol} = ${formattedRate} ${baseSymbol}`
+                : `1 ${baseSymbol} = ${formattedRate} ${targetSymbol}`;
 
-            const noteSnippet = customItem.note 
-                ? ` • <span class="custom-note-text">${escapeHTML(customItem.note)}</span>` 
-                : '';
+            const pillTooltip = state.lang === 'ru'
+                ? `Свой курс: ${ratePillText} (нажмите для выбора варианта или редактирования)`
+                : `Custom rate: ${ratePillText} (tap to select variant or edit)`;
 
-            subtitleHTML = `<span class="c-name">${escapeHTML(nameLocal)}${noteSnippet}</span>`;
+            if (customItem.note) {
+                subtitleHTML = `<span class="c-name"><span class="custom-card-note">${escapeHTML(customItem.note)}</span> <span class="custom-card-subname">• ${escapeHTML(nameLocal)}</span></span>`;
+            } else {
+                subtitleHTML = `<span class="c-name">${escapeHTML(nameLocal)}</span>`;
+            }
+
             customPillHTML = `
-                <button type="button" class="custom-rate-pill" data-edit-id="${code}" title="${state.lang === 'ru' ? 'Нажмите для изменения курса' : 'Tap to edit rate'}" aria-label="Edit custom rate">
+                <button type="button" class="custom-rate-pill" data-variant-root="${rootCode}" data-edit-id="${code}" title="${escapeHTML(pillTooltip)}" aria-label="Switch rate variant">
                     <span class="custom-rate-pill-val">${ratePillText}</span>
+                    <span class="custom-rate-pill-arrow">▾</span>
                 </button>
             `;
         } else {
@@ -223,6 +252,19 @@ function renderMain() {
             dbItem = (typeof currencyDb !== 'undefined' && currencyDb[code]) ? currencyDb[code] : { f: "🏳️" };
             nameLocal = getCurrencyName(code);
             subtitleHTML = `<span class="c-name">${escapeHTML(nameLocal)}</span>`;
+
+            if (hasMultipleVariants) {
+                const marketLabel = typeof getCustomI18n === 'function' ? getCustomI18n('marketTag', 'Биржевой') : (state.lang === 'ru' ? 'Биржевой' : 'Market');
+                const pillTooltip = state.lang === 'ru'
+                    ? 'Биржевой курс (нажмите для выбора своего курса)'
+                    : 'Market rate (tap to switch to custom rate)';
+                customPillHTML = `
+                    <button type="button" class="custom-rate-pill market-pill" data-variant-root="${rootCode}" title="${escapeHTML(pillTooltip)}" aria-label="Switch rate variant">
+                        <span class="custom-rate-pill-val">${marketLabel}</span>
+                        <span class="custom-rate-pill-arrow">▾</span>
+                    </button>
+                `;
+            }
         }
 
         const card = document.createElement('div');
@@ -235,7 +277,7 @@ function renderMain() {
             <div class="currency-meta">
                 <span class="flag">${dbItem.f}</span>
                 <div class="code-name">
-                    <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <div class="c-code-row">
                         <span class="c-code">${displayCode}</span>
                         ${customPillHTML}
                     </div>
@@ -262,8 +304,12 @@ function renderMain() {
         if (customPill) {
             customPill.addEventListener('click', (e) => {
                 e.stopPropagation();
-                if (typeof openCustomRateModal === 'function') {
-                    openCustomRateModal({ editId: code });
+                const variantRoot = customPill.dataset.variantRoot;
+                if (variantRoot && typeof openVariantSelectorModal === 'function') {
+                    openVariantSelectorModal(variantRoot);
+                } else if (typeof openCustomRateModal === 'function') {
+                    const editId = customPill.dataset.editId || code;
+                    openCustomRateModal({ editId });
                 }
             });
         }

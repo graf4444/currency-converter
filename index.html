@@ -141,7 +141,7 @@
                 <div class="spinner" id="loader" aria-hidden="true"></div>
             </div>
             <div id="last-update"></div>
-            <div id="app-version" class="app-version">v1.21.1 (2026-10-29 22:15)</div>
+            <div id="app-version" class="app-version">v1.21.2 (2026-11-01 18:23)</div>
         </div>
 
         <div class="footer-links">
@@ -243,23 +243,59 @@
 
         <div class="custom-modal-scrollable">
             <div class="form-group">
-                <label class="form-label" id="ui-lbl-base-curr">Валюта</label>
-                <div class="custom-picker-container" id="picker-base-container">
-                    <button type="button" class="custom-picker-btn" id="custom-base-btn" aria-haspopup="listbox" aria-expanded="false">
-                        <span class="picker-flag" id="base-picker-flag">🇺🇸</span>
-                        <span class="picker-code" id="base-picker-code">USD</span>
-                        <span class="picker-sep">—</span>
-                        <span class="picker-name" id="base-picker-name">Доллар США</span>
-                        <span class="picker-arrow">▾</span>
-                    </button>
-                    <div class="custom-picker-dropdown" id="base-picker-dropdown" hidden>
-                        <div class="picker-search-wrap">
-                            <input type="text" class="picker-search-input" id="base-picker-search" placeholder="Поиск по коду или названию..." autocomplete="off">
+                <label class="form-label" id="ui-lbl-rate-calc">Ваш курс</label>
+                <div class="rate-equation-box">
+                    <span class="rate-eq-qty">1</span>
+
+                    <div class="formula-picker-container" id="picker-base-container">
+                        <button type="button" class="formula-picker-btn" id="custom-base-btn" aria-haspopup="listbox" aria-expanded="false" title="Базовая валюта">
+                            <span class="picker-flag" id="base-picker-flag">🇺🇸</span>
+                            <span class="picker-code" id="base-picker-code">USD</span>
+                            <span class="formula-picker-arrow">▾</span>
+                        </button>
+                        <div class="custom-picker-dropdown dropdown-left" id="base-picker-dropdown" hidden>
+                            <div class="picker-search-wrap">
+                                <input type="text" class="picker-search-input" id="base-picker-search" placeholder="Поиск по коду или названию..." autocomplete="off">
+                            </div>
+                            <div class="picker-list" id="base-picker-list" role="listbox"></div>
                         </div>
-                        <div class="picker-list" id="base-picker-list" role="listbox"></div>
+                    </div>
+
+                    <span class="rate-eq-equals">=</span>
+
+                    <div class="rate-eq-input-wrap">
+                        <input type="text" inputmode="decimal" class="rate-input" id="custom-rate-val" placeholder="0.00" autocomplete="off">
+                    </div>
+
+                    <div class="formula-picker-container" id="picker-target-container">
+                        <button type="button" class="formula-picker-btn" id="custom-target-btn" aria-haspopup="listbox" aria-expanded="false" title="К какой валюте">
+                            <span class="picker-flag" id="target-picker-flag">🇷🇺</span>
+                            <span class="picker-code" id="target-picker-code">RUB</span>
+                            <span class="formula-picker-arrow">▾</span>
+                        </button>
+                        <div class="custom-picker-dropdown dropdown-right" id="target-picker-dropdown" hidden>
+                            <div class="picker-search-wrap">
+                                <input type="text" class="picker-search-input" id="target-picker-search" placeholder="Поиск по коду или названию..." autocomplete="off">
+                            </div>
+                            <div class="picker-list" id="target-picker-list" role="listbox"></div>
+                        </div>
                     </div>
                 </div>
+
+                <div class="rate-market-hint-row" id="rate-market-hint-row">
+                    <span id="custom-market-hint-text">Биржевой: 80.30 ₽</span>
+                    <button type="button" class="btn-use-market" id="btn-use-market-rate">Подставить</button>
+                </div>
+
+                <!-- Hidden helper elements for backwards compatibility -->
                 <select id="custom-base-select" style="display:none;"></select>
+                <select id="custom-target-select" style="display:none;"></select>
+                <span id="base-picker-name" style="display:none;"></span>
+                <span id="target-picker-name" style="display:none;"></span>
+                <span id="rate-base-flag" style="display:none;"></span>
+                <span id="rate-base-code-badge" style="display:none;"></span>
+                <span id="rate-target-flag" style="display:none;"></span>
+                <span id="rate-target-code-badge" style="display:none;"></span>
             </div>
 
             <!-- Optional: shows only when user chooses "+ Своя валюта" -->
@@ -275,51 +311,14 @@
             </div>
 
             <div class="form-group">
-                <label class="form-label" id="ui-lbl-target-curr">К какой валюте</label>
-                <div class="custom-picker-container" id="picker-target-container">
-                    <button type="button" class="custom-picker-btn" id="custom-target-btn" aria-haspopup="listbox" aria-expanded="false">
-                        <span class="picker-flag" id="target-picker-flag">🇷🇺</span>
-                        <span class="picker-code" id="target-picker-code">RUB</span>
-                        <span class="picker-sep">—</span>
-                        <span class="picker-name" id="target-picker-name">Российский рубль</span>
-                        <span class="picker-arrow">▾</span>
-                    </button>
-                    <div class="custom-picker-dropdown" id="target-picker-dropdown" hidden>
-                        <div class="picker-search-wrap">
-                            <input type="text" class="picker-search-input" id="target-picker-search" placeholder="Поиск по коду или названию..." autocomplete="off">
-                        </div>
-                        <div class="picker-list" id="target-picker-list" role="listbox"></div>
-                    </div>
-                </div>
-                <select id="custom-target-select" style="display:none;"></select>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label" id="ui-lbl-rate-calc">Курс покупки</label>
-                <div class="rate-equation-box">
-                    <div class="rate-eq-left" id="rate-eq-left-badge" title="Выбрать базовую валюту">
-                        <span class="rate-eq-qty">1</span>
-                        <span class="rate-eq-flag" id="rate-base-flag">🇺🇸</span>
-                        <span class="rate-eq-code" id="rate-base-code-badge">USD</span>
-                        <span class="rate-eq-equals">=</span>
-                    </div>
-                    <div class="rate-eq-input-wrap">
-                        <input type="text" inputmode="decimal" class="rate-input" id="custom-rate-val" placeholder="0.00" autocomplete="off">
-                    </div>
-                    <div class="rate-eq-right" id="rate-eq-right-badge" title="Выбрать целевую валюту">
-                        <span class="rate-eq-flag" id="rate-target-flag">🇷🇺</span>
-                        <span class="rate-eq-code" id="rate-target-code-badge">RUB</span>
-                    </div>
-                </div>
-                <div class="rate-market-hint-row" id="rate-market-hint-row">
-                    <span id="custom-market-hint-text">Биржевой: 95.20 ₽</span>
-                    <button type="button" class="btn-use-market" id="btn-use-market-rate">Подставить</button>
-                </div>
-            </div>
-
-            <div class="form-group">
                 <label for="custom-note-input" class="form-label" id="ui-lbl-note">Примечание</label>
                 <input type="text" class="custom-text-input" id="custom-note-input" placeholder="Например: Наличные для отпуска" maxlength="50">
+                <div class="note-chips-row" id="custom-note-chips">
+                    <button type="button" class="note-chip" data-note="Отпуск">Отпуск</button>
+                    <button type="button" class="note-chip" data-note="Обменник">Обменник</button>
+                    <button type="button" class="note-chip" data-note="Банк">Банк</button>
+                    <button type="button" class="note-chip" data-note="Зарплата">Зарплата</button>
+                </div>
             </div>
 
             <div class="custom-footer-note">
@@ -337,7 +336,32 @@
     </div>
 </div>
 
+<!-- Currency Rate Variant Selector Modal -->
+<div class="modal" id="variant-selector-modal" role="dialog" aria-modal="true" aria-labelledby="variant-modal-title" aria-hidden="true">
+    <div class="modal-content variant-modal-content">
+        <div class="modal-header">
+            <div class="variant-modal-header-info">
+                <span class="variant-modal-flag" id="variant-modal-flag">🇺🇸</span>
+                <div class="variant-modal-titles">
+                    <h3 id="variant-modal-title">Варианты курса USD</h3>
+                    <span class="variant-modal-subtitle" id="variant-modal-subtitle">Доллар США</span>
+                </div>
+            </div>
+            <button class="close-modal" id="variant-modal-close-btn" aria-label="Закрыть">✕</button>
+        </div>
 
+        <div class="variant-options-list" id="variant-options-list" role="radiogroup">
+            <!-- Dynamically populated variant cards -->
+        </div>
+
+        <div class="variant-modal-footer">
+            <button type="button" class="btn-variant-add-new" id="btn-variant-add-new">
+                <span class="btn-variant-add-icon">➕</span>
+                <span id="btn-variant-add-text">Зафиксировать свой курс...</span>
+            </button>
+        </div>
+    </div>
+</div>
 
 <div class="keypad-container" id="virtual-keypad" aria-label="Calculator Keypad" hidden>
     <div class="keypad-header">

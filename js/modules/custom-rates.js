@@ -65,7 +65,24 @@ function getPickerItemMeta(code) {
 /**
  * Selects a currency in the searchable picker and updates UI.
  */
-function selectPickerCurrency(type, code, updateHint = true) {
+function selectPickerCurrency(type, rawCode, updateHint = true) {
+    let code = rawCode;
+    // Guard: Never allow custom currency IDs to be selected as base or target
+    if (code !== '__NEW__' && (!currencyDb || !currencyDb[code])) {
+        if (state && state.customCurrencies && state.customCurrencies[code]) {
+            const item = state.customCurrencies[code];
+            if (item.baseCode && currencyDb && currencyDb[item.baseCode]) {
+                code = item.baseCode;
+            } else if (type === 'base') {
+                code = '__NEW__';
+            } else {
+                code = 'RUB';
+            }
+        } else {
+            code = type === 'base' ? 'USD' : 'RUB';
+        }
+    }
+
     const hiddenSelect = document.getElementById(`custom-${type}-select`);
     if (hiddenSelect) hiddenSelect.value = code;
 
@@ -266,6 +283,10 @@ function updateMarketRateHint() {
     const baseFlag = document.getElementById('rate-base-flag');
     const targetBadge = document.getElementById('rate-target-code-badge');
     const targetFlag = document.getElementById('rate-target-flag');
+    const basePickerCode = document.getElementById('base-picker-code');
+    const basePickerFlag = document.getElementById('base-picker-flag');
+    const targetPickerCode = document.getElementById('target-picker-code');
+    const targetPickerFlag = document.getElementById('target-picker-flag');
     const extraFields = document.getElementById('custom-currency-extra-fields');
 
     if (!baseSelect || !targetSelect) return;
@@ -275,27 +296,29 @@ function updateMarketRateHint() {
 
     // Target emoji & badge in equation row
     if (targetBadge) targetBadge.textContent = target;
-    if (targetFlag) {
-        const targetMeta = (typeof currencyDb !== 'undefined' && currencyDb[target]) ? currencyDb[target] : { f: '💵' };
-        targetFlag.textContent = targetMeta.f || '💵';
-    }
+    if (targetPickerCode) targetPickerCode.textContent = target;
+    const targetMeta = (typeof currencyDb !== 'undefined' && currencyDb[target]) ? currencyDb[target] : { f: '💵' };
+    if (targetFlag) targetFlag.textContent = targetMeta.f || '💵';
+    if (targetPickerFlag) targetPickerFlag.textContent = targetMeta.f || '💵';
 
     if (base === '__NEW__') {
         if (extraFields) extraFields.style.display = 'grid';
         const codeInput = document.getElementById('new-curr-code');
         const codeVal = (codeInput && codeInput.value.trim().toUpperCase()) || 'NEW';
         if (baseBadge) baseBadge.textContent = codeVal;
+        if (basePickerCode) basePickerCode.textContent = codeVal;
         if (baseFlag) baseFlag.textContent = '🏷️';
+        if (basePickerFlag) basePickerFlag.textContent = '🏷️';
         if (hintRow) hintRow.style.display = 'none';
         return;
     }
 
     if (extraFields) extraFields.style.display = 'none';
     if (baseBadge) baseBadge.textContent = base;
-    if (baseFlag) {
-        const baseMeta = (typeof currencyDb !== 'undefined' && currencyDb[base]) ? currencyDb[base] : { f: '💵' };
-        baseFlag.textContent = baseMeta.f || '💵';
-    }
+    if (basePickerCode) basePickerCode.textContent = base;
+    const baseMeta = (typeof currencyDb !== 'undefined' && currencyDb[base]) ? currencyDb[base] : { f: '💵' };
+    if (baseFlag) baseFlag.textContent = baseMeta.f || '💵';
+    if (basePickerFlag) basePickerFlag.textContent = baseMeta.f || '💵';
     if (hintRow) hintRow.style.display = 'flex';
 
     const baseRateUSD = state.rates ? (state.rates[base] || 1) : 1;
@@ -334,6 +357,358 @@ function applyMarketRate() {
 }
 
 /**
+ * Resolves root currency code from either a standard code ('USD') or a custom ID ('cust_USD_...').
+ */
+function getCurrencyRootCode(codeOrId) {
+    if (!codeOrId) return '';
+    if (state && state.customCurrencies && state.customCurrencies[codeOrId]) {
+        const item = state.customCurrencies[codeOrId];
+        return (item.baseCode || item.code || codeOrId).toUpperCase();
+    }
+    return String(codeOrId).toUpperCase();
+}
+
+/**
+ * Returns all available variants (market rate + all custom locked rates) for a given root currency code.
+ */
+function getCurrencyVariants(rootCode) {
+    const root = (rootCode || '').toUpperCase();
+    const variants = [];
+
+    // 1. Market variant (if registered in currencyDb)
+    if (typeof currencyDb !== 'undefined' && currencyDb[root]) {
+        const dbItem = currencyDb[root];
+        const name = (dbItem.n && (dbItem.n[state.lang] || dbItem.n['en'])) || root;
+        variants.push({
+            id: root,
+            rootCode: root,
+            isMarket: true,
+            flag: dbItem.f || '💵',
+            name: name,
+            displayCode: root,
+            note: '',
+            rateCurrency: '',
+            rateValue: 0
+        });
+    }
+
+    // 2. Custom variants from state.customCurrencies
+    if (state && state.customCurrencies && typeof state.customCurrencies === 'object') {
+        Object.values(state.customCurrencies).forEach(custom => {
+            if (!custom || !custom.id) return;
+            const customRoot = (custom.baseCode || custom.code || '').toUpperCase();
+            if (customRoot === root) {
+                const name = custom.name || (typeof getCurrencyName === 'function' ? getCurrencyName(custom.id) : root);
+                variants.push({
+                    id: custom.id,
+                    rootCode: root,
+                    isMarket: false,
+                    flag: custom.flag || '🏷️',
+                    name: name,
+                    displayCode: custom.baseCode || custom.code || root,
+                    note: custom.note || '',
+                    rateCurrency: custom.rateCurrency || 'USD',
+                    rateValue: custom.rateValue,
+                    rateDirection: custom.rateDirection || 'direct',
+                    item: custom
+                });
+            }
+        });
+    }
+
+    return variants;
+}
+
+/**
+ * Returns which variant ID of rootCode is currently active in state.favorites.
+ */
+function getActiveVariantId(rootCode) {
+    const root = (rootCode || '').toUpperCase();
+    const variants = getCurrencyVariants(root);
+    const variantIds = variants.map(v => v.id);
+    const active = state && state.favorites ? state.favorites.find(id => variantIds.includes(id)) : null;
+    return active || (variants.length > 0 ? variants[0].id : root);
+}
+
+/**
+ * Sets targetVariantId as the single active variant for rootCode in favorites,
+ * replacing any previous variant of that currency in-place.
+ */
+function setCurrencyVariant(rootCode, targetVariantId, showToastNotice = false) {
+    const root = (rootCode || '').toUpperCase();
+    const variants = getCurrencyVariants(root);
+    const variantIds = variants.map(v => v.id);
+
+    if (!variantIds.includes(targetVariantId)) return;
+
+    if (!Array.isArray(state.favorites)) state.favorites = [];
+
+    const existingIdx = state.favorites.findIndex(id => variantIds.includes(id));
+    if (existingIdx !== -1) {
+        state.favorites[existingIdx] = targetVariantId;
+        state.favorites = state.favorites.filter((id, idx) => idx === existingIdx || !variantIds.includes(id));
+    } else {
+        state.favorites.push(targetVariantId);
+    }
+
+    permanentFavorites = [...state.favorites];
+
+    if (currentInputCode && variantIds.includes(currentInputCode)) {
+        currentInputCode = targetVariantId;
+    }
+
+    recomputeCustomRates();
+    saveState();
+    renderMain();
+
+    if (typeof filterCurrencies === 'function') {
+        filterCurrencies();
+    }
+
+    if (currentInputCode && currentInputValue !== '' && typeof recalculate === 'function') {
+        recalculate(currentInputCode, currentInputValue);
+    }
+
+    if (showToastNotice) {
+        const selected = variants.find(v => v.id === targetVariantId);
+        const name = selected ? (selected.note ? `${selected.name} (${selected.note})` : selected.name) : root;
+        const msg = (getCustomI18n('variantSwitched', 'Курс {code} переключен')).replace('{code}', name);
+        triggerCustomToast(msg);
+        triggerHaptic(12);
+    }
+}
+
+/**
+ * Sanitizes favorites list so each root currency has at most one variant present.
+ */
+function normalizeFavoritesVariants() {
+    if (!state || !state.favorites || !Array.isArray(state.favorites)) return;
+    const seenRoots = new Set();
+    const cleaned = [];
+
+    state.favorites.forEach(code => {
+        if (!code) return;
+        const root = getCurrencyRootCode(code);
+        if (!seenRoots.has(root)) {
+            seenRoots.add(root);
+            cleaned.push(code);
+        }
+    });
+
+    if (cleaned.length !== state.favorites.length) {
+        state.favorites = cleaned;
+        permanentFavorites = [...state.favorites];
+        saveState();
+    }
+}
+
+/**
+ * Opens Variant Selector Modal to choose between Market or Custom rates for a currency.
+ */
+function openVariantSelectorModal(rootCode) {
+    if (typeof closeVirtualKeypad === 'function') closeVirtualKeypad();
+
+    const root = (rootCode || '').toUpperCase();
+    const variants = getCurrencyVariants(root);
+    const activeId = getActiveVariantId(root);
+
+    const modal = document.getElementById('variant-selector-modal');
+    const titleEl = document.getElementById('variant-modal-title');
+    const subtitleEl = document.getElementById('variant-modal-subtitle');
+    const flagEl = document.getElementById('variant-modal-flag');
+    const listEl = document.getElementById('variant-options-list');
+    const addBtn = document.getElementById('btn-variant-add-new');
+    const addBtnText = document.getElementById('btn-variant-add-text');
+
+    if (!modal || !listEl) return;
+
+    const rootMeta = (typeof currencyDb !== 'undefined' && currencyDb[root]) ? currencyDb[root] : { f: '🏷️' };
+    const rootName = (rootMeta.n && (rootMeta.n[state.lang] || rootMeta.n['en'])) || (variants.length > 0 ? variants[0].name : root);
+
+    if (flagEl) flagEl.textContent = rootMeta.f || (variants.length > 0 ? variants[0].flag : '🏷️');
+    if (titleEl) {
+        const titleTmpl = getCustomI18n('variantModalTitle', 'Варианты курса {code}');
+        titleEl.textContent = titleTmpl.replace('{code}', root);
+    }
+    if (subtitleEl) {
+        subtitleEl.textContent = rootName;
+    }
+    if (addBtnText) {
+        const addTmpl = getCustomI18n('btnVariantAdd', 'Зафиксировать ещё один курс {code}...');
+        addBtnText.textContent = addTmpl.replace('{code}', root);
+    }
+
+    const defaultTarget = getSmartDefaultTarget(root);
+    const defaultTargetSymbol = typeof getCurrencySymbol === 'function' ? getCurrencySymbol(defaultTarget) : defaultTarget;
+
+    listEl.innerHTML = variants.map(v => {
+        const isActive = v.id === activeId;
+        if (v.isMarket) {
+            const baseRateUSD = state.rates ? (state.rates[root] || 1) : 1;
+            const targetRateUSD = state.rates ? (state.rates[defaultTarget] || 1) : 1;
+            const marketRate = targetRateUSD / baseRateUSD;
+            const digits = getCurrencyDisplayDigits(marketRate, defaultTarget);
+            let formattedRate = marketRate.toFixed(digits);
+            if (digits > 2) formattedRate = formattedRate.replace(/(\.\d*?[1-9])0+$|\.0+$/, '$1');
+            const rateFormattedStr = formatNumberString(formattedRate);
+
+            const marketTitle = getCustomI18n('marketRateTitle', 'Биржевой курс');
+            const marketDesc = state.lang === 'ru'
+                ? `Текущий биржевой: 1 ${root} ≈ ${rateFormattedStr} ${defaultTargetSymbol}`
+                : `Live market rate: 1 ${root} ≈ ${rateFormattedStr} ${defaultTargetSymbol}`;
+            const tagLabel = getCustomI18n('marketTag', 'Биржевой');
+
+            return `
+                <div class="variant-option-card ${isActive ? 'is-active' : ''}" data-variant-id="${v.id}" role="radio" aria-checked="${isActive}">
+                    <div class="variant-option-left">
+                        <div class="variant-radio-circle">
+                            <span class="variant-radio-check">✓</span>
+                        </div>
+                        <div class="variant-option-info">
+                            <div class="variant-option-header-row">
+                                <span class="variant-option-name">${escapeHTML(marketTitle)}</span>
+                                <span class="variant-option-tag">${escapeHTML(tagLabel)}</span>
+                            </div>
+                            <div class="variant-option-desc">${escapeHTML(marketDesc)}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            const baseSymbol = typeof getCurrencySymbol === 'function' ? getCurrencySymbol(v.displayCode) : v.displayCode;
+            const targetSymbol = typeof getCurrencySymbol === 'function' ? getCurrencySymbol(v.rateCurrency) : v.rateCurrency;
+            const formattedRate = typeof formatNumberString === 'function' ? formatNumberString(String(v.rateValue)) : String(v.rateValue);
+            const rateBadgeText = v.rateDirection === 'reverse'
+                ? `1 ${targetSymbol} = ${formattedRate} ${baseSymbol}`
+                : `1 ${baseSymbol} = ${formattedRate} ${targetSymbol}`;
+
+            const nameText = v.note ? v.note : (state.lang === 'ru' ? 'Свой курс' : 'Custom rate');
+            const descText = state.lang === 'ru' ? 'Зафиксированный курс • Сохранено локально' : 'Locked exchange rate • Saved locally';
+
+            return `
+                <div class="variant-option-card ${isActive ? 'is-active' : ''}" data-variant-id="${v.id}" role="radio" aria-checked="${isActive}">
+                    <div class="variant-option-left">
+                        <div class="variant-radio-circle">
+                            <span class="variant-radio-check">✓</span>
+                        </div>
+                        <div class="variant-option-info">
+                            <div class="variant-option-header-row">
+                                <span class="variant-option-name">${escapeHTML(nameText)}</span>
+                                <span class="variant-option-rate-badge">${escapeHTML(rateBadgeText)}</span>
+                            </div>
+                            <div class="variant-option-desc">${escapeHTML(descText)}</div>
+                        </div>
+                    </div>
+                    <div class="variant-option-actions">
+                        <button type="button" class="variant-btn-edit" data-edit-id="${v.id}" title="${state.lang === 'ru' ? 'Редактировать курс' : 'Edit rate'}" aria-label="Edit rate">✎</button>
+                        <button type="button" class="variant-btn-delete" data-delete-id="${v.id}" title="${state.lang === 'ru' ? 'Удалить курс' : 'Delete rate'}" aria-label="Delete rate">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    }).join('');
+
+    listEl.querySelectorAll('.variant-option-card').forEach(cardEl => {
+        cardEl.addEventListener('click', (e) => {
+            if (e.target.closest('.variant-btn-edit') || e.target.closest('.variant-btn-delete')) return;
+            const variantId = cardEl.dataset.variantId;
+            setCurrencyVariant(root, variantId, true);
+            closeVariantSelectorModal();
+        });
+    });
+
+    listEl.querySelectorAll('.variant-btn-edit').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const editId = btn.dataset.editId;
+            closeVariantSelectorModal();
+            openCustomRateModal({ editId });
+        });
+    });
+
+    listEl.querySelectorAll('.variant-btn-delete').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const delId = btn.dataset.deleteId;
+            deleteCustomRateWithUndo(delId);
+        });
+    });
+
+    if (addBtn) {
+        addBtn.onclick = () => {
+            closeVariantSelectorModal();
+            if (typeof currencyDb !== 'undefined' && currencyDb[root]) {
+                openCustomRateModal({ baseCode: root });
+            } else {
+                openCustomRateModal({ baseCode: '__NEW__' });
+            }
+        };
+    }
+
+    modal.style.display = 'flex';
+    modal.setAttribute('aria-hidden', 'false');
+}
+
+/**
+ * Cleans up any legacy or corrupted custom currencies (e.g. custom rates accidentally created on custom rates).
+ */
+function sanitizeCustomCurrencies() {
+    if (!state || !state.customCurrencies || typeof state.customCurrencies !== 'object') return;
+
+    let modified = false;
+    Object.keys(state.customCurrencies).forEach(id => {
+        const item = state.customCurrencies[id];
+        if (!item) return;
+
+        // 1. If baseCode points to a custom ID
+        if (item.baseCode && (item.baseCode.startsWith('cust_') || state.customCurrencies[item.baseCode])) {
+            const parent = state.customCurrencies[item.baseCode];
+            if (parent && parent.baseCode && currencyDb && currencyDb[parent.baseCode]) {
+                item.baseCode = parent.baseCode;
+                item.code = parent.baseCode;
+            } else {
+                item.baseCode = null;
+                item.code = (item.code || 'CUSTOM').replace(/^cust_/i, '').toUpperCase().slice(0, 8);
+            }
+            modified = true;
+        }
+
+        // 2. If baseCode is not registered in currencyDb
+        if (item.baseCode && (!currencyDb || !currencyDb[item.baseCode])) {
+            item.baseCode = null;
+            modified = true;
+        }
+
+        // 3. If rateCurrency points to a custom ID or not in currencyDb
+        if (item.rateCurrency && (!currencyDb || !currencyDb[item.rateCurrency] || item.rateCurrency.startsWith('cust_'))) {
+            const parent = state.customCurrencies[item.rateCurrency];
+            if (parent && parent.rateCurrency && currencyDb && currencyDb[parent.rateCurrency]) {
+                item.rateCurrency = parent.rateCurrency;
+            } else {
+                item.rateCurrency = 'RUB';
+            }
+            modified = true;
+        }
+    });
+
+    if (modified) {
+        saveState();
+    }
+}
+
+function closeVariantSelectorModal() {
+    const modal = document.getElementById('variant-selector-modal');
+    if (modal) {
+        modal.style.display = 'none';
+        modal.setAttribute('aria-hidden', 'true');
+    }
+}
+
+/**
  * Opens Custom Rate Modal for creating or editing.
  */
 function openCustomRateModal({ baseCode, editId } = {}) {
@@ -364,7 +739,7 @@ function openCustomRateModal({ baseCode, editId } = {}) {
         if (deleteBtn) deleteBtn.style.display = 'inline-block';
         if (saveBtn) saveBtn.textContent = state.lang === 'ru' ? 'Сохранить' : 'Save';
 
-        if (item.baseCode) {
+        if (item.baseCode && currencyDb && currencyDb[item.baseCode]) {
             initialBase = item.baseCode;
             if (extraFields) extraFields.style.display = 'none';
         } else {
@@ -374,7 +749,7 @@ function openCustomRateModal({ baseCode, editId } = {}) {
             if (newNameInput) newNameInput.value = item.name || '';
         }
 
-        initialTarget = item.rateCurrency || 'RUB';
+        initialTarget = (item.rateCurrency && currencyDb && currencyDb[item.rateCurrency]) ? item.rateCurrency : 'RUB';
         if (rateInput) rateInput.value = item.rateValue || '';
         if (noteInput) noteInput.value = item.note || '';
     } else {
@@ -382,10 +757,45 @@ function openCustomRateModal({ baseCode, editId } = {}) {
         if (deleteBtn) deleteBtn.style.display = 'none';
         if (saveBtn) saveBtn.textContent = state.lang === 'ru' ? 'Сохранить' : 'Save';
 
-        initialBase = baseCode || (state.favorites && state.favorites[0]) || 'USD';
-        initialTarget = getSmartDefaultTarget(initialBase);
+        // STRICT RESOLUTION OF BASE CURRENCY (NEVER ALLOW CUSTOM IDS)
+        let resolvedBase = null;
 
-        if (extraFields) extraFields.style.display = 'none';
+        if (baseCode) {
+            if (baseCode === '__NEW__') {
+                resolvedBase = '__NEW__';
+            } else if (currencyDb && currencyDb[baseCode]) {
+                resolvedBase = baseCode;
+            } else if (state.customCurrencies && state.customCurrencies[baseCode]) {
+                const c = state.customCurrencies[baseCode];
+                resolvedBase = (c.baseCode && currencyDb && currencyDb[c.baseCode]) ? c.baseCode : '__NEW__';
+            } else {
+                resolvedBase = 'USD';
+            }
+        } else if (state.favorites && state.favorites.length > 0) {
+            for (const fav of state.favorites) {
+                if (currencyDb && currencyDb[fav]) {
+                    resolvedBase = fav;
+                    break;
+                }
+                if (state.customCurrencies && state.customCurrencies[fav]) {
+                    const c = state.customCurrencies[fav];
+                    if (c.baseCode && currencyDb && currencyDb[c.baseCode]) {
+                        resolvedBase = c.baseCode;
+                        break;
+                    }
+                }
+            }
+        }
+
+        initialBase = resolvedBase || 'USD';
+        initialTarget = getSmartDefaultTarget(initialBase === '__NEW__' ? 'USD' : initialBase);
+
+        if (initialBase === '__NEW__') {
+            if (extraFields) extraFields.style.display = 'grid';
+        } else {
+            if (extraFields) extraFields.style.display = 'none';
+        }
+
         if (rateInput) rateInput.value = '';
         if (noteInput) noteInput.value = '';
 
@@ -396,6 +806,12 @@ function openCustomRateModal({ baseCode, editId } = {}) {
     selectPickerCurrency('base', initialBase, false);
     selectPickerCurrency('target', initialTarget, false);
     updateMarketRateHint();
+
+    const curNote = (noteInput && noteInput.value.trim()) || '';
+    document.querySelectorAll('.note-chip').forEach(c => {
+        const tag = c.dataset.note || c.textContent.trim();
+        c.classList.toggle('is-active', Boolean(curNote && tag === curNote));
+    });
 
     if (modal) {
         modal.style.display = 'flex';
@@ -448,7 +864,8 @@ function saveCustomRate() {
     if (baseVal === '__NEW__') {
         const newCodeInput = document.getElementById('new-curr-code');
         const newNameInput = document.getElementById('new-curr-name');
-        const code = (newCodeInput && newCodeInput.value.trim().toUpperCase()) || '';
+        let code = (newCodeInput && newCodeInput.value.trim().toUpperCase()) || '';
+        code = code.replace(/^CUST_/, '');
 
         if (!code || code.length < 2 || code.length > 8) {
             triggerCustomToast(state.lang === 'ru' ? 'Укажите код валюты (2-8 букв)' : 'Enter currency code (2-8 chars)');
@@ -456,6 +873,7 @@ function saveCustomRate() {
             return;
         }
 
+        const validTarget = (currencyDb && currencyDb[rateCurrency]) ? rateCurrency : 'RUB';
         const name = (newNameInput && newNameInput.value.trim()) || code;
         const id = currentEditCustomId || `cust_new_${code}_${Date.now().toString(36)}`;
 
@@ -467,18 +885,25 @@ function saveCustomRate() {
             name,
             note,
             rateValue,
-            rateCurrency,
+            rateCurrency: validTarget,
             rateDirection: 'direct',
             isCustom: true,
             updatedAt: Date.now()
         };
 
-        if (!state.favorites.includes(id)) {
-            state.favorites.push(id);
-        }
+        setCurrencyVariant(code, id);
     } else {
-        const baseCode = baseVal;
-        const baseItem = (typeof currencyDb !== 'undefined' && currencyDb[baseCode]) ? currencyDb[baseCode] : { f: '💵' };
+        let baseCode = baseVal;
+        if (!currencyDb || !currencyDb[baseCode]) {
+            const root = getCurrencyRootCode(baseCode);
+            if (currencyDb && currencyDb[root]) {
+                baseCode = root;
+            } else {
+                baseCode = 'USD';
+            }
+        }
+        const validTarget = (currencyDb && currencyDb[rateCurrency]) ? rateCurrency : 'RUB';
+        const baseItem = currencyDb[baseCode] || { f: '💵' };
         const id = currentEditCustomId || `cust_${baseCode}_${Date.now().toString(36)}`;
 
         state.customCurrencies[id] = {
@@ -489,20 +914,13 @@ function saveCustomRate() {
             name: getCurrencyName(baseCode),
             note,
             rateValue,
-            rateCurrency,
+            rateCurrency: validTarget,
             rateDirection: 'direct',
             isCustom: true,
             updatedAt: Date.now()
         };
 
-        if (!state.favorites.includes(id)) {
-            const baseIdx = state.favorites.indexOf(baseCode);
-            if (baseIdx !== -1) {
-                state.favorites.splice(baseIdx + 1, 0, id);
-            } else {
-                state.favorites.unshift(id);
-            }
-        }
+        setCurrencyVariant(baseCode, id);
     }
 
     permanentFavorites = [...state.favorites];
@@ -511,37 +929,209 @@ function saveCustomRate() {
     renderMain();
     if (typeof filterCurrencies === 'function') filterCurrencies();
     closeCustomRateModal();
+    closeVariantSelectorModal();
     triggerCustomToast(state.lang === 'ru' ? 'Курс сохранён' : 'Rate saved');
     triggerHaptic(15);
 }
 
+let lastDeletedCustomRate = null;
+let undoToastTimer = null;
+
+function hideUndoToast() {
+    clearTimeout(undoToastTimer);
+    const toast = document.getElementById('undo-toast');
+    if (toast) {
+        toast.classList.remove('show');
+        toast.classList.remove('is-animating');
+    }
+}
+
+function showUndoToast(rateName, onUndo) {
+    let toast = document.getElementById('undo-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'undo-toast';
+        toast.className = 'undo-toast';
+        toast.setAttribute('role', 'alert');
+        toast.setAttribute('aria-live', 'assertive');
+        document.body.appendChild(toast);
+    }
+
+    const undoLabel = getCustomI18n('undoAction', 'Отменить');
+    const deleteTmpl = getCustomI18n('rateDeletedUndo', 'Курс «{name}» удалён');
+    const msg = deleteTmpl.replace('{name}', rateName);
+
+    toast.innerHTML = `
+        <div class="undo-toast-content">
+            <span class="undo-toast-icon">🗑️</span>
+            <span class="undo-toast-message">${escapeHTML(msg)}</span>
+            <button type="button" class="undo-toast-btn" id="undo-toast-action">${escapeHTML(undoLabel)}</button>
+            <button type="button" class="undo-toast-close" id="undo-toast-close" aria-label="✕">✕</button>
+        </div>
+        <div class="undo-toast-progress"><div class="undo-toast-progress-bar"></div></div>
+    `;
+
+    const actionBtn = toast.querySelector('#undo-toast-action');
+    const closeBtn = toast.querySelector('#undo-toast-close');
+
+    if (actionBtn) {
+        actionBtn.onclick = (e) => {
+            e.stopPropagation();
+            hideUndoToast();
+            if (typeof onUndo === 'function') onUndo();
+        };
+    }
+
+    if (closeBtn) {
+        closeBtn.onclick = (e) => {
+            e.stopPropagation();
+            hideUndoToast();
+            lastDeletedCustomRate = null;
+        };
+    }
+
+    toast.classList.remove('show', 'is-animating');
+    void toast.offsetWidth; // Force CSS reflow to restart progress animation
+    toast.classList.add('show', 'is-animating');
+
+    clearTimeout(undoToastTimer);
+    undoToastTimer = setTimeout(() => {
+        hideUndoToast();
+        lastDeletedCustomRate = null;
+    }, 5500);
+}
+
+function restoreLastDeletedRate() {
+    if (!lastDeletedCustomRate || !lastDeletedCustomRate.data) return;
+
+    const { id, data, rootCode, wasActive, activeIndex, rateName } = lastDeletedCustomRate;
+
+    if (!state.customCurrencies || typeof state.customCurrencies !== 'object') {
+        state.customCurrencies = {};
+    }
+    state.customCurrencies[id] = data;
+
+    if (wasActive) {
+        const variants = getCurrencyVariants(rootCode);
+        const variantIds = variants.map(v => v.id);
+        const existingIdx = state.favorites.findIndex(c => variantIds.includes(c));
+        if (existingIdx !== -1) {
+            state.favorites[existingIdx] = id;
+        } else {
+            if (activeIndex !== -1 && activeIndex <= state.favorites.length) {
+                state.favorites.splice(activeIndex, 0, id);
+            } else {
+                state.favorites.push(id);
+            }
+        }
+    }
+
+    state.favorites = [...new Set(state.favorites.filter(Boolean))];
+    permanentFavorites = [...state.favorites];
+
+    lastDeletedCustomRate = null;
+    hideUndoToast();
+
+    recomputeCustomRates();
+    saveState();
+    renderMain();
+
+    if (typeof filterCurrencies === 'function') {
+        if (typeof expandedCurrencyRoots !== 'undefined') {
+            expandedCurrencyRoots.add(rootCode);
+        }
+        filterCurrencies();
+    }
+
+    const variantModal = document.getElementById('variant-selector-modal');
+    if (variantModal && variantModal.style.display === 'flex') {
+        openVariantSelectorModal(rootCode);
+    }
+
+    const restoreTmpl = getCustomI18n('rateRestoredToast', 'Курс «{name}» восстановлен');
+    const msg = restoreTmpl.replace('{name}', rateName);
+    triggerCustomToast(msg);
+    triggerHaptic(12);
+}
+
 /**
- * Deletes custom rate.
+ * Deletes custom rate with immediate execution and transient Undo option.
  */
-function deleteCustomRate(id) {
+function deleteCustomRateWithUndo(id) {
     const targetId = id || currentEditCustomId;
     if (!targetId || !state.customCurrencies || !state.customCurrencies[targetId]) return;
+
+    const item = state.customCurrencies[targetId];
+    const rootCode = (item.baseCode || item.code || '').toUpperCase();
+    const wasActive = state.favorites.includes(targetId);
+    const activeIndex = wasActive ? state.favorites.indexOf(targetId) : -1;
+    const rateName = item.note || item.name || rootCode;
+
+    lastDeletedCustomRate = {
+        id: targetId,
+        data: JSON.parse(JSON.stringify(item)),
+        rootCode,
+        wasActive,
+        activeIndex,
+        rateName
+    };
 
     delete state.customCurrencies[targetId];
     if (state.rates && state.rates[targetId]) {
         delete state.rates[targetId];
     }
 
-    state.favorites = state.favorites.filter(c => c !== targetId);
+    if (wasActive) {
+        const remaining = getCurrencyVariants(rootCode);
+        if (remaining.length > 0) {
+            state.favorites[activeIndex] = remaining[0].id;
+        } else {
+            state.favorites = state.favorites.filter(c => c !== targetId);
+        }
+    } else {
+        state.favorites = state.favorites.filter(c => c !== targetId);
+    }
+
+    state.favorites = [...new Set(state.favorites.filter(Boolean))];
     permanentFavorites = [...state.favorites];
 
     if (currentInputCode === targetId) {
-        currentInputCode = null;
-        currentInputValue = '';
+        const remaining = getCurrencyVariants(rootCode);
+        currentInputCode = remaining.length > 0 ? remaining[0].id : null;
+        if (!currentInputCode) currentInputValue = '';
     }
 
     recomputeCustomRates();
     saveState();
     renderMain();
-    if (typeof filterCurrencies === 'function') filterCurrencies();
+
+    if (typeof filterCurrencies === 'function') {
+        filterCurrencies();
+    }
+
+    const variantModal = document.getElementById('variant-selector-modal');
+    if (variantModal && variantModal.style.display === 'flex') {
+        const remaining = getCurrencyVariants(rootCode);
+        if (remaining.length <= 1) {
+            closeVariantSelectorModal();
+        } else {
+            openVariantSelectorModal(rootCode);
+        }
+    }
+
     closeCustomRateModal();
-    triggerCustomToast(state.lang === 'ru' ? 'Курс удалён' : 'Rate deleted');
     triggerHaptic(15);
+
+    showUndoToast(rateName, () => {
+        restoreLastDeletedRate();
+    });
+}
+
+/**
+ * Deletes custom rate (delegates to deleteCustomRateWithUndo).
+ */
+function deleteCustomRate(id) {
+    deleteCustomRateWithUndo(id);
 }
 
 /**
@@ -605,6 +1195,35 @@ function setupCustomRateEvents() {
         });
     }
 
+    const noteInput = document.getElementById('custom-note-input');
+    const noteChips = document.querySelectorAll('.note-chip');
+    noteChips.forEach(chip => {
+        chip.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (!noteInput) return;
+            const tag = chip.dataset.note || chip.textContent.trim();
+            if (noteInput.value.trim() === tag) {
+                noteInput.value = '';
+                chip.classList.remove('is-active');
+            } else {
+                noteInput.value = tag;
+                noteChips.forEach(c => c.classList.remove('is-active'));
+                chip.classList.add('is-active');
+            }
+            if (typeof triggerHaptic === 'function') triggerHaptic(10);
+        });
+    });
+
+    if (noteInput) {
+        noteInput.addEventListener('input', () => {
+            const val = noteInput.value.trim();
+            noteChips.forEach(c => {
+                const tag = c.dataset.note || c.textContent.trim();
+                c.classList.toggle('is-active', tag === val);
+            });
+        });
+    }
+
     // Close pickers on outside click
     document.addEventListener('click', (e) => {
         if (!e.target.closest('#picker-base-container')) {
@@ -618,6 +1237,12 @@ function setupCustomRateEvents() {
     // Close on Escape
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
+            const variantModal = document.getElementById('variant-selector-modal');
+            if (variantModal && variantModal.style.display === 'flex') {
+                e.stopPropagation();
+                closeVariantSelectorModal();
+                return;
+            }
             const baseDropdown = document.getElementById('base-picker-dropdown');
             const targetDropdown = document.getElementById('target-picker-dropdown');
             if ((baseDropdown && !baseDropdown.hidden) || (targetDropdown && !targetDropdown.hidden)) {
@@ -626,4 +1251,17 @@ function setupCustomRateEvents() {
             }
         }
     });
+
+    const variantCloseBtn = document.getElementById('variant-modal-close-btn');
+    const variantModal = document.getElementById('variant-selector-modal');
+    if (variantCloseBtn) {
+        variantCloseBtn.addEventListener('click', closeVariantSelectorModal);
+    }
+    if (variantModal) {
+        variantModal.addEventListener('click', (e) => {
+            if (e.target === variantModal) {
+                closeVariantSelectorModal();
+            }
+        });
+    }
 }

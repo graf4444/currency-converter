@@ -117,6 +117,40 @@ function evaluateMathExpression(expr) {
 }
 
 /**
+ * Formats evaluated math calculation result cleanly for currency input display,
+ * eliminating IEEE 754 floating point inaccuracies (e.g. 0.30000000000000004 or 3.3333333333333335).
+ * 
+ * @param {number} value - Evaluated numeric result.
+ * @param {string} code - Currency code for contextual precision.
+ * @returns {string} Clean number string without trailing zeroes or floating noise.
+ */
+function formatMathResult(value, code) {
+    if (value === 0) return '0';
+    if (!isFinite(value) || isNaN(value)) return '';
+
+    const digits = (typeof getCurrencyDisplayDigits === 'function') 
+        ? getCurrencyDisplayDigits(value, code) 
+        : 2;
+
+    // Round off IEEE-754 precision noise at 10 decimals
+    const roundedClean = parseFloat(value.toFixed(10));
+    const roundedStr = roundedClean.toString();
+
+    const isCrypto = ['BTC', 'ETH', 'TON', 'SOL', 'USDT', 'DOGE', 'XRP', 'BNB'].includes(code);
+    const maxCleanDecimals = isCrypto ? Math.max(digits, 6) : Math.max(digits, 4);
+
+    const decPart = roundedStr.includes('.') ? roundedStr.split('.')[1] : '';
+
+    if (decPart.length <= maxCleanDecimals) {
+        return roundedStr;
+    }
+
+    let formatted = value.toFixed(digits);
+    formatted = formatted.replace(/(\.\d*?[1-9])0+$|\.0+$/, '$1');
+    return formatted;
+}
+
+/**
  * Applies evaluated math result to the specified input element.
  * 
  * @param {HTMLInputElement} input - Target input element.
@@ -130,14 +164,15 @@ function applyMathResult(input) {
     const calculated = evaluateMathExpression(rawValue);
     
     if (calculated !== null) {
-        const formatted = formatExpression(calculated.toString());
+        const cleanStr = formatMathResult(calculated, code);
+        const formatted = formatExpression(cleanStr);
         input.value = formatted;
         
         currentInputCode = code;
-        currentInputValue = calculated.toString();
+        currentInputValue = cleanStr;
         saveState();
         
         adjustFontSize(input);
-        recalculate(code, calculated.toString());
+        recalculate(code, cleanStr);
     }
 }

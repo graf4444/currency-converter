@@ -117,6 +117,8 @@ window.addEventListener('focus', () => {
 // ============================================================
 
 initSystemSettings();
+if (typeof sanitizeCustomCurrencies === 'function') sanitizeCustomCurrencies();
+if (typeof normalizeFavoritesVariants === 'function') normalizeFavoritesVariants();
 if (typeof recomputeCustomRates === 'function') recomputeCustomRates();
 applyLocalization();
 applyTheme();
