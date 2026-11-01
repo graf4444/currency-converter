@@ -571,6 +571,62 @@ function filterCurrencies() {
     }
 }
 
+function animateReorder(container, movingEl, afterElement) {
+    if (!movingEl || !container) return;
+    const currentNext = movingEl.nextElementSibling;
+    if (afterElement === movingEl || afterElement === currentNext) return;
+
+    // 1. FIRST: measure initial bounding boxes of non-dragging sibling items
+    const siblings = Array.from(container.querySelectorAll('.search-item:not(.dragging)'));
+    const initialTops = new Map();
+    siblings.forEach(el => {
+        initialTops.set(el, el.getBoundingClientRect().top);
+    });
+
+    // 2. Perform DOM reorder
+    if (afterElement == null) {
+        container.appendChild(movingEl);
+    } else {
+        container.insertBefore(movingEl, afterElement);
+    }
+
+    if (typeof triggerHaptic === 'function') {
+        triggerHaptic(8);
+    }
+
+    // 3. LAST & INVERT: measure new positions and animate smoothly
+    siblings.forEach(el => {
+        const oldTop = initialTops.get(el);
+        if (oldTop !== undefined) {
+            const newTop = el.getBoundingClientRect().top;
+            const deltaY = oldTop - newTop;
+            if (deltaY !== 0) {
+                el.style.transition = 'none';
+                el.style.transform = `translateY(${deltaY}px)`;
+
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        el.style.transition = 'transform 0.24s cubic-bezier(0.2, 0, 0, 1)';
+                        el.style.transform = '';
+                    });
+                });
+            }
+        }
+    });
+}
+
+function settleDroppedItem(item) {
+    if (!item) return;
+    item.classList.remove('dragging');
+    item.classList.add('just-dropped');
+    if (typeof triggerHaptic === 'function') {
+        triggerHaptic(18);
+    }
+    setTimeout(() => {
+        item.classList.remove('just-dropped');
+    }, 300);
+}
+
 function setupDragAndDropHandlers() {
     const container = document.getElementById('added-container');
     if (!container) return;
@@ -595,9 +651,12 @@ function setupDragAndDropHandlers() {
             const item = e.target.closest('.search-item');
             if (item) {
                 activeTouchEl = item;
+                if (typeof triggerHaptic === 'function') {
+                    triggerHaptic(12);
+                }
                 setTimeout(() => {
                     if (activeTouchEl) activeTouchEl.classList.add('dragging');
-                }, 50);
+                }, 40);
             }
         }
     }, { passive: true });
@@ -607,6 +666,10 @@ function setupDragAndDropHandlers() {
         if (!item) return;
 
         dragEl = item;
+
+        if (typeof triggerHaptic === 'function') {
+            triggerHaptic(15);
+        }
 
         if (e.dataTransfer) {
             e.dataTransfer.effectAllowed = 'move';
@@ -642,8 +705,9 @@ function setupDragAndDropHandlers() {
     });
 
     container.addEventListener('dragend', (e) => {
-        const item = e.target.closest('.search-item');
-        if (item) { item.classList.remove('dragging'); saveNewOrder(); }
+        const item = e.target.closest('.search-item') || dragEl;
+        settleDroppedItem(item);
+        saveNewOrder();
         dragEl = null;
     });
 
@@ -651,8 +715,7 @@ function setupDragAndDropHandlers() {
         e.preventDefault();
         if (!dragEl) return;
         const afterElement = getDragAfterElement(container, e.clientY);
-        if (afterElement == null) container.appendChild(dragEl);
-        else container.insertBefore(dragEl, afterElement);
+        animateReorder(container, dragEl, afterElement);
     });
 
     container.addEventListener('touchmove', (e) => {
@@ -660,13 +723,12 @@ function setupDragAndDropHandlers() {
         e.preventDefault(); 
         const touch = e.touches[0];
         const afterElement = getDragAfterElement(container, touch.clientY);
-        if (afterElement == null) container.appendChild(activeTouchEl);
-        else container.insertBefore(activeTouchEl, afterElement);
+        animateReorder(container, activeTouchEl, afterElement);
     }, { passive: false });
 
     const handleTouchEnd = () => {
         if (activeTouchEl) {
-            activeTouchEl.classList.remove('dragging');
+            settleDroppedItem(activeTouchEl);
             activeTouchEl = null;
             saveNewOrder();
         }
