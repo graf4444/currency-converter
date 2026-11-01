@@ -1070,8 +1070,8 @@ function startCardsPhysics(mode = 'shake') {
         let vx = 0;
         let vy = 0;
         let vRot = 0;
-        // Each card has an individual natural tilt between -26deg and +26deg so they fit smoothly
-        const targetRot = (idx % 2 === 0 ? 1 : -1) * (10 + (idx * 6) % 18);
+        // Moderate natural resting tilt so cards lie nicely without extreme rotation
+        const targetRot = (idx % 2 === 0 ? 1 : -1) * (6 + (idx * 4) % 12);
 
         if (mode === 'explosion') {
             const dx = cx - blastCx;
@@ -1079,14 +1079,14 @@ function startCardsPhysics(mode = 'shake') {
             const dist = Math.hypot(dx, dy) || 1;
             const nx = dx / dist;
             const ny = dy / dist;
-            const blastForce = Math.random() * 4 + 6.5;
-            vx = nx * blastForce + (Math.random() - 0.5) * 3;
-            vy = ny * blastForce - 4.5 + (Math.random() - 0.5) * 3;
-            vRot = (targetRot - 0) * 0.08 + (Math.random() - 0.5) * 3.5;
+            const blastForce = Math.random() * 3 + 5;
+            vx = nx * blastForce + (Math.random() - 0.5) * 2;
+            vy = ny * blastForce - 3 + (Math.random() - 0.5) * 2;
+            vRot = (targetRot - 0) * 0.05 + (Math.random() - 0.5) * 2.5;
         } else {
-            vx = (Math.random() - 0.5) * 4.5;
-            vy = Math.random() * 2.5 + 1.2;
-            vRot = (targetRot - 0) * 0.05;
+            vx = (Math.random() - 0.5) * 3.5;
+            vy = Math.random() * 2 + 1;
+            vRot = (targetRot - 0) * 0.04;
         }
 
         return {
@@ -1146,68 +1146,39 @@ function startCardsPhysics(mode = 'shake') {
             c.cy += c.vy;
             c.rot += c.vRot;
 
-            // Floor collision & landing into static rest
+            // Floor collision & landing into static rest (no bouncy spring, pure falling and slide)
+            const cardFloor = floor - ((i % 5) * 4);
             const cardHalfH = c.h * 0.5;
-            if (c.cy + cardHalfH >= floor) {
-                c.cy = floor - cardHalfH;
-
-                if (Math.abs(c.vy) > 1.2) {
-                    c.vy = -c.vy * 0.32; // Soft, pleasant bounce
-                    c.vx *= 0.82;
-                    c.vRot *= 0.75;
-                } else {
+            if (c.cy + cardHalfH >= cardFloor) {
+                c.cy = cardFloor - cardHalfH;
+                c.vy = 0; // Dead stop vertically - no spring repulsion
+                c.vx *= 0.72;
+                c.vRot *= 0.68;
+                c.settleCount++;
+                // Settle into static rest once resting on floor and slow
+                if (c.settleCount > 3 || (Math.abs(c.vx) < 0.15 && Math.abs(c.vRot) < 0.1)) {
+                    c.isResting = true;
+                    c.vx = 0;
                     c.vy = 0;
-                    c.vx *= 0.75;
-                    c.vRot *= 0.75;
-                    c.settleCount++;
-                    // Settle into static rest once resting on floor and slow
-                    if (c.settleCount > 6 || (Math.abs(c.vx) < 0.15 && Math.abs(c.vRot) < 0.1)) {
-                        c.isResting = true;
-                        c.vx = 0;
-                        c.vy = 0;
-                        c.vRot = 0;
-                        c.rot = c.targetRot;
-                    }
+                    c.vRot = 0;
+                    c.rot = c.targetRot;
                 }
             }
 
             // Ceiling clamp
             if (c.cy - cardHalfH < 10) {
                 c.cy = 10 + cardHalfH;
-                c.vy = Math.abs(c.vy) * 0.3;
+                c.vy = Math.abs(c.vy) * 0.2;
             }
 
             // Side wall soft containment
             const cardHalfW = c.w * 0.42;
             if (c.cx - cardHalfW < leftBound) {
                 c.cx = leftBound + cardHalfW;
-                c.vx = Math.abs(c.vx) * 0.35;
+                c.vx = Math.abs(c.vx) * 0.25;
             } else if (c.cx + cardHalfW > rightBound) {
                 c.cx = rightBound - cardHalfW;
-                c.vx = -Math.abs(c.vx) * 0.35;
-            }
-
-            // Soft inter-card nudge: allows overlapping naturally without ANY jittering/shorting
-            for (let j = i + 1; j < physicsCards.length; j++) {
-                const c2 = physicsCards[j];
-                const dx = c2.cx - c.cx;
-                const dy = c2.cy - c.cy;
-                const dist = Math.hypot(dx, dy) || 1;
-                const minDist = (c.h + c2.h) * 0.65;
-
-                if (dist < minDist) {
-                    const push = (minDist - dist) * 0.035;
-                    const nx = dx / dist;
-                    const ny = dy / dist;
-                    if (!c.isResting) {
-                        c.vx -= nx * push;
-                        c.vy -= ny * push;
-                    }
-                    if (!c2.isResting) {
-                        c2.vx += nx * push;
-                        c2.vy += ny * push;
-                    }
-                }
+                c.vx = -Math.abs(c.vx) * 0.25;
             }
 
             // Render transform

@@ -70,9 +70,8 @@ h1 { font-size: 1.5rem; font-weight: 700; }
     display: flex;
     align-items: center;
     gap: 10px;
-    flex: 0 1 auto;
+    flex: 1 1 auto;
     min-width: 0;
-    max-width: 62%;
     user-select: none;
 }
 .flag {
@@ -93,7 +92,7 @@ h1 { font-size: 1.5rem; font-weight: 700; }
 .c-code-row {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 7px;
     flex-wrap: nowrap;
     min-width: 0;
     width: auto;
@@ -115,7 +114,7 @@ h1 { font-size: 1.5rem; font-weight: 700; }
     gap: 6px;
     flex: 0 1 auto;
     min-width: 0;
-    max-width: 65%;
+    max-width: 50%;
     justify-content: flex-end;
 }
 .currency-input {
@@ -1467,13 +1466,13 @@ footer {
     position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 3.5px;
+    gap: 4px;
     background: rgba(0, 113, 227, 0.08);
-    border: 1px solid rgba(0, 113, 227, 0.22);
+    border: 1px solid rgba(0, 113, 227, 0.32);
     color: var(--accent);
-    padding: 2px 7px;
+    padding: 2.5px 8px;
     border-radius: 6px;
-    font-size: 0.74rem;
+    font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
     user-select: none;
@@ -1486,7 +1485,6 @@ footer {
     line-height: 1.25;
     width: auto;
     width: max-content;
-    max-width: 100%;
     box-sizing: border-box;
     z-index: 2;
 }
@@ -1509,13 +1507,13 @@ footer {
 .custom-rate-pill-prefix {
     white-space: nowrap;
     flex-shrink: 0;
+    display: inline;
 }
 
 .custom-rate-pill-val {
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 145px;
+    flex-shrink: 0;
+    display: inline;
 }
 
 .custom-rate-pill:hover {
@@ -1542,19 +1540,19 @@ footer {
 
 .custom-rate-pill-arrow {
     font-size: 0.65rem;
-    opacity: 0.75;
-    margin-left: 1px;
+    opacity: 0.8;
+    margin-left: 2px;
 }
 
 [data-theme="dark"] .custom-rate-pill {
     background: rgba(41, 151, 255, 0.12);
-    border-color: rgba(41, 151, 255, 0.26);
-    color: var(--accent);
+    border-color: rgba(41, 151, 255, 0.42);
+    color: #2997ff;
 }
 
 [data-theme="dark"] .custom-rate-pill:hover {
     background: rgba(41, 151, 255, 0.22);
-    border-color: var(--accent);
+    border-color: #2997ff;
 }
 
 [data-theme="dark"] .custom-rate-pill.market-pill {
@@ -3251,14 +3249,6 @@ footer {
     }
 }
 
-@media (max-width: 390px) {
-    .currency-card .custom-rate-pill-prefix {
-        display: none;
-    }
-    .custom-rate-pill-val {
-        max-width: 105px;
-    }
-}
 
 /* ============================================================
    EASTER EGGS (1337, 777, / 0, 80085)
