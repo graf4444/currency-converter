@@ -378,8 +378,13 @@ function renderMain() {
 
         const customPill = card.querySelector('.custom-rate-pill');
         if (customPill) {
+            customPill.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+            });
             customPill.addEventListener('click', (e) => {
                 e.stopPropagation();
+                e.preventDefault();
+                if (typeof triggerHaptic === 'function') triggerHaptic(10);
                 const variantRoot = customPill.dataset.variantRoot;
                 if (variantRoot && typeof openVariantSelectorModal === 'function') {
                     openVariantSelectorModal(variantRoot);

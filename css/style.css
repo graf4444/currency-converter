@@ -1462,24 +1462,43 @@ footer {
    ============================================================ */
 
 .custom-rate-pill {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 3px;
+    gap: 3.5px;
     background: rgba(0, 113, 227, 0.08);
-    border: 1px solid rgba(0, 113, 227, 0.2);
+    border: 1px solid rgba(0, 113, 227, 0.22);
     color: var(--accent);
-    padding: 1.5px 6px;
-    border-radius: 5px;
-    font-size: 0.72rem;
+    padding: 2.5px 7px;
+    border-radius: 6px;
+    font-size: 0.74rem;
     font-weight: 600;
     cursor: pointer;
     user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
     white-space: nowrap;
-    transition: all 0.15s ease;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
     flex-shrink: 0;
-    line-height: 1.2;
+    line-height: 1.25;
     max-width: 100%;
-    overflow: hidden;
+    z-index: 2;
+}
+
+/* Invisible hit area expansion for reliable mobile touch (minimum 44px touch target) */
+.custom-rate-pill::after {
+    content: '';
+    position: absolute;
+    top: -11px;
+    bottom: -11px;
+    left: -6px;
+    right: -8px;
+    z-index: 1;
+}
+
+.custom-rate-pill > * {
+    pointer-events: none;
 }
 
 .custom-rate-pill-prefix,
@@ -1493,7 +1512,8 @@ footer {
 }
 
 .custom-rate-pill:active {
-    transform: scale(0.95);
+    transform: scale(0.94);
+    opacity: 0.85;
 }
 
 .custom-rate-pill.market-pill {
@@ -1535,6 +1555,30 @@ footer {
     background: rgba(255, 255, 255, 0.12);
     color: var(--text);
     border-color: var(--accent);
+}
+
+/* Gold VIP Edition */
+[data-theme="gold"] .custom-rate-pill {
+    background: rgba(255, 215, 0, 0.12);
+    border-color: rgba(255, 215, 0, 0.35);
+    color: #ffd700;
+}
+
+[data-theme="gold"] .custom-rate-pill:hover {
+    background: rgba(255, 215, 0, 0.22);
+    border-color: #ffd700;
+}
+
+[data-theme="gold"] .custom-rate-pill.market-pill {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 215, 0, 0.22);
+    color: #f5e8c7;
+}
+
+[data-theme="gold"] .custom-rate-pill.market-pill:hover {
+    background: rgba(255, 215, 0, 0.15);
+    color: #ffd700;
+    border-color: #ffd700;
 }
 
 .custom-card-note {
@@ -3444,15 +3488,15 @@ body.easter-egg-matrix .key-btn:active {
 }
 
 /* 4. Calculator Pranks: 80085 (Giggle) & 01134 (Upside-down) */
-.keypad-giggle-active {
-    animation: keypadGiggleOnly 0.16s ease-in-out infinite alternate !important;
+.keypad-container.keypad-giggle-active {
+    animation: keypadContainerGiggle 0.16s ease-in-out infinite alternate !important;
 }
 
 .display-giggle-active {
-    animation: keypadGiggleOnly 0.16s ease-in-out infinite alternate !important;
+    animation: displayGiggleOnly 0.16s ease-in-out infinite alternate !important;
 }
 
-@keyframes keypadGiggleOnly {
+@keyframes displayGiggleOnly {
     0% {
         transform: rotate(0deg) scale(1);
     }
@@ -3464,8 +3508,20 @@ body.easter-egg-matrix .key-btn:active {
     }
 }
 
-.keypad-upside-down {
-    transform: rotate(180deg) !important;
+@keyframes keypadContainerGiggle {
+    0% {
+        transform: translateX(-50%) translateY(0) rotate(0deg) scale(1);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-3px) rotate(-3deg) scale(1.02);
+    }
+    100% {
+        transform: translateX(-50%) translateY(2px) rotate(3deg) scale(0.99);
+    }
+}
+
+.keypad-container.keypad-upside-down {
+    transform: translateX(-50%) translateY(0) rotate(180deg) !important;
     transform-origin: center center !important;
     transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
@@ -3649,24 +3705,40 @@ body[data-theme="gold"] {
    ============================================================ */
 .reassemble-btn {
     position: fixed;
-    bottom: 28px;
+    bottom: 24px;
     left: 50%;
     transform: translateX(-50%);
     background: linear-gradient(135deg, #0071e3 0%, #4facfe 100%);
     color: #ffffff;
     font-size: 0.95rem;
     font-weight: 700;
-    padding: 12px 24px;
+    padding: 12px 26px;
     border-radius: 999px;
     border: none;
-    box-shadow: 0 8px 30px rgba(0, 113, 227, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 30px rgba(0, 113, 227, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
     z-index: 100000;
     cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    white-space: nowrap;
     animation: reassemblePop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .reassemble-btn:active {
     transform: translateX(-50%) scale(0.95);
+}
+
+[data-theme="dark"] .reassemble-btn {
+    background: linear-gradient(135deg, #0a84ff 0%, #0051a8 100%);
+    box-shadow: 0 8px 30px rgba(10, 132, 255, 0.45), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="gold"] .reassemble-btn {
+    background: linear-gradient(135deg, #ffd700 0%, #dfa837 100%);
+    color: #000000;
+    box-shadow: 0 8px 30px rgba(255, 215, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.5);
 }
 
 @keyframes reassemblePop {

@@ -47,7 +47,31 @@ let physicsAnimId = null;
 let isExplosionActive = false;
 let explosionAnimId = null;
 let explosionCards = [];
+let physicsCards = [];
 let easterEggAudioCtx = null;
+
+/**
+ * Smoothly hides the virtual keypad / native keyboard first before running an easter egg animation.
+ * This prevents the keyboard from moving sideways, covering effects, or conflicting with transforms.
+ */
+function prepareForEasterEggAnimation(callback) {
+    const keypad = document.getElementById('virtual-keypad');
+    const isKeypadOpen = document.body.classList.contains('has-keypad-open') ||
+        (keypad && !keypad.hasAttribute('hidden') && keypad.classList.contains('is-visible'));
+
+    if (typeof closeVirtualKeypad === 'function') {
+        closeVirtualKeypad();
+    }
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        try { document.activeElement.blur(); } catch (_) {}
+    }
+
+    if (isKeypadOpen) {
+        setTimeout(callback, 280);
+    } else {
+        callback();
+    }
+}
 
 // ============================================================
 // WEB AUDIO SYNTHESIZER (Soft, pleasant, non-intrusive)
@@ -621,174 +645,50 @@ function triggerJackpotEasterEgg() {
 // ============================================================
 
 function triggerDivideByZeroEasterEgg(input) {
-    if (isEconomyWarningActive) return;
+    if (isEconomyWarningActive || isPhysicsActive) return;
     isEconomyWarningActive = true;
 
-    if (navigator.vibrate) {
-        try { navigator.vibrate([40, 70, 40]); } catch (_) {}
-    }
-    playExplosionSound();
+    prepareForEasterEggAnimation(() => {
+        if (navigator.vibrate) {
+            try { navigator.vibrate([40, 70, 40]); } catch (_) {}
+        }
+        playExplosionSound();
 
-    // 1. Centered warning banner
-    const banner = document.createElement('div');
-    banner.className = 'economy-banner';
-    const textMsg = getEasterEggText('economyDestroyed', 'You almost destroyed the global economy!');
-    banner.innerHTML = `
-        <span class="economy-banner-icon">💥</span>
-        <div class="economy-banner-text">${textMsg}</div>
-    `;
-    document.body.appendChild(banner);
+        // 1. Centered warning banner
+        const banner = document.createElement('div');
+        banner.className = 'economy-banner';
+        const textMsg = getEasterEggText('economyDestroyed', 'You almost destroyed the global economy!');
+        banner.innerHTML = `
+            <span class="economy-banner-icon">💥</span>
+            <div class="economy-banner-text">${textMsg}</div>
+        `;
+        document.body.appendChild(banner);
 
-    // 2. Blast all blocks outward in an explosion!
-    triggerExplosionPhysics();
+        // 2. Blast all blocks outward with unified physics & show reassemble button!
+        startCardsPhysics('explosion');
 
-    if (input) {
-        input.value = '';
-        if (typeof adjustFontSize === 'function') adjustFontSize(input);
-        const clearBtn = document.getElementById(`clear-${input.dataset.code}`);
-        if (clearBtn) clearBtn.classList.remove('visible');
-        const shareBtn = document.getElementById(`share-${input.dataset.code}`);
-        if (shareBtn) shareBtn.classList.remove('visible');
-    }
+        if (input) {
+            input.value = '';
+            if (typeof adjustFontSize === 'function') adjustFontSize(input);
+            const clearBtn = document.getElementById(`clear-${input.dataset.code}`);
+            if (clearBtn) clearBtn.classList.remove('visible');
+            const shareBtn = document.getElementById(`share-${input.dataset.code}`);
+            if (shareBtn) shareBtn.classList.remove('visible');
+        }
 
-    setTimeout(() => {
-        try { banner.remove(); } catch (_) {}
-        isEconomyWarningActive = false;
-    }, 2800);
+        setTimeout(() => {
+            try { banner.remove(); } catch (_) {}
+            isEconomyWarningActive = false;
+        }, 2800);
+    });
 }
 
 function triggerExplosionPhysics() {
-    if (isExplosionActive) return;
-    isExplosionActive = true;
-
-    const domCards = Array.from(document.querySelectorAll('.currency-card'));
-    if (!domCards.length) {
-        isExplosionActive = false;
-        return;
-    }
-
-    const cx = window.innerWidth / 2;
-    const cy = window.innerHeight / 2;
-
-    explosionCards = domCards.map(el => {
-        const rect = el.getBoundingClientRect();
-        const cardCx = rect.left + rect.width / 2;
-        const cardCy = rect.top + rect.height / 2;
-        const dx = cardCx - cx;
-        const dy = cardCy - cy;
-        const dist = Math.hypot(dx, dy) || 1;
-        const nx = dx / dist;
-        const ny = dy / dist;
-
-        const blastForce = Math.random() * 8 + 14;
-
-        return {
-            el,
-            x: rect.left,
-            y: rect.top,
-            origX: rect.left,
-            origY: rect.top,
-            w: rect.width,
-            h: rect.height,
-            vx: nx * blastForce + (Math.random() - 0.5) * 6,
-            vy: ny * blastForce + (Math.random() - 0.5) * 6 - 4,
-            rot: 0,
-            vRot: (Math.random() - 0.5) * 16
-        };
-    });
-
-    const floor = window.innerHeight - 15;
-    const leftBound = 8;
-    const rightBound = window.innerWidth - 8;
-    const gravity = 0.5;
-
-    function stepExplosion() {
-        if (!isExplosionActive) return;
-
-        for (let i = 0; i < explosionCards.length; i++) {
-            const c = explosionCards[i];
-            c.vy += gravity;
-            c.x += c.vx;
-            c.y += c.vy;
-            c.rot += c.vRot;
-
-            c.vx *= 0.97;
-            c.vRot *= 0.97;
-
-            // Floor bounce
-            if (c.y + c.h > floor) {
-                c.y = floor - c.h;
-                c.vy = -c.vy * 0.4;
-                c.vx *= 0.85;
-                c.vRot *= 0.85;
-            }
-
-            // Wall bounce
-            if (c.x < leftBound) {
-                c.x = leftBound;
-                c.vx = -c.vx * 0.5;
-            } else if (c.x + c.w > rightBound) {
-                c.x = rightBound - c.w;
-                c.vx = -c.vx * 0.5;
-            }
-
-            // Inter-card collision (не проходя друг через друга)
-            for (let j = i + 1; j < explosionCards.length; j++) {
-                const c2 = explosionCards[j];
-                const overlapX = (c.w / 2 + c2.w / 2) - Math.abs((c.x + c.w / 2) - (c2.x + c2.w / 2));
-                const overlapY = (c.h / 2 + c2.h / 2) - Math.abs((c.y + c.h / 2) - (c2.y + c2.h / 2));
-
-                if (overlapX > 0 && overlapY > 0) {
-                    if (overlapY < overlapX) {
-                        const sign = c.y < c2.y ? -1 : 1;
-                        c.y += sign * (overlapY * 0.5);
-                        c2.y -= sign * (overlapY * 0.5);
-                        const avgVy = (c.vy + c2.vy) * 0.5;
-                        c.vy = avgVy * 0.3;
-                        c2.vy = avgVy * 0.3;
-                    } else {
-                        const sign = c.x < c2.x ? -1 : 1;
-                        c.x += sign * (overlapX * 0.5);
-                        c2.x -= sign * (overlapX * 0.5);
-                        c.vx *= -0.4;
-                        c2.vx *= -0.4;
-                    }
-                }
-            }
-
-            const dx = c.x - c.origX;
-            const dy = c.y - c.origY;
-            c.el.style.transform = `translate3d(${dx}px, ${dy}px, 0) rotate(${c.rot}deg)`;
-            c.el.style.zIndex = '9998';
-        }
-
-        explosionAnimId = requestAnimationFrame(stepExplosion);
-    }
-
-    explosionAnimId = requestAnimationFrame(stepExplosion);
-
-    // Auto-restore cards after 2.4 seconds with spring animation
-    setTimeout(() => {
-        restoreExplosionCards();
-    }, 2400);
+    startCardsPhysics('explosion');
 }
 
 function restoreExplosionCards() {
-    if (!isExplosionActive) return;
-    isExplosionActive = false;
-    if (explosionAnimId) cancelAnimationFrame(explosionAnimId);
-
-    explosionCards.forEach(c => {
-        c.el.style.transition = 'transform 0.65s cubic-bezier(0.16, 1, 0.3, 1)';
-        c.el.style.transform = 'translate3d(0, 0, 0) rotate(0deg)';
-        setTimeout(() => {
-            c.el.style.transition = '';
-            c.el.style.transform = '';
-            c.el.style.zIndex = '';
-        }, 680);
-    });
-
-    explosionCards = [];
+    restorePhysicsCards();
 }
 
 // ============================================================
@@ -1069,7 +969,6 @@ function toggleGoldVipTheme() {
 
 let shakeEnergy = 0;
 let lastAcc = { x: 0, y: 0, z: 0 };
-let physicsCards = [];
 
 function setupAccelerometerEasterEgg() {
     if (typeof window !== 'undefined' && 'ondevicemotion' in window) {
@@ -1080,7 +979,11 @@ function setupAccelerometerEasterEgg() {
     window.addEventListener('keydown', (e) => {
         if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 's') {
             e.preventDefault();
-            triggerShakePhysics();
+            if (isPhysicsActive) {
+                restorePhysicsCards();
+            } else {
+                triggerShakePhysics();
+            }
         }
     });
 }
@@ -1096,10 +999,14 @@ function handleDeviceMotion(e) {
     lastAcc = { x: acc.x || 0, y: acc.y || 0, z: acc.z || 0 };
 
     if (isPhysicsActive) {
-        if (delta > 10) {
+        if (delta > 8) {
+            const impulseScale = Math.min(delta * 0.22, 6.5);
+            const signX = (acc.x || 0) < 0 ? 1 : -1;
+            const signY = (acc.y || 0) < 0 ? 1 : -1;
             physicsCards.forEach(c => {
-                c.vx -= (acc.x || 0) * 0.9;
-                c.vy += (acc.y || 0) * 0.9;
+                c.vx += signX * impulseScale * (0.8 + Math.random() * 0.4);
+                c.vy += signY * impulseScale * (0.8 + Math.random() * 0.4);
+                c.vRot += (Math.random() - 0.5) * impulseScale * 1.1;
             });
             if (navigator.vibrate) {
                 try { navigator.vibrate([30, 50, 30]); } catch (_) {}
@@ -1122,36 +1029,211 @@ function handleDeviceMotion(e) {
 
 function triggerShakePhysics() {
     if (isPhysicsActive) return;
-    isPhysicsActive = true;
 
-    if (navigator.vibrate) {
-        try { navigator.vibrate([30, 50, 30]); } catch (_) {}
-    }
-    playExplosionSound();
+    prepareForEasterEggAnimation(() => {
+        if (navigator.vibrate) {
+            try { navigator.vibrate([30, 50, 30]); } catch (_) {}
+        }
+        playExplosionSound();
+        startCardsPhysics('shake');
+    });
+}
+
+function startCardsPhysics(mode = 'shake') {
+    if (isPhysicsActive) return;
+    isPhysicsActive = true;
+    isExplosionActive = (mode === 'explosion');
 
     const domCards = Array.from(document.querySelectorAll('.currency-card'));
     if (!domCards.length) {
         isPhysicsActive = false;
+        isExplosionActive = false;
         return;
     }
 
+    const blastCx = window.innerWidth / 2;
+    const blastCy = window.innerHeight / 2;
+
     physicsCards = domCards.map(el => {
         const rect = el.getBoundingClientRect();
+        const origX = rect.left;
+        const origY = rect.top;
+        const w = rect.width;
+        const h = rect.height;
+        const cx = origX + w / 2;
+        const cy = origY + h / 2;
+
+        let vx = 0;
+        let vy = 0;
+        let vRot = 0;
+
+        if (mode === 'explosion') {
+            const dx = cx - blastCx;
+            const dy = cy - blastCy;
+            const dist = Math.hypot(dx, dy) || 1;
+            const nx = dx / dist;
+            const ny = dy / dist;
+            const blastForce = Math.random() * 5 + 8.5;
+            vx = nx * blastForce + (Math.random() - 0.5) * 4;
+            vy = ny * blastForce - 5 + (Math.random() - 0.5) * 4;
+            vRot = (Math.random() - 0.5) * 14;
+        } else {
+            vx = (Math.random() - 0.5) * 6;
+            vy = Math.random() * 4 + 2;
+            vRot = (Math.random() - 0.5) * 8;
+        }
+
         return {
             el,
-            x: rect.left,
-            y: rect.top,
-            origX: rect.left,
-            origY: rect.top,
-            w: rect.width,
-            h: rect.height,
-            vx: (Math.random() - 0.5) * 10,
-            vy: Math.random() * 5 + 3,
+            origX,
+            origY,
+            w,
+            h,
+            cx,
+            cy,
+            vx,
+            vy,
             rot: 0,
-            vRot: (Math.random() - 0.5) * 8
+            vRot
         };
     });
 
+    showReassembleButton();
+
+    const floor = window.innerHeight - 82;
+    const ceiling = 8;
+    const leftBound = 6;
+    const rightBound = window.innerWidth - 6;
+    const gravity = 0.42;
+
+    function stepPhysics() {
+        if (!isPhysicsActive) return;
+
+        const maxAllowedHalfW = Math.max(30, (window.innerWidth - 12) / 2);
+
+        for (let i = 0; i < physicsCards.length; i++) {
+            const c = physicsCards[i];
+
+            c.vy += gravity;
+
+            // Clamped velocity so blocks never shoot off screen
+            c.vx = Math.max(-14, Math.min(14, c.vx));
+            c.vy = Math.max(-14, Math.min(14, c.vy));
+            c.vRot = Math.max(-12, Math.min(12, c.vRot));
+
+            c.cx += c.vx;
+            c.cy += c.vy;
+            c.rot += c.vRot;
+
+            // Air damping
+            c.vx *= 0.985;
+            c.vy *= 0.99;
+            c.vRot *= 0.982;
+
+            // Bounding extents of rotated rectangle
+            const rad = (c.rot * Math.PI) / 180;
+            const cos = Math.abs(Math.cos(rad));
+            const sin = Math.abs(Math.sin(rad));
+            const halfW = Math.min((c.w * cos + c.h * sin) / 2, maxAllowedHalfW);
+            const halfH = (c.w * sin + c.h * cos) / 2;
+
+            // 1. Floor collision & bounce
+            if (c.cy + halfH > floor) {
+                c.cy = floor - halfH;
+                c.vy = -Math.abs(c.vy) * 0.44;
+                c.vx *= 0.86;
+                // Floor friction creates rotation torque
+                c.vRot = (c.vRot * 0.65) + (c.vx * 0.12);
+            }
+
+            // 2. Ceiling collision & bounce
+            if (c.cy - halfH < ceiling) {
+                c.cy = ceiling + halfH;
+                c.vy = Math.abs(c.vy) * 0.44;
+                c.vx *= 0.86;
+                c.vRot = (c.vRot * 0.65) - (c.vx * 0.12);
+            }
+
+            // 3. Left wall collision & bounce
+            if (c.cx - halfW < leftBound) {
+                c.cx = leftBound + halfW;
+                c.vx = Math.abs(c.vx) * 0.48;
+                c.vRot = (c.vRot * 0.65) + (c.vy * 0.14);
+            }
+
+            // 4. Right wall collision & bounce
+            if (c.cx + halfW > rightBound) {
+                c.cx = rightBound - halfW;
+                c.vx = -Math.abs(c.vx) * 0.48;
+                c.vRot = (c.vRot * 0.65) - (c.vy * 0.14);
+            }
+
+            // 5. Inter-card collision with soft repulsion & tumble
+            for (let j = i + 1; j < physicsCards.length; j++) {
+                const c2 = physicsCards[j];
+                const rad2 = (c2.rot * Math.PI) / 180;
+                const cos2 = Math.abs(Math.cos(rad2));
+                const sin2 = Math.abs(Math.sin(rad2));
+                const halfW2 = Math.min((c2.w * cos2 + c2.h * sin2) / 2, maxAllowedHalfW);
+                const halfH2 = (c2.w * sin2 + c2.h * cos2) / 2;
+
+                const dx = c2.cx - c.cx;
+                const dy = c2.cy - c.cy;
+                const overlapX = (halfW + halfW2) - Math.abs(dx);
+                const overlapY = (halfH + halfH2) - Math.abs(dy);
+
+                if (overlapX > 0 && overlapY > 0) {
+                    if (overlapY < overlapX) {
+                        const sign = dy > 0 ? 1 : -1;
+                        const push = overlapY * 0.52;
+                        c.cy -= sign * push;
+                        c2.cy += sign * push;
+
+                        const relVy = c.vy - c2.vy;
+                        if (relVy * sign > 0) {
+                            const impulse = relVy * 0.52;
+                            c.vy -= impulse;
+                            c2.vy += impulse;
+                            const torque = Math.max(-5, Math.min(5, (dx / (halfW + 1)) * impulse * 0.22));
+                            c.vRot -= torque;
+                            c2.vRot += torque;
+                        }
+                    } else {
+                        const sign = dx > 0 ? 1 : -1;
+                        const push = overlapX * 0.52;
+                        c.cx -= sign * push;
+                        c2.cx += sign * push;
+
+                        const relVx = c.vx - c2.vx;
+                        if (relVx * sign > 0) {
+                            const impulse = relVx * 0.52;
+                            c.vx -= impulse;
+                            c2.vx += impulse;
+                            const torque = Math.max(-5, Math.min(5, (dy / (halfH + 1)) * impulse * 0.22));
+                            c.vRot += torque;
+                            c2.vRot += torque;
+                        }
+                    }
+                }
+            }
+
+            // Render transform
+            const curX = c.cx - c.w / 2;
+            const curY = c.cy - c.h / 2;
+            const tx = curX - c.origX;
+            const ty = curY - c.origY;
+            c.el.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0) rotate(${c.rot.toFixed(1)}deg)`;
+            c.el.style.zIndex = '9998';
+        }
+
+        physicsAnimId = requestAnimationFrame(stepPhysics);
+    }
+
+    if (physicsAnimId) cancelAnimationFrame(physicsAnimId);
+    physicsAnimId = requestAnimationFrame(stepPhysics);
+}
+
+function showReassembleButton() {
     let reassembleBtn = document.getElementById('reassemble-btn');
     if (!reassembleBtn) {
         reassembleBtn = document.createElement('button');
@@ -1159,84 +1241,24 @@ function triggerShakePhysics() {
         reassembleBtn.className = 'reassemble-btn';
         reassembleBtn.innerHTML = getEasterEggText('reassembleCards', '✨ Put everything back');
         document.body.appendChild(reassembleBtn);
+        reassembleBtn.addEventListener('pointerdown', (e) => {
+            e.stopPropagation();
+        });
         reassembleBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             restorePhysicsCards();
         });
     }
-
-    const floor = window.innerHeight - 15;
-    const leftBound = 8;
-    const rightBound = window.innerWidth - 8;
-    const gravity = 0.55;
-
-    function stepPhysics() {
-        if (!isPhysicsActive) return;
-
-        for (let i = 0; i < physicsCards.length; i++) {
-            const c = physicsCards[i];
-            c.vy += gravity;
-            c.x += c.vx;
-            c.y += c.vy;
-            c.rot += c.vRot;
-
-            c.vx *= 0.98;
-            c.vRot *= 0.98;
-
-            if (c.y + c.h > floor) {
-                c.y = floor - c.h;
-                c.vy = -c.vy * 0.42;
-                c.vx *= 0.85;
-                c.vRot *= 0.85;
-            }
-
-            if (c.x < leftBound) {
-                c.x = leftBound;
-                c.vx = -c.vx * 0.5;
-            } else if (c.x + c.w > rightBound) {
-                c.x = rightBound - c.w;
-                c.vx = -c.vx * 0.5;
-            }
-
-            for (let j = i + 1; j < physicsCards.length; j++) {
-                const c2 = physicsCards[j];
-                const overlapX = (c.w / 2 + c2.w / 2) - Math.abs((c.x + c.w / 2) - (c2.x + c2.w / 2));
-                const overlapY = (c.h / 2 + c2.h / 2) - Math.abs((c.y + c.h / 2) - (c2.y + c2.h / 2));
-
-                if (overlapX > 0 && overlapY > 0) {
-                    if (overlapY < overlapX) {
-                        const sign = c.y < c2.y ? -1 : 1;
-                        c.y += sign * (overlapY * 0.5);
-                        c2.y -= sign * (overlapY * 0.5);
-                        const avgVy = (c.vy + c2.vy) * 0.5;
-                        c.vy = avgVy * 0.3;
-                        c2.vy = avgVy * 0.3;
-                    } else {
-                        const sign = c.x < c2.x ? -1 : 1;
-                        c.x += sign * (overlapX * 0.5);
-                        c2.x -= sign * (overlapX * 0.5);
-                        c.vx *= -0.4;
-                        c2.vx *= -0.4;
-                    }
-                }
-            }
-
-            const dx = c.x - c.origX;
-            const dy = c.y - c.origY;
-            c.el.style.transform = `translate3d(${dx}px, ${dy}px, 0) rotate(${c.rot}deg)`;
-            c.el.style.zIndex = '9998';
-        }
-
-        physicsAnimId = requestAnimationFrame(stepPhysics);
-    }
-
-    physicsAnimId = requestAnimationFrame(stepPhysics);
 }
 
 function restorePhysicsCards() {
     if (!isPhysicsActive) return;
     isPhysicsActive = false;
-    if (physicsAnimId) cancelAnimationFrame(physicsAnimId);
+    isExplosionActive = false;
+    if (physicsAnimId) {
+        cancelAnimationFrame(physicsAnimId);
+        physicsAnimId = null;
+    }
 
     const reassembleBtn = document.getElementById('reassemble-btn');
     if (reassembleBtn) {
@@ -1254,7 +1276,7 @@ function restorePhysicsCards() {
     });
 
     physicsCards = [];
-    triggerHaptic(20);
+    if (typeof triggerHaptic === 'function') triggerHaptic(20);
 }
 
 // ============================================================
@@ -1285,31 +1307,33 @@ function setupBitcoinEasterEgg() {
 }
 
 function triggerBitcoinToTheMoon() {
-    if (navigator.vibrate) {
-        try { navigator.vibrate([30, 50, 30]); } catch (_) {}
-    }
-    playRocketLaunchSound();
-    launchGoldConfetti(4500, '₿');
+    prepareForEasterEggAnimation(() => {
+        if (navigator.vibrate) {
+            try { navigator.vibrate([30, 50, 30]); } catch (_) {}
+        }
+        playRocketLaunchSound();
+        launchGoldConfetti(4500, '₿');
 
-    const rocket = document.createElement('div');
-    rocket.className = 'moon-rocket-el';
-    rocket.innerHTML = '🚀';
-    document.body.appendChild(rocket);
-    setTimeout(() => {
-        try { rocket.remove(); } catch (_) {}
-    }, 2500);
+        const rocket = document.createElement('div');
+        rocket.className = 'moon-rocket-el';
+        rocket.innerHTML = '🚀';
+        document.body.appendChild(rocket);
+        setTimeout(() => {
+            try { rocket.remove(); } catch (_) {}
+        }, 2500);
 
-    const banner = document.createElement('div');
-    banner.className = 'moon-banner';
-    banner.innerHTML = `
-        <span class="moon-icon">🚀 🌕</span>
-        <div class="moon-title">TO THE MOON!</div>
-        <div class="moon-sub">₿ HODL BTC TO 1 000 000 $</div>
-    `;
-    document.body.appendChild(banner);
-    setTimeout(() => {
-        try { banner.remove(); } catch (_) {}
-    }, 3200);
+        const banner = document.createElement('div');
+        banner.className = 'moon-banner';
+        banner.innerHTML = `
+            <span class="moon-icon">🚀 🌕</span>
+            <div class="moon-title">TO THE MOON!</div>
+            <div class="moon-sub">₿ HODL BTC TO 1 000 000 $</div>
+        `;
+        document.body.appendChild(banner);
+        setTimeout(() => {
+            try { banner.remove(); } catch (_) {}
+        }, 3200);
+    });
 }
 
 // ============================================================
@@ -1335,7 +1359,7 @@ function checkInputEasterEggs(cleanVal, inputEl) {
     if (cleanVal === '1337' || cleanDigits === '1337') {
         hasEasterEggFired = true;
         lastTriggeredEasterEgg = '1337';
-        enterMatrixMode();
+        prepareForEasterEggAnimation(() => enterMatrixMode());
         return;
     }
 
@@ -1343,7 +1367,7 @@ function checkInputEasterEggs(cleanVal, inputEl) {
     if (cleanVal === '777' || cleanDigits === '777') {
         hasEasterEggFired = true;
         lastTriggeredEasterEgg = '777';
-        triggerJackpotEasterEgg();
+        prepareForEasterEggAnimation(() => triggerJackpotEasterEgg());
         return;
     }
 
@@ -1352,7 +1376,7 @@ function checkInputEasterEggs(cleanVal, inputEl) {
     if (is80085) {
         hasEasterEggFired = true;
         lastTriggeredEasterEgg = '80085';
-        triggerGiggleEasterEgg();
+        prepareForEasterEggAnimation(() => triggerGiggleEasterEgg());
         return;
     }
 
@@ -1361,7 +1385,7 @@ function checkInputEasterEggs(cleanVal, inputEl) {
     if (is01134) {
         hasEasterEggFired = true;
         lastTriggeredEasterEgg = '01134';
-        triggerUpsideDownEasterEgg();
+        prepareForEasterEggAnimation(() => triggerUpsideDownEasterEgg());
         return;
     }
 }
