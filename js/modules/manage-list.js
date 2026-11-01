@@ -571,62 +571,6 @@ function filterCurrencies() {
     }
 }
 
-function animateReorder(container, movingEl, afterElement) {
-    if (!movingEl || !container) return;
-    const currentNext = movingEl.nextElementSibling;
-    if (afterElement === movingEl || afterElement === currentNext) return;
-
-    // 1. FIRST: measure initial bounding boxes of non-dragging sibling items
-    const siblings = Array.from(container.querySelectorAll('.search-item:not(.dragging)'));
-    const initialTops = new Map();
-    siblings.forEach(el => {
-        initialTops.set(el, el.getBoundingClientRect().top);
-    });
-
-    // 2. Perform DOM reorder
-    if (afterElement == null) {
-        container.appendChild(movingEl);
-    } else {
-        container.insertBefore(movingEl, afterElement);
-    }
-
-    if (typeof triggerHaptic === 'function') {
-        triggerHaptic(8);
-    }
-
-    // 3. LAST & INVERT: measure new positions and animate smoothly
-    siblings.forEach(el => {
-        const oldTop = initialTops.get(el);
-        if (oldTop !== undefined) {
-            const newTop = el.getBoundingClientRect().top;
-            const deltaY = oldTop - newTop;
-            if (deltaY !== 0) {
-                el.style.transition = 'none';
-                el.style.transform = `translateY(${deltaY}px)`;
-
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        el.style.transition = 'transform 0.24s cubic-bezier(0.2, 0, 0, 1)';
-                        el.style.transform = '';
-                    });
-                });
-            }
-        }
-    });
-}
-
-function settleDroppedItem(item) {
-    if (!item) return;
-    item.classList.remove('dragging');
-    item.classList.add('just-dropped');
-    if (typeof triggerHaptic === 'function') {
-        triggerHaptic(18);
-    }
-    setTimeout(() => {
-        item.classList.remove('just-dropped');
-    }, 300);
-}
-
 function setupDragAndDropHandlers() {
     const container = document.getElementById('added-container');
     if (!container) return;
@@ -636,31 +580,29 @@ function setupDragAndDropHandlers() {
     let lastPointerX = 0;
     let lastPointerY = 0;
 
-    // Track the pointer/touch coordinates where the drag was initiated
+    // Track pointer coordinates for exact drag image offset
     container.addEventListener('pointerdown', (e) => {
         lastPointerX = e.clientX;
         lastPointerY = e.clientY;
     }, { passive: true });
 
+    // Mobile touch drag initiation on handle
     container.addEventListener('touchstart', (e) => {
-        if (e.touches && e.touches[0]) {
-            lastPointerX = e.touches[0].clientX;
-            lastPointerY = e.touches[0].clientY;
-        }
-        if (e.target.closest('.drag-handle')) {
-            const item = e.target.closest('.search-item');
-            if (item) {
-                activeTouchEl = item;
-                if (typeof triggerHaptic === 'function') {
-                    triggerHaptic(12);
-                }
-                setTimeout(() => {
-                    if (activeTouchEl) activeTouchEl.classList.add('dragging');
-                }, 40);
-            }
-        }
-    }, { passive: true });
+        const handle = e.target.closest('.drag-handle');
+        if (!handle) return;
+        const item = handle.closest('.search-item');
+        if (!item) return;
 
+        if (e.cancelable) e.preventDefault();
+
+        activeTouchEl = item;
+        item.classList.add('dragging');
+        if (typeof triggerHaptic === 'function') {
+            triggerHaptic(12);
+        }
+    }, { passive: false });
+
+    // Desktop HTML5 drag start
     container.addEventListener('dragstart', (e) => {
         const item = e.target.closest('.search-item');
         if (!item) return;
@@ -668,7 +610,7 @@ function setupDragAndDropHandlers() {
         dragEl = item;
 
         if (typeof triggerHaptic === 'function') {
-            triggerHaptic(15);
+            triggerHaptic(12);
         }
 
         if (e.dataTransfer) {
@@ -684,9 +626,8 @@ function setupDragAndDropHandlers() {
             let offsetX = pointerX - rect.left;
             let offsetY = pointerY - rect.top;
 
-            // Ensure offset is strictly within item boundaries
             if (isNaN(offsetX) || offsetX < 0 || offsetX > rect.width) {
-                offsetX = 20; // Default anchor near drag handle on the left
+                offsetX = 20;
             }
             if (isNaN(offsetY) || offsetY < 0 || offsetY > rect.height) {
                 offsetY = rect.height / 2;
@@ -700,38 +641,77 @@ function setupDragAndDropHandlers() {
         }
 
         setTimeout(() => {
-            if (item) item.classList.add('dragging');
+            if (item && dragEl === item) {
+                item.classList.add('dragging');
+            }
         }, 0);
-    });
-
-    container.addEventListener('dragend', (e) => {
-        const item = e.target.closest('.search-item') || dragEl;
-        settleDroppedItem(item);
-        saveNewOrder();
-        dragEl = null;
     });
 
     container.addEventListener('dragover', (e) => {
         e.preventDefault();
         if (!dragEl) return;
+
         const afterElement = getDragAfterElement(container, e.clientY);
-        animateReorder(container, dragEl, afterElement);
+        const currentNext = dragEl.nextElementSibling;
+
+        if (afterElement == null) {
+            if (container.lastElementChild !== dragEl) {
+                container.appendChild(dragEl);
+                if (typeof triggerHaptic === 'function') triggerHaptic(6);
+            }
+        } else if (afterElement !== dragEl && afterElement !== currentNext) {
+            container.insertBefore(dragEl, afterElement);
+            if (typeof triggerHaptic === 'function') triggerHaptic(6);
+        }
+    });
+
+    container.addEventListener('dragend', (e) => {
+        const item = e.target.closest('.search-item') || dragEl;
+        if (item) {
+            item.classList.remove('dragging');
+            item.classList.add('just-dropped');
+            setTimeout(() => item.classList.remove('just-dropped'), 260);
+        }
+        if (typeof triggerHaptic === 'function') {
+            triggerHaptic(15);
+        }
+        dragEl = null;
+        saveNewOrder();
     });
 
     container.addEventListener('touchmove', (e) => {
         if (!activeTouchEl) return;
-        e.preventDefault(); 
+        if (e.cancelable) e.preventDefault();
         const touch = e.touches[0];
+        if (!touch) return;
+
         const afterElement = getDragAfterElement(container, touch.clientY);
-        animateReorder(container, activeTouchEl, afterElement);
+        const currentNext = activeTouchEl.nextElementSibling;
+
+        if (afterElement == null) {
+            if (container.lastElementChild !== activeTouchEl) {
+                container.appendChild(activeTouchEl);
+                if (typeof triggerHaptic === 'function') triggerHaptic(6);
+            }
+        } else if (afterElement !== activeTouchEl && afterElement !== currentNext) {
+            container.insertBefore(activeTouchEl, afterElement);
+            if (typeof triggerHaptic === 'function') triggerHaptic(6);
+        }
     }, { passive: false });
 
     const handleTouchEnd = () => {
-        if (activeTouchEl) {
-            settleDroppedItem(activeTouchEl);
-            activeTouchEl = null;
-            saveNewOrder();
+        if (!activeTouchEl) return;
+        const item = activeTouchEl;
+        activeTouchEl = null;
+
+        item.classList.remove('dragging');
+        item.classList.add('just-dropped');
+        setTimeout(() => item.classList.remove('just-dropped'), 260);
+
+        if (typeof triggerHaptic === 'function') {
+            triggerHaptic(15);
         }
+        saveNewOrder();
     };
 
     container.addEventListener('touchend', handleTouchEnd);
@@ -742,15 +722,12 @@ function getDragAfterElement(container, y) {
     const draggableElements = [...container.querySelectorAll('.search-item:not(.dragging)')];
     return draggableElements.reduce((closest, child) => {
         const box = child.getBoundingClientRect();
-        const childCenter = box.top + box.height / 2;
-        if (y < childCenter) {
-            const offset = y - box.top - (box.height * 0.25);
-            if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+        const offset = y - box.top - box.height / 2;
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
         } else {
-            const offset = y - box.top - (box.height * 0.75);
-            if (offset < 0 && offset > closest.offset) return { offset: offset, element: child };
+            return closest;
         }
-        return closest;
     }, { offset: Number.NEGATIVE_INFINITY }).element;
 }
 
