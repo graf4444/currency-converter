@@ -3,6 +3,8 @@
 // Safe arithmetic evaluation (+, -, *, /, parentheses) without eval().
 // ============================================================
 
+let isDivideByZeroOccurred = false;
+
 /**
  * Safely evaluates a mathematical expression string containing basic arithmetic
  * (+, -, *, /) and parentheses without using eval() or new Function().
@@ -11,6 +13,7 @@
  * @returns {number|null} The numeric result, or null if invalid or divide-by-zero.
  */
 function evaluateMathExpression(expr) {
+    isDivideByZeroOccurred = false;
     if (!expr || typeof expr !== 'string') return null;
 
     let clean = expr.replace(/\s+/g, '').replace(/,/g, '.');
@@ -69,7 +72,10 @@ function evaluateMathExpression(expr) {
             const right = parseFactor();
             if (right === null) return null;
             if (op === '/') {
-                if (right === 0) return null;
+                if (right === 0) {
+                    isDivideByZeroOccurred = true;
+                    return null;
+                }
                 left = left / right;
             } else {
                 left = left * right;
@@ -174,5 +180,9 @@ function applyMathResult(input) {
         
         adjustFontSize(input);
         recalculate(code, cleanStr);
+    } else if (isDivideByZeroOccurred || /\/\s*0(?![.0-9])/.test(rawValue)) {
+        if (typeof triggerDivideByZeroEasterEgg === 'function') {
+            triggerDivideByZeroEasterEgg(input);
+        }
     }
 }

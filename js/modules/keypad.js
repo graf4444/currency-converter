@@ -166,6 +166,7 @@ function handleKeypadPress(key) {
         input.value = '';
         currentInputValue = '';
         input.setSelectionRange(0, 0);
+        clearAllInputs();
         input.dispatchEvent(new Event('input', { bubbles: true }));
         return;
     }

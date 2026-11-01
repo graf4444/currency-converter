@@ -3201,6 +3201,567 @@ footer {
     }
 }
 
+/* ============================================================
+   EASTER EGGS (1337, 777, / 0, 80085)
+   ============================================================ */
+
+/* 1. Matrix retro terminal mode (1337) */
+body.easter-egg-matrix {
+    background-color: #000000 !important;
+    color: #00ff66 !important;
+    font-family: 'Courier New', Courier, monospace !important;
+}
+
+body.easter-egg-matrix * {
+    font-family: 'Courier New', Courier, monospace !important;
+    text-shadow: 0 0 5px rgba(0, 255, 102, 0.6) !important;
+}
+
+body.easter-egg-matrix::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        rgba(0, 0, 0, 0.28),
+        rgba(0, 0, 0, 0.28) 1px,
+        transparent 1px,
+        transparent 3px
+    );
+    pointer-events: none;
+    z-index: 99998;
+}
+
+body.easter-egg-matrix .currency-card {
+    background: #020c04 !important;
+    border: 1px solid #00ff66 !important;
+    box-shadow: 0 0 14px rgba(0, 255, 102, 0.25) !important;
+}
+
+body.easter-egg-matrix .currency-input {
+    color: #00ff66 !important;
+    text-shadow: 0 0 8px rgba(0, 255, 102, 0.9) !important;
+    background: transparent !important;
+}
+
+body.easter-egg-matrix .c-code,
+body.easter-egg-matrix .c-name,
+body.easter-egg-matrix .custom-card-note,
+body.easter-egg-matrix .custom-card-subname,
+body.easter-egg-matrix #ui-title,
+body.easter-egg-matrix .app-version,
+body.easter-egg-matrix #sync-status,
+body.easter-egg-matrix #last-update {
+    color: #00ff66 !important;
+}
+
+body.easter-egg-matrix header {
+    border-bottom: 1px solid rgba(0, 255, 102, 0.3) !important;
+}
+
+body.easter-egg-matrix .virtual-keypad {
+    background: #010a03 !important;
+    border-top: 1px solid #00ff66 !important;
+    box-shadow: 0 -4px 20px rgba(0, 255, 102, 0.3) !important;
+}
+
+body.easter-egg-matrix .key-btn {
+    background: #051c0a !important;
+    border: 1px solid #00ff66 !important;
+    color: #00ff66 !important;
+    box-shadow: 0 0 6px rgba(0, 255, 102, 0.2) !important;
+}
+
+body.easter-egg-matrix .key-btn:active {
+    background: #00ff66 !important;
+    color: #000000 !important;
+}
+
+/* 2. Casino Jackpot (777) */
+.jackpot-banner {
+    position: fixed;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: linear-gradient(135deg, #ffd700 0%, #ff8c00 50%, #ff007f 100%);
+    color: #ffffff;
+    font-size: 2.2rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    padding: 16px 36px;
+    border-radius: 999px;
+    box-shadow: 0 0 35px rgba(255, 215, 0, 0.85), 0 8px 30px rgba(0, 0, 0, 0.6);
+    border: 3px solid #ffffff;
+    z-index: 100000;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    animation: jackpotPop 3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes jackpotPop {
+    0% {
+        transform: translate(-50%, -50%) scale(0) rotate(-10deg);
+        opacity: 0;
+    }
+    15% {
+        transform: translate(-50%, -50%) scale(1.15) rotate(3deg);
+        opacity: 1;
+    }
+    30% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    80% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(0.6) translateY(-40px);
+        opacity: 0;
+    }
+}
+
+.slot-spinning {
+    animation: slotNumberPulse 0.08s ease-in-out infinite alternate;
+    color: #ffd700 !important;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.8) !important;
+}
+
+@keyframes slotNumberPulse {
+    0% {
+        transform: translateY(-2px);
+        opacity: 0.85;
+    }
+    100% {
+        transform: translateY(2px);
+        opacity: 1;
+    }
+}
+
+.slot-locked {
+    animation: slotLockBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes slotLockBounce {
+    0% {
+        transform: scale(1.18);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@media (max-width: 480px) {
+    .jackpot-banner {
+        font-size: 1.6rem;
+        padding: 12px 24px;
+        top: 22%;
+    }
+}
+
+/* 3. Divide by zero (/ 0) Warning Banner */
+.gentle-economy-pulse {
+    animation: gentleEconomyPulse 0.45s ease-in-out forwards;
+    transform-origin: center center;
+}
+
+@keyframes gentleEconomyPulse {
+    0% { transform: scale(1); }
+    40% { transform: scale(0.96); }
+    75% { transform: scale(1.015); }
+    100% { transform: scale(1); }
+}
+
+.economy-banner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.85);
+    background: rgba(24, 24, 30, 0.96);
+    color: #ffffff;
+    padding: 24px 28px;
+    border-radius: 20px;
+    border: 1.5px solid rgba(255, 69, 58, 0.65);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7), 0 0 35px rgba(255, 69, 58, 0.35);
+    z-index: 100000;
+    text-align: center;
+    max-width: 90vw;
+    width: 380px;
+    pointer-events: none;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    animation: economyBannerPop 3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.economy-banner-icon {
+    font-size: 2.6rem;
+    line-height: 1;
+    margin-bottom: 12px;
+    display: block;
+    filter: drop-shadow(0 2px 10px rgba(255, 69, 58, 0.6));
+}
+
+.economy-banner-text {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: -0.2px;
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+
+@keyframes economyBannerPop {
+    0% {
+        transform: translate(-50%, -50%) scale(0.5);
+        opacity: 0;
+    }
+    14% {
+        transform: translate(-50%, -50%) scale(1.05);
+        opacity: 1;
+    }
+    26% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    82% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    .economy-banner {
+        width: 320px;
+        padding: 20px 22px;
+    }
+    .economy-banner-text {
+        font-size: 1.05rem;
+    }
+}
+
+/* 4. Calculator Pranks: 80085 (Giggle) & 01134 (Upside-down) */
+.keypad-giggle-active {
+    animation: keypadGiggleOnly 0.16s ease-in-out infinite alternate !important;
+}
+
+.display-giggle-active {
+    animation: keypadGiggleOnly 0.16s ease-in-out infinite alternate !important;
+}
+
+@keyframes keypadGiggleOnly {
+    0% {
+        transform: rotate(0deg) scale(1);
+    }
+    50% {
+        transform: rotate(-3.5deg) translateY(-3px) scale(1.02);
+    }
+    100% {
+        transform: rotate(3.5deg) translateY(2px) scale(0.99);
+    }
+}
+
+.keypad-upside-down {
+    transform: rotate(180deg) !important;
+    transform-origin: center center !important;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+.display-upside-down {
+    transform: rotate(180deg) !important;
+    transform-origin: center center !important;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
+/* ============================================================
+   EASTER EGG: GOLD VIP EDITION (AMOLED PITCH BLACK & LUXURY GOLD)
+   ============================================================ */
+[data-theme="gold"] {
+    --bg: #000000;
+    --card-bg: #0d0c0a;
+    --text: #f5e8c7;
+    --text-muted: #c9ab6b;
+    --accent: #ffd700;
+    --border: rgba(255, 215, 0, 0.35);
+}
+
+body[data-theme="gold"] {
+    background-color: #000000 !important;
+    color: #f5e8c7 !important;
+}
+
+[data-theme="gold"] .currency-card {
+    background: linear-gradient(145deg, #0e0d0b 0%, #15130f 100%) !important;
+    border: 1px solid rgba(255, 215, 0, 0.4) !important;
+    box-shadow: 0 4px 22px rgba(0, 0, 0, 0.85), 0 0 16px rgba(255, 215, 0, 0.12) !important;
+}
+
+[data-theme="gold"] .currency-input {
+    color: #ffd700 !important;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.45) !important;
+}
+
+[data-theme="gold"] .c-code {
+    color: #ffd700 !important;
+    font-weight: 800 !important;
+}
+
+[data-theme="gold"] #ui-title {
+    background: linear-gradient(90deg, #ffd700 0%, #fff3b0 50%, #dfa837 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.35));
+}
+
+[data-theme="gold"] .add-btn {
+    background: linear-gradient(135deg, #ffd700 0%, #dfa837 100%) !important;
+    color: #000000 !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 18px rgba(255, 215, 0, 0.35) !important;
+}
+
+[data-theme="gold"] .virtual-keypad {
+    background: #060605 !important;
+    border-top: 1px solid rgba(255, 215, 0, 0.4) !important;
+    box-shadow: 0 -4px 25px rgba(255, 215, 0, 0.15) !important;
+}
+
+[data-theme="gold"] .key-btn {
+    background: #11100d !important;
+    border: 1px solid rgba(255, 215, 0, 0.3) !important;
+    color: #f5e8c7 !important;
+}
+
+[data-theme="gold"] .key-btn.key-equals {
+    background: linear-gradient(135deg, #ffd700 0%, #e5aa38 100%) !important;
+    color: #000000 !important;
+}
+
+[data-theme="gold"] .key-btn:active {
+    background: rgba(255, 215, 0, 0.3) !important;
+}
+
+.gold-vip-banner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.85);
+    background: linear-gradient(145deg, #12100d 0%, #080705 100%);
+    color: #ffd700;
+    padding: 24px 32px;
+    border-radius: 24px;
+    border: 2px solid rgba(255, 215, 0, 0.65);
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(255, 215, 0, 0.3);
+    z-index: 100000;
+    text-align: center;
+    max-width: 90vw;
+    width: 360px;
+    pointer-events: none;
+    animation: goldBannerPop 2.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.gold-vip-crown {
+    font-size: 2.8rem;
+    line-height: 1;
+    margin-bottom: 10px;
+    display: block;
+    filter: drop-shadow(0 2px 8px rgba(255, 215, 0, 0.5));
+}
+
+.gold-vip-title {
+    font-size: 1.3rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #ffd700;
+    margin-bottom: 6px;
+    text-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+}
+
+.gold-vip-sub {
+    font-size: 0.88rem;
+    color: #d8c292;
+    letter-spacing: 0.5px;
+}
+
+@keyframes goldBannerPop {
+    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+    15% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+    28% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+}
+
+/* ============================================================
+   EASTER EGG: SPLASH SCREEN SLOT MINIGAME
+   ============================================================ */
+.splash-badge-minigame {
+    cursor: pointer;
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.splash-badge-minigame:active {
+    transform: scale(0.92);
+}
+
+.splash-badge-active-game {
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.7), 0 0 60px rgba(255, 140, 0, 0.4) !important;
+    border-color: #ffd700 !important;
+}
+
+.splash-mini-reels {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 48px;
+    width: 100%;
+}
+
+.splash-mini-reel {
+    width: 26px;
+    height: 44px;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #ffd700;
+    box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+}
+
+.splash-mini-reel.spinning {
+    animation: miniReelSpin 0.06s infinite alternate;
+}
+
+@keyframes miniReelSpin {
+    0% { transform: translateY(-2px); opacity: 0.8; }
+    100% { transform: translateY(2px); opacity: 1; }
+}
+
+/* ============================================================
+   EASTER EGG: ACCELEROMETER PHYSICS COLLAPSE & REASSEMBLE
+   ============================================================ */
+.reassemble-btn {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #0071e3 0%, #4facfe 100%);
+    color: #ffffff;
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 12px 24px;
+    border-radius: 999px;
+    border: none;
+    box-shadow: 0 8px 30px rgba(0, 113, 227, 0.5), 0 2px 6px rgba(0, 0, 0, 0.3);
+    z-index: 100000;
+    cursor: pointer;
+    animation: reassemblePop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.reassemble-btn:active {
+    transform: translateX(-50%) scale(0.95);
+}
+
+@keyframes reassemblePop {
+    0% { transform: translateX(-50%) scale(0.6); opacity: 0; }
+    100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+/* ============================================================
+   EASTER EGG: BITCOIN TO THE MOON (🚀 🌕)
+   ============================================================ */
+.moon-banner {
+    position: fixed;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.85);
+    background: linear-gradient(145deg, #1a1708 0%, #0d0b03 100%);
+    color: #f7931a;
+    padding: 22px 32px;
+    border-radius: 22px;
+    border: 2px solid #f7931a;
+    box-shadow: 0 16px 50px rgba(0, 0, 0, 0.8), 0 0 35px rgba(247, 147, 26, 0.45);
+    z-index: 100000;
+    text-align: center;
+    max-width: 90vw;
+    width: 360px;
+    pointer-events: none;
+    animation: moonBannerPop 3.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.moon-icon {
+    font-size: 2.8rem;
+    line-height: 1;
+    margin-bottom: 8px;
+    display: block;
+    filter: drop-shadow(0 0 12px rgba(247, 147, 26, 0.6));
+}
+
+.moon-title {
+    font-size: 1.45rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #ffffff;
+    text-shadow: 0 0 15px rgba(247, 147, 26, 0.8);
+    margin-bottom: 4px;
+}
+
+.moon-sub {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #f7931a;
+    letter-spacing: 1px;
+}
+
+@keyframes moonBannerPop {
+    0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+    14% { transform: translate(-50%, -50%) scale(1.08); opacity: 1; }
+    26% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    80% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    100% { transform: translate(-50%, -50%) scale(0.7); opacity: 0; }
+}
+
+.moon-rocket-el {
+    position: fixed;
+    bottom: -80px;
+    left: 20%;
+    font-size: 4.2rem;
+    z-index: 100002;
+    pointer-events: none;
+    transform: rotate(45deg);
+    filter: drop-shadow(0 0 20px rgba(255, 140, 0, 0.9));
+    animation: rocketFlight 2.4s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+
+@keyframes rocketFlight {
+    0% {
+        bottom: -80px;
+        left: 20%;
+        transform: rotate(45deg) scale(0.8);
+        opacity: 1;
+    }
+    40% {
+        bottom: 45vh;
+        left: 50%;
+        transform: rotate(40deg) scale(1.2);
+        opacity: 1;
+    }
+    100% {
+        bottom: 110vh;
+        left: 85%;
+        transform: rotate(35deg) scale(0.9);
+        opacity: 0;
+    }
+}
+
+
 
 
 
