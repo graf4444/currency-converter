@@ -70,8 +70,9 @@ h1 { font-size: 1.5rem; font-weight: 700; }
     display: flex;
     align-items: center;
     gap: 10px;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
     min-width: 0;
+    max-width: 62%;
     user-select: none;
 }
 .flag {
@@ -87,14 +88,15 @@ h1 { font-size: 1.5rem; font-weight: 700; }
     flex-direction: column;
     gap: 2px;
     min-width: 0;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
 }
 .c-code-row {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 6px;
     flex-wrap: nowrap;
     min-width: 0;
+    width: auto;
     flex-shrink: 0;
 }
 .c-code { font-weight: 700; font-size: 1.05rem; flex-shrink: 0; line-height: 1.2; }
@@ -1469,7 +1471,7 @@ footer {
     background: rgba(0, 113, 227, 0.08);
     border: 1px solid rgba(0, 113, 227, 0.22);
     color: var(--accent);
-    padding: 2.5px 7px;
+    padding: 2px 7px;
     border-radius: 6px;
     font-size: 0.74rem;
     font-weight: 600;
@@ -1482,7 +1484,10 @@ footer {
     transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
     flex-shrink: 0;
     line-height: 1.25;
+    width: auto;
+    width: max-content;
     max-width: 100%;
+    box-sizing: border-box;
     z-index: 2;
 }
 
@@ -1501,9 +1506,16 @@ footer {
     pointer-events: none;
 }
 
-.custom-rate-pill-prefix,
+.custom-rate-pill-prefix {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
 .custom-rate-pill-val {
     white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 145px;
 }
 
 .custom-rate-pill:hover {
@@ -3239,9 +3251,12 @@ footer {
     }
 }
 
-@media (max-width: 320px) {
+@media (max-width: 390px) {
     .currency-card .custom-rate-pill-prefix {
         display: none;
+    }
+    .custom-rate-pill-val {
+        max-width: 105px;
     }
 }
 

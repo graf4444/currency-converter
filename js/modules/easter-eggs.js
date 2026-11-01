@@ -1000,14 +1000,18 @@ function handleDeviceMotion(e) {
 
     if (isPhysicsActive) {
         if (delta > 8) {
-            const impulseScale = Math.min(delta * 0.22, 6.5);
+            const impulseScale = Math.min(delta * 0.2, 5.5);
             const signX = (acc.x || 0) < 0 ? 1 : -1;
-            const signY = (acc.y || 0) < 0 ? 1 : -1;
             physicsCards.forEach(c => {
-                c.vx += signX * impulseScale * (0.8 + Math.random() * 0.4);
-                c.vy += signY * impulseScale * (0.8 + Math.random() * 0.4);
-                c.vRot += (Math.random() - 0.5) * impulseScale * 1.1;
+                c.isResting = false;
+                c.settleCount = 0;
+                c.vx += signX * impulseScale * (0.6 + Math.random() * 0.4);
+                c.vy -= Math.random() * impulseScale * 0.75 + 1.2; // pleasant hop
+                c.vRot += (Math.random() - 0.5) * impulseScale * 0.8;
             });
+            if (!physicsAnimId) {
+                physicsAnimId = requestAnimationFrame(stepPhysics);
+            }
             if (navigator.vibrate) {
                 try { navigator.vibrate([30, 50, 30]); } catch (_) {}
             }
@@ -1054,7 +1058,7 @@ function startCardsPhysics(mode = 'shake') {
     const blastCx = window.innerWidth / 2;
     const blastCy = window.innerHeight / 2;
 
-    physicsCards = domCards.map(el => {
+    physicsCards = domCards.map((el, idx) => {
         const rect = el.getBoundingClientRect();
         const origX = rect.left;
         const origY = rect.top;
@@ -1066,6 +1070,8 @@ function startCardsPhysics(mode = 'shake') {
         let vx = 0;
         let vy = 0;
         let vRot = 0;
+        // Each card has an individual natural tilt between -26deg and +26deg so they fit smoothly
+        const targetRot = (idx % 2 === 0 ? 1 : -1) * (10 + (idx * 6) % 18);
 
         if (mode === 'explosion') {
             const dx = cx - blastCx;
@@ -1073,14 +1079,14 @@ function startCardsPhysics(mode = 'shake') {
             const dist = Math.hypot(dx, dy) || 1;
             const nx = dx / dist;
             const ny = dy / dist;
-            const blastForce = Math.random() * 5 + 8.5;
-            vx = nx * blastForce + (Math.random() - 0.5) * 4;
-            vy = ny * blastForce - 5 + (Math.random() - 0.5) * 4;
-            vRot = (Math.random() - 0.5) * 14;
+            const blastForce = Math.random() * 4 + 6.5;
+            vx = nx * blastForce + (Math.random() - 0.5) * 3;
+            vy = ny * blastForce - 4.5 + (Math.random() - 0.5) * 3;
+            vRot = (targetRot - 0) * 0.08 + (Math.random() - 0.5) * 3.5;
         } else {
-            vx = (Math.random() - 0.5) * 6;
-            vy = Math.random() * 4 + 2;
-            vRot = (Math.random() - 0.5) * 8;
+            vx = (Math.random() - 0.5) * 4.5;
+            vy = Math.random() * 2.5 + 1.2;
+            vRot = (targetRot - 0) * 0.05;
         }
 
         return {
@@ -1094,125 +1100,112 @@ function startCardsPhysics(mode = 'shake') {
             vx,
             vy,
             rot: 0,
-            vRot
+            vRot,
+            targetRot,
+            isResting: false,
+            settleCount: 0
         };
     });
 
     showReassembleButton();
 
-    const floor = window.innerHeight - 82;
-    const ceiling = 8;
-    const leftBound = 6;
-    const rightBound = window.innerWidth - 6;
-    const gravity = 0.42;
+    const floor = window.innerHeight - 84;
+    const leftBound = 8;
+    const rightBound = window.innerWidth - 8;
+    const gravity = 0.5;
 
     function stepPhysics() {
         if (!isPhysicsActive) return;
 
-        const maxAllowedHalfW = Math.max(30, (window.innerWidth - 12) / 2);
+        let anyMoving = false;
 
         for (let i = 0; i < physicsCards.length; i++) {
             const c = physicsCards[i];
+            if (c.isResting) continue;
 
+            anyMoving = true;
+
+            // Apply gravity
             c.vy += gravity;
 
-            // Clamped velocity so blocks never shoot off screen
-            c.vx = Math.max(-14, Math.min(14, c.vx));
-            c.vy = Math.max(-14, Math.min(14, c.vy));
-            c.vRot = Math.max(-12, Math.min(12, c.vRot));
+            // Air friction (dissipates energy smoothly)
+            c.vx *= 0.95;
+            c.vy *= 0.96;
+            c.vRot *= 0.92;
+
+            // Gently guide rotation toward natural resting tilt angle
+            const rotDiff = c.targetRot - c.rot;
+            c.vRot += rotDiff * 0.025;
+
+            // Clamp max velocities for velvety smooth motion
+            c.vx = Math.max(-9, Math.min(9, c.vx));
+            c.vy = Math.max(-11, Math.min(11, c.vy));
+            c.vRot = Math.max(-5, Math.min(5, c.vRot));
 
             c.cx += c.vx;
             c.cy += c.vy;
             c.rot += c.vRot;
 
-            // Air damping
-            c.vx *= 0.985;
-            c.vy *= 0.99;
-            c.vRot *= 0.982;
+            // Floor collision & landing into static rest
+            const cardHalfH = c.h * 0.5;
+            if (c.cy + cardHalfH >= floor) {
+                c.cy = floor - cardHalfH;
 
-            // Bounding extents of rotated rectangle
-            const rad = (c.rot * Math.PI) / 180;
-            const cos = Math.abs(Math.cos(rad));
-            const sin = Math.abs(Math.sin(rad));
-            const halfW = Math.min((c.w * cos + c.h * sin) / 2, maxAllowedHalfW);
-            const halfH = (c.w * sin + c.h * cos) / 2;
-
-            // 1. Floor collision & bounce
-            if (c.cy + halfH > floor) {
-                c.cy = floor - halfH;
-                c.vy = -Math.abs(c.vy) * 0.44;
-                c.vx *= 0.86;
-                // Floor friction creates rotation torque
-                c.vRot = (c.vRot * 0.65) + (c.vx * 0.12);
+                if (Math.abs(c.vy) > 1.2) {
+                    c.vy = -c.vy * 0.32; // Soft, pleasant bounce
+                    c.vx *= 0.82;
+                    c.vRot *= 0.75;
+                } else {
+                    c.vy = 0;
+                    c.vx *= 0.75;
+                    c.vRot *= 0.75;
+                    c.settleCount++;
+                    // Settle into static rest once resting on floor and slow
+                    if (c.settleCount > 6 || (Math.abs(c.vx) < 0.15 && Math.abs(c.vRot) < 0.1)) {
+                        c.isResting = true;
+                        c.vx = 0;
+                        c.vy = 0;
+                        c.vRot = 0;
+                        c.rot = c.targetRot;
+                    }
+                }
             }
 
-            // 2. Ceiling collision & bounce
-            if (c.cy - halfH < ceiling) {
-                c.cy = ceiling + halfH;
-                c.vy = Math.abs(c.vy) * 0.44;
-                c.vx *= 0.86;
-                c.vRot = (c.vRot * 0.65) - (c.vx * 0.12);
+            // Ceiling clamp
+            if (c.cy - cardHalfH < 10) {
+                c.cy = 10 + cardHalfH;
+                c.vy = Math.abs(c.vy) * 0.3;
             }
 
-            // 3. Left wall collision & bounce
-            if (c.cx - halfW < leftBound) {
-                c.cx = leftBound + halfW;
-                c.vx = Math.abs(c.vx) * 0.48;
-                c.vRot = (c.vRot * 0.65) + (c.vy * 0.14);
+            // Side wall soft containment
+            const cardHalfW = c.w * 0.42;
+            if (c.cx - cardHalfW < leftBound) {
+                c.cx = leftBound + cardHalfW;
+                c.vx = Math.abs(c.vx) * 0.35;
+            } else if (c.cx + cardHalfW > rightBound) {
+                c.cx = rightBound - cardHalfW;
+                c.vx = -Math.abs(c.vx) * 0.35;
             }
 
-            // 4. Right wall collision & bounce
-            if (c.cx + halfW > rightBound) {
-                c.cx = rightBound - halfW;
-                c.vx = -Math.abs(c.vx) * 0.48;
-                c.vRot = (c.vRot * 0.65) - (c.vy * 0.14);
-            }
-
-            // 5. Inter-card collision with soft repulsion & tumble
+            // Soft inter-card nudge: allows overlapping naturally without ANY jittering/shorting
             for (let j = i + 1; j < physicsCards.length; j++) {
                 const c2 = physicsCards[j];
-                const rad2 = (c2.rot * Math.PI) / 180;
-                const cos2 = Math.abs(Math.cos(rad2));
-                const sin2 = Math.abs(Math.sin(rad2));
-                const halfW2 = Math.min((c2.w * cos2 + c2.h * sin2) / 2, maxAllowedHalfW);
-                const halfH2 = (c2.w * sin2 + c2.h * cos2) / 2;
-
                 const dx = c2.cx - c.cx;
                 const dy = c2.cy - c.cy;
-                const overlapX = (halfW + halfW2) - Math.abs(dx);
-                const overlapY = (halfH + halfH2) - Math.abs(dy);
+                const dist = Math.hypot(dx, dy) || 1;
+                const minDist = (c.h + c2.h) * 0.65;
 
-                if (overlapX > 0 && overlapY > 0) {
-                    if (overlapY < overlapX) {
-                        const sign = dy > 0 ? 1 : -1;
-                        const push = overlapY * 0.52;
-                        c.cy -= sign * push;
-                        c2.cy += sign * push;
-
-                        const relVy = c.vy - c2.vy;
-                        if (relVy * sign > 0) {
-                            const impulse = relVy * 0.52;
-                            c.vy -= impulse;
-                            c2.vy += impulse;
-                            const torque = Math.max(-5, Math.min(5, (dx / (halfW + 1)) * impulse * 0.22));
-                            c.vRot -= torque;
-                            c2.vRot += torque;
-                        }
-                    } else {
-                        const sign = dx > 0 ? 1 : -1;
-                        const push = overlapX * 0.52;
-                        c.cx -= sign * push;
-                        c2.cx += sign * push;
-
-                        const relVx = c.vx - c2.vx;
-                        if (relVx * sign > 0) {
-                            const impulse = relVx * 0.52;
-                            c.vx -= impulse;
-                            c2.vx += impulse;
-                            const torque = Math.max(-5, Math.min(5, (dy / (halfH + 1)) * impulse * 0.22));
-                            c.vRot += torque;
-                            c2.vRot += torque;
-                        }
+                if (dist < minDist) {
+                    const push = (minDist - dist) * 0.035;
+                    const nx = dx / dist;
+                    const ny = dy / dist;
+                    if (!c.isResting) {
+                        c.vx -= nx * push;
+                        c.vy -= ny * push;
+                    }
+                    if (!c2.isResting) {
+                        c2.vx += nx * push;
+                        c2.vy += ny * push;
                     }
                 }
             }
@@ -1223,10 +1216,15 @@ function startCardsPhysics(mode = 'shake') {
             const tx = curX - c.origX;
             const ty = curY - c.origY;
             c.el.style.transform = `translate3d(${tx.toFixed(1)}px, ${ty.toFixed(1)}px, 0) rotate(${c.rot.toFixed(1)}deg)`;
-            c.el.style.zIndex = '9998';
+            c.el.style.zIndex = `${100 + i}`;
         }
 
-        physicsAnimId = requestAnimationFrame(stepPhysics);
+        if (anyMoving) {
+            physicsAnimId = requestAnimationFrame(stepPhysics);
+        } else {
+            // All cards are in smooth static rest!
+            physicsAnimId = null;
+        }
     }
 
     if (physicsAnimId) cancelAnimationFrame(physicsAnimId);
