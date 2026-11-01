@@ -1564,17 +1564,55 @@ footer {
 }
 
 /* Custom Rate Modal */
-.custom-rate-modal-content {
-    max-width: 440px;
-    height: auto;
-    max-height: 85vh;
-    padding: 20px 20px 22px 20px;
-    border-radius: 24px 24px 0 0;
+#custom-rate-modal {
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
-@media (min-width: 600px) {
+.custom-rate-modal-content {
+    width: 100%;
+    max-width: 430px;
+    height: auto;
+    max-height: calc(100dvh - 32px);
+    padding: 20px 20px 22px 20px;
+    border-radius: 24px;
+    box-shadow: 0 16px 44px rgba(0, 0, 0, 0.35);
+    margin: auto;
+    transform-origin: center center;
+    animation: modalDialogPopIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes modalDialogPopIn {
+    from {
+        opacity: 0;
+        transform: scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@media (max-width: 600px) {
+    #custom-rate-modal {
+        /* Position in upper half on mobile so keyboard never collides with it */
+        align-items: flex-start;
+        padding-top: max(20px, 7vh);
+        padding-bottom: 24px;
+    }
+
     .custom-rate-modal-content {
         border-radius: 24px;
+        margin: 0 auto;
+    }
+
+    /* Prevent iOS Safari auto-zoom on input focus */
+    .custom-text-input,
+    .picker-search-input {
+        font-size: 16px !important;
     }
 }
 

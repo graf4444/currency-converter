@@ -46,7 +46,7 @@ function getPickerItemMeta(code) {
         const newCodeInput = document.getElementById('new-curr-code');
         const newNameInput = document.getElementById('new-curr-name');
         const customCode = (newCodeInput && newCodeInput.value.trim().toUpperCase()) || 'NEW';
-        const customName = (newNameInput && newNameInput.value.trim()) || (state.lang === 'ru' ? 'Своя валюта (баллы, мили...)' : 'Other custom currency');
+        const customName = (newNameInput && newNameInput.value.trim()) || getCustomI18n('customRateBtn', state.lang === 'ru' ? 'Своя валюта' : 'Custom currency');
         return {
             code: customCode,
             flag: '➕',
@@ -136,7 +136,7 @@ function renderPickerList(type, query = '') {
     }
 
     if (itemsToRender.length === 0 && !newCurrencyMatched) {
-        listEl.innerHTML = `<div class="picker-empty">${state.lang === 'ru' ? 'Ничего не найдено' : 'No currencies found'}</div>`;
+        listEl.innerHTML = `<div class="picker-empty">${getCustomI18n('noCurrenciesFound', state.lang === 'ru' ? 'Ничего не найдено' : 'No currencies found')}</div>`;
         return;
     }
 
@@ -191,6 +191,11 @@ function openPicker(type) {
     const otherType = type === 'base' ? 'target' : 'base';
     closePicker(otherType);
 
+    // Dismiss any active mobile keyboard
+    if (document.activeElement && typeof document.activeElement.blur === 'function') {
+        document.activeElement.blur();
+    }
+
     const dropdown = document.getElementById(`${type}-picker-dropdown`);
     const btn = document.getElementById(`custom-${type}-btn`);
     const searchInput = document.getElementById(`${type}-picker-search`);
@@ -205,11 +210,16 @@ function openPicker(type) {
     }
     renderPickerList(type, '');
 
+    const touch = typeof isTouchDevice === 'function' && isTouchDevice();
+
     setTimeout(() => {
-        if (searchInput) searchInput.focus();
+        if (!touch && searchInput) {
+            searchInput.focus();
+        }
         const selectedItem = dropdown.querySelector('.picker-item.is-selected');
-        if (selectedItem) {
-            selectedItem.scrollIntoView({ block: 'nearest' });
+        const listEl = document.getElementById(`${type}-picker-list`);
+        if (listEl && selectedItem) {
+            listEl.scrollTop = Math.max(0, selectedItem.offsetTop - 50);
         }
     }, 40);
 }
@@ -333,9 +343,8 @@ function updateMarketRateHint() {
 
     const targetSymbol = getCurrencySymbol(target);
     if (hintText) {
-        hintText.textContent = state.lang === 'ru' 
-            ? `Биржевой: ${formattedRate} ${targetSymbol}`
-            : `Market rate: ${formattedRate} ${targetSymbol}`;
+        const marketLabel = getCustomI18n('marketRateTitle', state.lang === 'ru' ? 'Биржевой' : 'Market rate');
+        hintText.textContent = `${marketLabel}: ${formattedRate} ${targetSymbol}`;
         hintText.dataset.marketRate = formattedRate;
     }
 }
@@ -351,7 +360,10 @@ function applyMarketRate() {
     const rateVal = hintText.dataset.marketRate;
     if (rateVal) {
         rateInput.value = rateVal;
-        rateInput.focus();
+        const touch = typeof isTouchDevice === 'function' && isTouchDevice();
+        if (!touch) {
+            rateInput.focus();
+        }
         triggerHaptic(10);
     }
 }
@@ -582,8 +594,8 @@ function openVariantSelectorModal(rootCode) {
                 ? `1 ${targetSymbol} = ${formattedRate} ${baseSymbol}`
                 : `1 ${baseSymbol} = ${formattedRate} ${targetSymbol}`;
 
-            const nameText = v.note ? v.note : (state.lang === 'ru' ? 'Свой курс' : 'Custom rate');
-            const descText = state.lang === 'ru' ? 'Зафиксированный курс • Сохранено локально' : 'Locked exchange rate • Saved locally';
+            const nameText = v.note ? v.note : getCustomI18n('customTag', state.lang === 'ru' ? 'Свой курс' : 'Custom rate');
+            const descText = state.lang === 'ru' ? 'Зафиксированный курс • Сохранено локально' : (getCustomI18n('noticeLocalDesc', 'Locked exchange rate • Saved locally')).replace('🔒 ', '');
 
             return `
                 <div class="variant-option-card ${isActive ? 'is-active' : ''}" data-variant-id="${v.id}" role="radio" aria-checked="${isActive}">
@@ -600,8 +612,8 @@ function openVariantSelectorModal(rootCode) {
                         </div>
                     </div>
                     <div class="variant-option-actions">
-                        <button type="button" class="variant-btn-edit" data-edit-id="${v.id}" title="${state.lang === 'ru' ? 'Редактировать курс' : 'Edit rate'}" aria-label="Edit rate">✎</button>
-                        <button type="button" class="variant-btn-delete" data-delete-id="${v.id}" title="${state.lang === 'ru' ? 'Удалить курс' : 'Delete rate'}" aria-label="Delete rate">
+                        <button type="button" class="variant-btn-edit" data-edit-id="${v.id}" title="${escapeHTML(getCustomI18n('editRate', state.lang === 'ru' ? 'Редактировать курс' : 'Edit rate'))}" aria-label="${escapeHTML(getCustomI18n('editRate', 'Edit rate'))}">✎</button>
+                        <button type="button" class="variant-btn-delete" data-delete-id="${v.id}" title="${escapeHTML(getCustomI18n('deleteRate', state.lang === 'ru' ? 'Удалить курс' : 'Delete rate'))}" aria-label="${escapeHTML(getCustomI18n('deleteRate', 'Delete rate'))}">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
                             </svg>
@@ -735,9 +747,9 @@ function openCustomRateModal({ baseCode, editId } = {}) {
 
     if (editId && state.customCurrencies && state.customCurrencies[editId]) {
         const item = state.customCurrencies[editId];
-        if (titleEl) titleEl.textContent = state.lang === 'ru' ? 'Редактирование курса' : 'Edit Custom Rate';
+        if (titleEl) titleEl.textContent = getCustomI18n('customRateEditTitle', state.lang === 'ru' ? 'Редактирование курса' : 'Edit Custom Rate');
         if (deleteBtn) deleteBtn.style.display = 'inline-block';
-        if (saveBtn) saveBtn.textContent = state.lang === 'ru' ? 'Сохранить' : 'Save';
+        if (saveBtn) saveBtn.textContent = getCustomI18n('saveRate', state.lang === 'ru' ? 'Сохранить' : 'Save');
 
         if (item.baseCode && currencyDb && currencyDb[item.baseCode]) {
             initialBase = item.baseCode;
@@ -753,9 +765,9 @@ function openCustomRateModal({ baseCode, editId } = {}) {
         if (rateInput) rateInput.value = item.rateValue || '';
         if (noteInput) noteInput.value = item.note || '';
     } else {
-        if (titleEl) titleEl.textContent = state.lang === 'ru' ? 'Фиксация курса' : 'Lock Exchange Rate';
+        if (titleEl) titleEl.textContent = getCustomI18n('customRateTitle', state.lang === 'ru' ? 'Фиксация курса' : 'Lock Exchange Rate');
         if (deleteBtn) deleteBtn.style.display = 'none';
-        if (saveBtn) saveBtn.textContent = state.lang === 'ru' ? 'Сохранить' : 'Save';
+        if (saveBtn) saveBtn.textContent = getCustomI18n('saveRate', state.lang === 'ru' ? 'Сохранить' : 'Save');
 
         // STRICT RESOLUTION OF BASE CURRENCY (NEVER ALLOW CUSTOM IDS)
         let resolvedBase = null;
@@ -818,9 +830,12 @@ function openCustomRateModal({ baseCode, editId } = {}) {
         modal.setAttribute('aria-hidden', 'false');
     }
 
-    setTimeout(() => {
-        if (rateInput && !editId) rateInput.focus();
-    }, 50);
+    const touch = typeof isTouchDevice === 'function' && isTouchDevice();
+    if (!touch && rateInput && !editId) {
+        setTimeout(() => {
+            rateInput.focus();
+        }, 150);
+    }
 }
 
 /**
@@ -852,7 +867,7 @@ function saveCustomRate() {
     const rateValue = parseFloat(cleanRateStr);
 
     if (isNaN(rateValue) || rateValue <= 0) {
-        triggerCustomToast(state.lang === 'ru' ? 'Введите курс больше 0' : 'Enter rate greater than 0');
+        triggerCustomToast(getCustomI18n('invalidRateToast', state.lang === 'ru' ? 'Введите курс больше 0' : 'Enter rate greater than 0'));
         if (rateInput) rateInput.focus();
         return;
     }
@@ -868,7 +883,7 @@ function saveCustomRate() {
         code = code.replace(/^CUST_/, '');
 
         if (!code || code.length < 2 || code.length > 8) {
-            triggerCustomToast(state.lang === 'ru' ? 'Укажите код валюты (2-8 букв)' : 'Enter currency code (2-8 chars)');
+            triggerCustomToast(getCustomI18n('invalidCodeToast', state.lang === 'ru' ? 'Укажите код валюты (2-8 букв)' : 'Enter currency code (2-8 chars)'));
             if (newCodeInput) newCodeInput.focus();
             return;
         }
@@ -930,7 +945,7 @@ function saveCustomRate() {
     if (typeof filterCurrencies === 'function') filterCurrencies();
     closeCustomRateModal();
     closeVariantSelectorModal();
-    triggerCustomToast(state.lang === 'ru' ? 'Курс сохранён' : 'Rate saved');
+    triggerCustomToast(getCustomI18n('rateSavedToast', state.lang === 'ru' ? 'Курс сохранён' : 'Rate saved'));
     triggerHaptic(15);
 }
 

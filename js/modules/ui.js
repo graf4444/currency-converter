@@ -38,6 +38,22 @@ function applyLocalization() {
     const metaAppName = document.querySelector('meta[name="application-name"]');
     if (metaAppName) metaAppName.setAttribute("content", t.title);
 
+    const langPicker = document.getElementById('lang-picker');
+    if (langPicker) {
+        langPicker.value = state.lang;
+        langPicker.setAttribute('aria-label', t.selectLanguage || 'Select Language');
+    }
+
+    const themeToggle = document.getElementById('theme-btn') || document.getElementById('theme-toggle');
+    if (themeToggle) {
+        themeToggle.setAttribute('aria-label', t.toggleTheme || 'Toggle theme');
+    }
+
+    const githubLink = document.querySelector('.github-link');
+    if (githubLink) {
+        githubLink.setAttribute('aria-label', state.lang === 'ru' ? 'Исходный код на GitHub' : 'View source on GitHub');
+    }
+
     const btnAdd = document.getElementById('ui-add-btn');
     if (btnAdd) btnAdd.textContent = t.add;
     
@@ -48,10 +64,10 @@ function applyLocalization() {
     if (btnClose) btnClose.textContent = t.close;
     
     const searchBar = document.getElementById('search-bar');
-    if (searchBar) searchBar.placeholder = t.searchPlaceholder;
-    
-    const langPicker = document.getElementById('lang-picker');
-    if (langPicker) langPicker.value = state.lang;
+    if (searchBar) {
+        searchBar.placeholder = t.searchPlaceholder;
+        searchBar.setAttribute('aria-label', t.searchPlaceholder);
+    }
     
     const secAdded = document.getElementById('ui-section-added');
     if (secAdded) secAdded.textContent = t.secAdded;
@@ -88,45 +104,52 @@ function applyLocalization() {
         renderPrivacyContent();
     }
 
+    // Modal close buttons
+    document.querySelectorAll('.close-modal').forEach(btn => {
+        btn.setAttribute('aria-label', t.closeModal || (state.lang === 'ru' ? 'Закрыть' : 'Close'));
+    });
+
     const btnCustomTitle = document.getElementById('ui-btn-custom-title');
-    if (btnCustomTitle) btnCustomTitle.textContent = state.lang === 'ru' ? 'Добавить свой курс' : 'Add custom rate';
+    if (btnCustomTitle) btnCustomTitle.textContent = t.customRateCardTitle || (state.lang === 'ru' ? 'Добавить свой курс' : 'Add custom rate');
 
     const btnCustomSub = document.getElementById('ui-btn-custom-sub');
-    if (btnCustomSub) btnCustomSub.textContent = state.lang === 'ru' 
+    if (btnCustomSub) btnCustomSub.textContent = t.customRateCardSub || (state.lang === 'ru' 
         ? 'Курс покупки в обменнике, банке или своя валюта' 
-        : 'Cash purchase, bank exchange or custom currency';
+        : 'Cash purchase, bank exchange or custom currency');
 
     const modalCustomTitle = document.getElementById('ui-custom-modal-title');
-    if (modalCustomTitle && !currentEditCustomId) modalCustomTitle.textContent = state.lang === 'ru' ? 'Фиксация курса' : 'Lock Exchange Rate';
+    if (modalCustomTitle && !currentEditCustomId) {
+        modalCustomTitle.textContent = t.customRateTitle || (state.lang === 'ru' ? 'Фиксация курса' : 'Lock Exchange Rate');
+    }
 
-    const lblBase = document.getElementById('ui-lbl-base-curr');
-    if (lblBase) lblBase.textContent = state.lang === 'ru' ? 'Валюта' : 'Currency';
+    const customBaseBtn = document.getElementById('custom-base-btn');
+    if (customBaseBtn) customBaseBtn.setAttribute('title', t.baseCurrency || 'Base Currency');
 
-    const lblTarget = document.getElementById('ui-lbl-target-curr');
-    if (lblTarget) lblTarget.textContent = state.lang === 'ru' ? 'К какой валюте' : 'Target Currency';
+    const customTargetBtn = document.getElementById('custom-target-btn');
+    if (customTargetBtn) customTargetBtn.setAttribute('title', t.targetCurrency || 'Target Currency');
 
     const baseSearch = document.getElementById('base-picker-search');
-    if (baseSearch) baseSearch.placeholder = state.lang === 'ru' ? 'Поиск по коду или названию...' : 'Search code or name...';
+    if (baseSearch) baseSearch.placeholder = t.searchPlaceholder || 'Search...';
 
     const targetSearch = document.getElementById('target-picker-search');
-    if (targetSearch) targetSearch.placeholder = state.lang === 'ru' ? 'Поиск по коду или названию...' : 'Search code or name...';
+    if (targetSearch) targetSearch.placeholder = t.searchPlaceholder || 'Search...';
 
     const lblRate = document.getElementById('ui-lbl-rate-calc');
-    if (lblRate) lblRate.textContent = state.lang === 'ru' ? 'Ваш курс' : 'Your Rate';
+    if (lblRate) lblRate.textContent = t.exchangeRate || (state.lang === 'ru' ? 'Ваш курс' : 'Your Rate');
 
     const btnUseMarket = document.getElementById('btn-use-market-rate');
-    if (btnUseMarket) btnUseMarket.textContent = state.lang === 'ru' ? 'Подставить' : 'Use Market';
+    if (btnUseMarket) btnUseMarket.textContent = t.useMarket || (state.lang === 'ru' ? 'Подставить' : 'Use Market');
 
     const lblNote = document.getElementById('ui-lbl-note');
-    if (lblNote) lblNote.textContent = state.lang === 'ru' ? 'Примечание' : 'Note';
+    if (lblNote) lblNote.textContent = t.noteLabel || (state.lang === 'ru' ? 'Примечание' : 'Note');
 
     const inputNote = document.getElementById('custom-note-input');
-    if (inputNote) inputNote.placeholder = state.lang === 'ru' ? 'Например: Наличные для отпуска' : 'e.g., Vacation cash';
+    if (inputNote) inputNote.placeholder = t.notePlaceholder || (state.lang === 'ru' ? 'Например: Наличные для отпуска' : 'e.g., Vacation cash');
 
     const noteChips = document.querySelectorAll('.note-chip');
-    const chipPresets = state.lang === 'ru' 
+    const chipPresets = t.noteChips || (state.lang === 'ru' 
         ? ['Отпуск', 'Обменник', 'Банк', 'Зарплата'] 
-        : ['Vacation', 'Exchange', 'Bank', 'Salary'];
+        : ['Vacation', 'Exchange', 'Bank', 'Salary']);
     noteChips.forEach((chip, idx) => {
         if (chipPresets[idx]) {
             chip.textContent = chipPresets[idx];
@@ -135,22 +158,63 @@ function applyLocalization() {
     });
 
     const lblNewCode = document.getElementById('ui-lbl-new-code');
-    if (lblNewCode) lblNewCode.textContent = state.lang === 'ru' ? 'Код' : 'Code';
+    if (lblNewCode) lblNewCode.textContent = t.newCode || (state.lang === 'ru' ? 'Код' : 'Code');
 
     const lblNewName = document.getElementById('ui-lbl-new-name');
-    if (lblNewName) lblNewName.textContent = state.lang === 'ru' ? 'Название' : 'Name';
+    if (lblNewName) lblNewName.textContent = t.newName || (state.lang === 'ru' ? 'Название' : 'Name');
+
+    const newCurrNameInput = document.getElementById('new-curr-name');
+    if (newCurrNameInput) newCurrNameInput.placeholder = t.newCurrPlaceholder || (state.lang === 'ru' ? 'Бонусные баллы' : 'e.g., Points / Miles');
 
     const noticeLocalDesc = document.getElementById('ui-notice-local-desc');
-    if (noticeLocalDesc) noticeLocalDesc.textContent = state.lang === 'ru' ? '🔒 Сохраняется только на этом устройстве' : '🔒 Saved only on this device';
+    if (noticeLocalDesc) noticeLocalDesc.textContent = t.noticeLocalDesc || (state.lang === 'ru' ? '🔒 Сохраняется только на этом устройстве' : '🔒 Saved only on this device');
 
     const btnSaveCustom = document.getElementById('btn-save-custom');
-    if (btnSaveCustom) btnSaveCustom.textContent = state.lang === 'ru' ? 'Сохранить' : 'Save';
+    if (btnSaveCustom) btnSaveCustom.textContent = t.saveRate || (state.lang === 'ru' ? 'Сохранить' : 'Save');
 
     const btnDeleteCustom = document.getElementById('btn-delete-custom');
-    if (btnDeleteCustom) btnDeleteCustom.textContent = state.lang === 'ru' ? 'Удалить' : 'Delete';
+    if (btnDeleteCustom) btnDeleteCustom.textContent = t.deleteRate || (state.lang === 'ru' ? 'Удалить' : 'Delete');
 
     const btnCancelCustom = document.getElementById('btn-cancel-custom');
-    if (btnCancelCustom) btnCancelCustom.textContent = state.lang === 'ru' ? 'Отмена' : 'Cancel';
+    if (btnCancelCustom) btnCancelCustom.textContent = t.cancel || (state.lang === 'ru' ? 'Отмена' : 'Cancel');
+
+    const btnVariantAddText = document.getElementById('btn-variant-add-text');
+    if (btnVariantAddText) btnVariantAddText.textContent = t.btnVariantAddCustom || (state.lang === 'ru' ? 'Добавить свой курс...' : 'Add custom rate...');
+
+    // Virtual Keypad elements
+    const keypad = document.getElementById('virtual-keypad');
+    if (keypad) keypad.setAttribute('aria-label', t.calculatorKeypad || 'Calculator keypad');
+
+    const keypadShare = document.getElementById('keypad-share');
+    if (keypadShare) {
+        keypadShare.setAttribute('title', t.shareBreakdown || 'Share Breakdown');
+        keypadShare.setAttribute('aria-label', t.shareBreakdown || 'Share Breakdown');
+    }
+
+    const keypadClose = document.getElementById('keypad-close');
+    if (keypadClose) keypadClose.setAttribute('title', t.closeModal || 'Close Keypad');
+
+    const keypadHideBtn = document.getElementById('keypad-hide-btn');
+    if (keypadHideBtn) keypadHideBtn.setAttribute('title', t.hideKeypadTitle || 'Hide keypad');
+
+    const backspaceKey = document.querySelector('.key-btn[data-key="BACKSPACE"]');
+    if (backspaceKey) backspaceKey.setAttribute('title', t.clear || 'Clear');
+
+    // Smart paste banner
+    const smartPasteHint = document.getElementById('smart-paste-hint');
+    if (smartPasteHint) smartPasteHint.textContent = t.clipboardHint || 'Paste from clipboard?';
+
+    const smartPasteApply = document.getElementById('smart-paste-apply');
+    if (smartPasteApply) smartPasteApply.textContent = t.pasteAction || 'Paste';
+
+    const smartPasteInfo = document.getElementById('smart-paste-info');
+    if (smartPasteInfo) {
+        smartPasteInfo.setAttribute('title', t.clipboardSecurity || 'Security');
+        smartPasteInfo.setAttribute('aria-label', t.clipboardSecurityAria || 'About clipboard security');
+    }
+
+    const smartPasteDismiss = document.getElementById('smart-paste-dismiss');
+    if (smartPasteDismiss) smartPasteDismiss.setAttribute('aria-label', t.closeModal || 'Close');
 
     renderAppVersion();
     updateLastUpdateUI();
@@ -201,6 +265,7 @@ function renderMain() {
     const container = document.getElementById('favorites-container');
     if (!container) return;
     
+    const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : i18n['en'];
     const fragment = document.createDocumentFragment();
 
     state.favorites.forEach(code => {
@@ -236,9 +301,7 @@ function renderMain() {
                 ? `1 ${targetSymbol} = ${formattedRate} ${baseSymbol}`
                 : `1 ${baseSymbol} = ${formattedRate} ${targetSymbol}`;
 
-            const pillTooltip = state.lang === 'ru'
-                ? `Свой курс: ${ratePillText} (нажмите для выбора варианта или редактирования)`
-                : `Custom rate: ${ratePillText} (tap to select variant or edit)`;
+            const pillTooltip = `${t.customTag || 'Custom'}: ${ratePillText} (${state.lang === 'ru' ? 'нажмите для выбора варианта или редактирования' : 'tap to select variant or edit'})`;
 
             if (customItem.note) {
                 subtitleHTML = `<span class="c-name"><span class="custom-card-note">${escapeHTML(customItem.note)}</span> <span class="custom-card-subname">• ${escapeHTML(nameLocal)}</span></span>`;
@@ -247,7 +310,7 @@ function renderMain() {
             }
 
             customPillHTML = `
-                <button type="button" class="custom-rate-pill" data-variant-root="${rootCode}" data-edit-id="${code}" title="${escapeHTML(pillTooltip)}" aria-label="Switch rate variant">
+                <button type="button" class="custom-rate-pill" data-variant-root="${rootCode}" data-edit-id="${code}" title="${escapeHTML(pillTooltip)}" aria-label="${escapeHTML(t.switchVariant || 'Switch rate variant')}">
                     <span class="custom-rate-pill-val">${ratePillText}</span>
                     <span class="custom-rate-pill-arrow">▾</span>
                 </button>
@@ -259,12 +322,10 @@ function renderMain() {
             subtitleHTML = `<span class="c-name">${escapeHTML(nameLocal)}</span>`;
 
             if (hasMultipleVariants) {
-                const marketLabel = typeof getCustomI18n === 'function' ? getCustomI18n('marketTag', 'Биржевой') : (state.lang === 'ru' ? 'Биржевой' : 'Market');
-                const pillTooltip = state.lang === 'ru'
-                    ? 'Биржевой курс (нажмите для выбора своего курса)'
-                    : 'Market rate (tap to switch to custom rate)';
+                const marketLabel = t.marketTag || (state.lang === 'ru' ? 'Биржевой' : 'Market');
+                const pillTooltip = `${t.marketRateTitle || 'Market'} (${state.lang === 'ru' ? 'нажмите для выбора своего курса' : 'tap to switch to custom rate'})`;
                 customPillHTML = `
-                    <button type="button" class="custom-rate-pill market-pill" data-variant-root="${rootCode}" title="${escapeHTML(pillTooltip)}" aria-label="Switch rate variant">
+                    <button type="button" class="custom-rate-pill market-pill" data-variant-root="${rootCode}" title="${escapeHTML(pillTooltip)}" aria-label="${escapeHTML(t.switchVariant || 'Switch rate variant')}">
                         <span class="custom-rate-pill-val">${marketLabel}</span>
                         <span class="custom-rate-pill-arrow">▾</span>
                     </button>
@@ -276,7 +337,7 @@ function renderMain() {
         card.className = 'currency-card';
         
         const hasRate = !!state.rates[code];
-        const placeholderText = hasRate ? '0' : (state.lang === 'ru' ? 'Нет курса' : 'No rate');
+        const placeholderText = hasRate ? '0' : (t.noRate || (state.lang === 'ru' ? 'Нет курса' : 'No rate'));
 
         card.innerHTML = `
             <div class="currency-meta">
@@ -292,14 +353,14 @@ function renderMain() {
             <div class="right-block">
                 <input type="text" ${isTouchDevice() ? 'inputmode="none"' : 'inputmode="decimal"'} class="currency-input" id="input-${code}" placeholder="${placeholderText}" data-code="${code}" autocomplete="off" ${!hasRate ? 'disabled' : ''}>
                 <div class="card-action-btns">
-                    <button type="button" class="share-btn" id="share-${code}" title="Share Breakdown" aria-label="Share conversion">
+                    <button type="button" class="share-btn" id="share-${code}" title="${escapeHTML(t.shareBreakdown || 'Share Breakdown')}" aria-label="${escapeHTML(t.shareBreakdown || 'Share conversion')}">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
                             <polyline points="16 6 12 2 8 6"></polyline>
                             <line x1="12" y1="2" x2="12" y2="15"></line>
                         </svg>
                     </button>
-                    <button type="button" class="clear-btn" id="clear-${code}" title="Clear">×</button>
+                    <button type="button" class="clear-btn" id="clear-${code}" title="${escapeHTML(t.clear || 'Clear')}">×</button>
                 </div>
             </div>
         `;

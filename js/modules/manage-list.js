@@ -148,6 +148,7 @@ function filterCurrencies() {
     const searchBar = document.getElementById('search-bar');
     if (!searchBar || typeof currencyDb === 'undefined') return;
     
+    const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : i18n['en'];
     const query = searchBar.value.toLowerCase().trim();
     const addedContainer = document.getElementById('added-container');
     const availableContainer = document.getElementById('available-container');
@@ -191,15 +192,15 @@ function filterCurrencies() {
             item.dataset.code = code;
             item.draggable = true;
 
-            const removeTitle = state.lang === 'ru' ? 'Удалить валюту' : 'Remove currency';
-            const variantsAriaLabel = state.lang === 'ru' ? `Варианты курса ${displayCode}` : `${displayCode} rate options`;
+            const removeTitle = t.removeCurrency || (state.lang === 'ru' ? 'Удалить валюту' : 'Remove currency');
+            const variantsAriaLabel = (t.variantModalTitle || `${displayCode} rate options`).replace('{code}', displayCode);
 
             let activePillLabel = '';
             if (isCustom) {
                 const formattedRate = getCustomRateSnippet(customItem);
-                activePillLabel = formattedRate || (state.lang === 'ru' ? 'Свой курс' : 'Custom');
+                activePillLabel = formattedRate || (t.customTag || (state.lang === 'ru' ? 'Свой курс' : 'Custom'));
             } else {
-                activePillLabel = state.lang === 'ru' ? 'Биржевой' : 'Market';
+                activePillLabel = t.marketTag || (state.lang === 'ru' ? 'Биржевой' : 'Market');
             }
 
             let subHTML;
@@ -214,10 +215,10 @@ function filterCurrencies() {
                 let variantTitle;
                 let variantSnippet;
                 if (v.isMarket) {
-                    variantTitle = state.lang === 'ru' ? 'Биржевой курс' : 'Market rate';
+                    variantTitle = t.marketRateTitle || (state.lang === 'ru' ? 'Биржевой курс' : 'Market rate');
                     variantSnippet = getMarketRateSnippet(rootCode);
                 } else {
-                    variantTitle = v.note || (state.lang === 'ru' ? 'Свой курс' : 'Custom rate');
+                    variantTitle = v.note || (t.customTag || (state.lang === 'ru' ? 'Свой курс' : 'Custom rate'));
                     variantSnippet = getCustomRateSnippet(v.item || (state.customCurrencies && state.customCurrencies[v.id]));
                 }
 
@@ -234,8 +235,8 @@ function filterCurrencies() {
                         </div>
                         ${!v.isMarket ? `
                         <div class="subgroup-item-actions">
-                            <button type="button" class="subgroup-edit-btn" data-edit-id="${v.id}" title="${state.lang === 'ru' ? 'Редактировать курс' : 'Edit rate'}" aria-label="Edit rate">✎</button>
-                            <button type="button" class="subgroup-delete-btn" data-delete-id="${v.id}" title="${state.lang === 'ru' ? 'Удалить курс' : 'Delete rate'}" aria-label="Delete rate">
+                            <button type="button" class="subgroup-edit-btn" data-edit-id="${v.id}" title="${escapeHTML(t.editRate || (state.lang === 'ru' ? 'Редактировать курс' : 'Edit rate'))}" aria-label="${escapeHTML(t.editRate || 'Edit rate')}">✎</button>
+                            <button type="button" class="subgroup-delete-btn" data-delete-id="${v.id}" title="${escapeHTML(t.deleteRate || (state.lang === 'ru' ? 'Удалить курс' : 'Delete rate'))}" aria-label="${escapeHTML(t.deleteRate || 'Delete rate')}">
                                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
                                 </svg>
@@ -255,7 +256,7 @@ function filterCurrencies() {
                             <div class="code-name">
                                 <div class="c-code-row">
                                     <span class="c-code">${displayCode}</span>
-                                    <span class="subgroup-toggle-pill clickable-pill" title="${state.lang === 'ru' ? 'Варианты курса' : 'Rate options'}">
+                                    <span class="subgroup-toggle-pill clickable-pill" title="${escapeHTML(t.rateVariants || (state.lang === 'ru' ? 'Варианты курса' : 'Rate options'))}">
                                         <span>${escapeHTML(activePillLabel)}</span>
                                         <span class="toggle-arrow ${isExpanded ? 'is-expanded' : ''}">▾</span>
                                     </span>
@@ -271,7 +272,7 @@ function filterCurrencies() {
                     <div class="subgroup-add-row">
                         <button type="button" class="subgroup-btn-add" data-base-code="${rootCode}">
                             <span class="subgroup-btn-add-icon">+</span>
-                            <span>${state.lang === 'ru' ? `Добавить курс ${rootCode}` : `Add ${rootCode} rate`}</span>
+                            <span>${(t.btnVariantAdd || (state.lang === 'ru' ? 'Добавить курс {code}' : 'Add {code} rate')).replace('{code}', rootCode)}</span>
                         </button>
                     </div>
                 </div>
@@ -387,13 +388,13 @@ function filterCurrencies() {
                         </div>
                     </div>
                     <div class="search-item-actions">
-                        <button type="button" class="search-item-btn edit-custom-btn" title="${state.lang === 'ru' ? 'Редактировать курс' : 'Edit rate'}">✎</button>
-                        <button type="button" class="search-item-btn delete-custom-btn" title="${state.lang === 'ru' ? 'Удалить курс' : 'Delete rate'}">
+                        <button type="button" class="search-item-btn edit-custom-btn" title="${escapeHTML(t.editRate || (state.lang === 'ru' ? 'Редактировать курс' : 'Edit rate'))}" aria-label="${escapeHTML(t.editRate || 'Edit rate')}">✎</button>
+                        <button type="button" class="search-item-btn delete-custom-btn" title="${escapeHTML(t.deleteRate || (state.lang === 'ru' ? 'Удалить курс' : 'Delete rate'))}" aria-label="${escapeHTML(t.deleteRate || 'Delete rate')}">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
                             </svg>
                         </button>
-                        <span class="action-icon" style="color:#ff453a; user-select:none;">−</span>
+                        <span class="action-icon" style="color:#ff453a; user-select:none;" title="${removeTitle}">−</span>
                     </div>
                 `;
 
@@ -478,8 +479,8 @@ function filterCurrencies() {
                     </div>
                 </div>
                 <div class="search-item-actions">
-                    <button type="button" class="search-item-btn edit-custom-btn" title="${state.lang === 'ru' ? 'Редактировать курс' : 'Edit rate'}">✎</button>
-                    <button type="button" class="search-item-btn delete-custom-btn" title="${state.lang === 'ru' ? 'Удалить курс' : 'Delete rate'}">
+                    <button type="button" class="search-item-btn edit-custom-btn" title="${escapeHTML(t.editRate || (state.lang === 'ru' ? 'Редактировать курс' : 'Edit rate'))}" aria-label="${escapeHTML(t.editRate || 'Edit rate')}">✎</button>
+                    <button type="button" class="search-item-btn delete-custom-btn" title="${escapeHTML(t.deleteRate || (state.lang === 'ru' ? 'Удалить курс' : 'Delete rate'))}" aria-label="${escapeHTML(t.deleteRate || 'Delete rate')}">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
                         </svg>
@@ -559,7 +560,15 @@ function filterCurrencies() {
     addedContainer.appendChild(addedFragment);
 
     availableContainer.innerHTML = '';
-    availableContainer.appendChild(availableFragment);
+    if (query && addedFragment.children.length === 0 && availableFragment.children.length === 0) {
+        const emptyDiv = document.createElement('div');
+        emptyDiv.className = 'search-empty-state';
+        emptyDiv.style.cssText = 'padding: 24px 16px; text-align: center; color: var(--text-muted); font-size: 0.95rem;';
+        emptyDiv.textContent = t.noCurrenciesFound || (state.lang === 'ru' ? 'Ничего не найдено' : 'No currencies found');
+        availableContainer.appendChild(emptyDiv);
+    } else {
+        availableContainer.appendChild(availableFragment);
+    }
 }
 
 function setupDragAndDropHandlers() {
