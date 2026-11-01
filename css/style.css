@@ -66,6 +66,18 @@ h1 { font-size: 1.5rem; font-weight: 700; }
     box-shadow: 0 4px 6px rgba(0,0,0,0.01);
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
+.currency-card {
+    background: var(--card);
+    padding: 11px 14px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 6px rgba(0,0,0,0.01);
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    gap: 8px;
+}
 .currency-meta {
     display: flex;
     align-items: center;
@@ -73,7 +85,6 @@ h1 { font-size: 1.5rem; font-weight: 700; }
     flex: 1 1 auto;
     min-width: 0;
     user-select: none;
-    margin-right: 6px;
 }
 .flag {
     font-size: 1.65rem;
@@ -87,7 +98,6 @@ h1 { font-size: 1.5rem; font-weight: 700; }
     display: flex;
     flex-direction: column;
     gap: 2px;
-    overflow: hidden;
     min-width: 0;
     flex: 1 1 auto;
 }
@@ -97,6 +107,7 @@ h1 { font-size: 1.5rem; font-weight: 700; }
     gap: 6px;
     flex-wrap: nowrap;
     min-width: 0;
+    flex-shrink: 0;
 }
 .c-code { font-weight: 700; font-size: 1.05rem; flex-shrink: 0; line-height: 1.2; }
 .c-name {
@@ -113,8 +124,8 @@ h1 { font-size: 1.5rem; font-weight: 700; }
     align-items: center;
     gap: 6px;
     flex: 0 1 auto;
-    min-width: 75px;
-    max-width: 50%;
+    min-width: 0;
+    max-width: 65%;
     justify-content: flex-end;
 }
 .currency-input {
@@ -125,9 +136,10 @@ h1 { font-size: 1.5rem; font-weight: 700; }
     font-size: 1.35rem;
     text-align: right;
     width: 100%;
+    min-width: 40px;
+    flex: 1 1 auto;
     font-variant-numeric: tabular-nums;
     font-weight: 500;
-    min-width: 0;
     cursor: text;
 }
 .currency-input:focus { outline: none; }
@@ -153,7 +165,35 @@ h1 { font-size: 1.5rem; font-weight: 700; }
 .clear-btn.visible { display: inline-block; }
 .clear-btn:hover { opacity: 0.7; }
 
-.add-btn { width: 100%; padding: 14px; background: var(--card); border: 1px dashed var(--accent); color: var(--accent); border-radius: 14px; font-size: 1rem; font-weight: 600; cursor: pointer; text-align: center; margin-bottom: 20px; }
+.add-btn {
+    width: 100%;
+    padding: 13px 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    border-radius: 14px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+.add-btn:hover {
+    border-color: var(--accent);
+    background: rgba(0, 113, 227, 0.05);
+}
+.add-btn:active {
+    transform: scale(0.99);
+}
+[data-theme="dark"] .add-btn:hover {
+    background: rgba(41, 151, 255, 0.1);
+}
 .quick-mode-btn { border-style: solid; background: var(--card); color: var(--text); border-color: var(--border); display: flex; align-items: center; justify-content: center; gap: 8px; }
 .quick-mode-btn:active { background: var(--border); }
 footer {
@@ -190,16 +230,17 @@ footer {
 
 .footer-links {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    margin-top: 4px;
+    margin-top: 6px;
+    width: 100%;
 }
 
 @media (min-width: 601px) {
     .footer-links {
-        flex-direction: row;
         gap: 10px;
     }
 }
@@ -446,15 +487,58 @@ footer {
 .section-title { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
 .section-block { display: flex; flex-direction: column; gap: 8px; }
 
-.search-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 12px; background: var(--bg); border: 1px solid transparent; }
+.search-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 11px 12px;
+    border-radius: 12px;
+    background: var(--bg);
+    border: 1px solid transparent;
+    gap: 8px;
+}
 .search-item.clickable { cursor: pointer; }
 .search-item.clickable:hover { border-color: var(--accent); }
-.action-icon { font-size: 1.4rem; font-weight: bold; padding-right: 5px; width: 24px; text-align: center; cursor: pointer; }
+.action-icon { font-size: 1.4rem; font-weight: bold; padding-right: 5px; width: 24px; text-align: center; cursor: pointer; flex-shrink: 0; }
 
 .search-item.dragging { opacity: 0.5; background: var(--border); border: 1px dashed var(--accent); }
-.drag-handle { cursor: grab; font-size: 1.2rem; color: var(--text-muted); padding: 0 8px; user-select: none; }
+.drag-handle { cursor: grab; font-size: 1.2rem; color: var(--text-muted); padding: 0 6px 0 0; user-select: none; flex-shrink: 0; }
 .drag-handle:active { cursor: grabbing; }
-.search-item-left { display: flex; align-items: center; gap: 4px; flex-grow: 1; }
+.search-item-left { display: flex; align-items: center; gap: 8px; flex: 1 1 auto; min-width: 0; }
+
+.search-item .currency-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-width: 0;
+    max-width: none !important;
+    margin-right: 0;
+}
+.search-item .code-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: visible;
+}
+.search-item .c-code-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    min-width: 0;
+}
+.search-item .c-name {
+    font-size: 0.76rem;
+    color: var(--text-muted);
+    line-height: 1.25;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+.search-item .custom-card-subname {
+    display: inline !important;
+}
 
 .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--text-muted); border-radius: 50%; border-top-color: transparent; animation: spin 0.8s linear infinite; margin-left: 5px; display: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -1356,6 +1440,13 @@ footer {
     transition: all 0.15s ease;
     flex-shrink: 0;
     line-height: 1.2;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.custom-rate-pill-prefix,
+.custom-rate-pill-val {
+    white-space: nowrap;
 }
 
 .custom-rate-pill:hover {
@@ -1555,12 +1646,24 @@ footer {
 }
 
 .custom-list-pill {
-    font-size: 0.72rem;
-    font-weight: 500;
-    padding: 1px 6px;
-    border-radius: 4px;
-    background: var(--border);
-    color: var(--text-muted);
+    display: inline-flex;
+    align-items: center;
+    font-size: 0.74rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 6px;
+    background: rgba(0, 113, 227, 0.08);
+    border: 1px solid rgba(0, 113, 227, 0.2);
+    color: var(--accent);
+    white-space: nowrap !important;
+    flex-shrink: 0;
+    line-height: 1.25;
+}
+
+[data-theme="dark"] .custom-list-pill {
+    background: rgba(41, 151, 255, 0.12);
+    border-color: rgba(41, 151, 255, 0.26);
+    color: var(--accent);
 }
 
 /* Custom Rate Modal */
@@ -2506,15 +2609,18 @@ footer {
 .subgroup-toggle-pill {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    font-size: 0.72rem;
+    gap: 5px;
+    font-size: 0.74rem;
     font-weight: 600;
-    padding: 2px 7px;
+    padding: 2.5px 8px;
     border-radius: 6px;
     background: var(--border);
     color: var(--accent);
     cursor: pointer;
     user-select: none;
+    white-space: nowrap !important;
+    flex-shrink: 0;
+    line-height: 1.25;
     transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
@@ -2936,6 +3042,222 @@ footer {
 @keyframes undoProgressAnim {
     from { transform: scaleX(1); }
     to { transform: scaleX(0); }
+}
+
+/* ============================================================
+   RESPONSIVE DESIGN (BREAKPOINTS: <= 440px, <= 350px, <= 320px)
+   Prevents number cutoff, header overflow, and layout clipping
+   ============================================================ */
+
+@media (max-width: 440px) {
+    body {
+        padding: 10px 10px;
+    }
+
+    header {
+        margin-bottom: 14px;
+        padding: 6px 0;
+        gap: 8px;
+    }
+
+    h1 {
+        font-size: 1.25rem;
+        line-height: 1.15;
+        min-width: 0;
+    }
+
+    .controls {
+        gap: 6px;
+        flex-shrink: 0;
+        min-width: 0;
+    }
+
+    .lang-select {
+        max-width: 155px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        padding: 5px 8px;
+        font-size: 0.82rem;
+    }
+
+    .theme-toggle {
+        min-width: 32px;
+        width: 32px;
+        height: 32px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 1.15rem;
+        padding: 0;
+    }
+
+    .currency-list {
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .currency-card {
+        padding: 10px 11px;
+        border-radius: 13px;
+        gap: 8px;
+    }
+
+    .currency-card > .currency-meta {
+        gap: 8px;
+        margin-right: 0;
+    }
+
+    .flag {
+        font-size: 1.45rem;
+        width: 27px;
+    }
+
+    .c-code {
+        font-size: 1rem;
+    }
+
+    .c-name {
+        font-size: 0.74rem;
+    }
+
+    .currency-card .custom-card-subname {
+        display: none;
+    }
+
+    .custom-rate-pill {
+        padding: 1.5px 6px;
+        font-size: 0.72rem;
+        white-space: nowrap !important;
+    }
+
+    .currency-card > .right-block {
+        gap: 4px;
+        max-width: 65%;
+    }
+
+    .currency-input {
+        font-size: 1.25rem;
+        padding: 2px 0;
+    }
+
+    .share-btn {
+        padding: 2px;
+    }
+
+    .share-btn svg {
+        width: 13px;
+        height: 13px;
+    }
+
+    .clear-btn {
+        font-size: 1.15rem;
+        padding: 0 2px;
+    }
+
+    .add-btn {
+        padding: 12px 14px;
+        font-size: 0.9rem;
+        border-radius: 13px;
+        margin-bottom: 16px;
+    }
+
+    .footer-links {
+        gap: 6px;
+    }
+
+    .footer-install-btn,
+    .footer-privacy-btn,
+    .github-badge {
+        padding: 5px 10px;
+        font-size: 0.72rem;
+    }
+}
+
+@media (max-width: 350px) {
+    body {
+        padding: 8px 6px;
+    }
+
+    h1 {
+        font-size: 1.15rem;
+    }
+
+    .lang-select {
+        max-width: 110px;
+        font-size: 0.76rem;
+        padding: 4px 5px;
+    }
+
+    .theme-toggle {
+        min-width: 28px;
+        width: 28px;
+        height: 28px;
+        font-size: 1.05rem;
+    }
+
+    .currency-card {
+        padding: 8px 8px;
+        gap: 4px;
+    }
+
+    .currency-card > .currency-meta {
+        gap: 6px;
+        margin-right: 0;
+    }
+
+    .flag {
+        font-size: 1.3rem;
+        width: 24px;
+    }
+
+    .c-code {
+        font-size: 0.94rem;
+    }
+
+    .c-name {
+        font-size: 0.7rem;
+    }
+
+    .custom-rate-pill {
+        padding: 1px 5px;
+        font-size: 0.68rem;
+    }
+
+    .currency-card > .right-block {
+        gap: 2px;
+        max-width: 65%;
+    }
+
+    .currency-input {
+        font-size: 1.15rem;
+    }
+
+    .share-btn {
+        padding: 1px;
+    }
+
+    .share-btn svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    .clear-btn {
+        font-size: 1.05rem;
+        padding: 0 1px;
+    }
+
+    .add-btn {
+        padding: 11px 12px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 320px) {
+    .currency-card .custom-rate-pill-prefix {
+        display: none;
+    }
 }
 
 

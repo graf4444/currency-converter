@@ -1,7 +1,7 @@
 // Application version & build configuration (can be edited manually or via build script)
 const APP_CONFIG = {
-    version: '1.21.4',
-    buildTime: '2026-11-01 19:15'
+    version: '1.21.6',
+    buildTime: '2026-11-01 19:52'
 };
 
 // UI localization constants for all supported languages

@@ -297,21 +297,25 @@ function renderMain() {
                 ? formatNumberString(String(customItem.rateValue)) 
                 : String(customItem.rateValue);
             
-            const ratePillText = customItem.rateDirection === 'reverse'
-                ? `1 ${targetSymbol} = ${formattedRate} ${baseSymbol}`
-                : `1 ${baseSymbol} = ${formattedRate} ${targetSymbol}`;
+            const pillPrefix = customItem.rateDirection === 'reverse'
+                ? `1 ${targetSymbol} = `
+                : `1 ${baseSymbol} = `;
+            const pillVal = customItem.rateDirection === 'reverse'
+                ? `${formattedRate} ${baseSymbol}`
+                : `${formattedRate} ${targetSymbol}`;
+            const ratePillText = `${pillPrefix}${pillVal}`;
 
             const pillTooltip = `${t.customTag || 'Custom'}: ${ratePillText} (${state.lang === 'ru' ? 'нажмите для выбора варианта или редактирования' : 'tap to select variant or edit'})`;
 
             if (customItem.note) {
-                subtitleHTML = `<span class="c-name"><span class="custom-card-note">${escapeHTML(customItem.note)}</span> <span class="custom-card-subname">• ${escapeHTML(nameLocal)}</span></span>`;
+                subtitleHTML = `<span class="c-name"><span class="custom-card-note">${escapeHTML(customItem.note)}</span><span class="custom-card-subname"> • ${escapeHTML(nameLocal)}</span></span>`;
             } else {
                 subtitleHTML = `<span class="c-name">${escapeHTML(nameLocal)}</span>`;
             }
 
             customPillHTML = `
                 <button type="button" class="custom-rate-pill" data-variant-root="${rootCode}" data-edit-id="${code}" title="${escapeHTML(pillTooltip)}" aria-label="${escapeHTML(t.switchVariant || 'Switch rate variant')}">
-                    <span class="custom-rate-pill-val">${ratePillText}</span>
+                    <span class="custom-rate-pill-prefix">${escapeHTML(pillPrefix)}</span><span class="custom-rate-pill-val">${escapeHTML(pillVal)}</span>
                     <span class="custom-rate-pill-arrow">▾</span>
                 </button>
             `;
@@ -326,7 +330,7 @@ function renderMain() {
                 const pillTooltip = `${t.marketRateTitle || 'Market'} (${state.lang === 'ru' ? 'нажмите для выбора своего курса' : 'tap to switch to custom rate'})`;
                 customPillHTML = `
                     <button type="button" class="custom-rate-pill market-pill" data-variant-root="${rootCode}" title="${escapeHTML(pillTooltip)}" aria-label="${escapeHTML(t.switchVariant || 'Switch rate variant')}">
-                        <span class="custom-rate-pill-val">${marketLabel}</span>
+                        <span class="custom-rate-pill-val">${escapeHTML(marketLabel)}</span>
                         <span class="custom-rate-pill-arrow">▾</span>
                     </button>
                 `;
@@ -753,4 +757,13 @@ function setupUIEvents() {
             closePrivacyModal();
         });
     }
+
+    // Responsive font recalculation on window resize / orientation change
+    window.addEventListener('resize', () => {
+        document.querySelectorAll('.currency-input').forEach(input => {
+            if (typeof adjustFontSize === 'function') {
+                adjustFontSize(input);
+            }
+        });
+    });
 }

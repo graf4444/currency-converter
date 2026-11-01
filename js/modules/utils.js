@@ -71,13 +71,33 @@ function parseCleanNumber(str) {
 }
 
 /**
- * Dynamically adjusts font size of currency input based on text length.
+ * Dynamically adjusts font size of currency input based on text length and viewport width.
+ * Prevents horizontal overflow, scrolling, and number cutoffs on mobile screens.
  */
 function adjustFontSize(input) {
-    const len = input.value.length;
-    if (len > 16) input.style.fontSize = '0.85rem';
-    else if (len > 11) input.style.fontSize = '1.1rem';
-    else input.style.fontSize = '1.4rem';
+    if (!input) return;
+    const val = input.value || '';
+    const len = val.length;
+    const w = window.innerWidth;
+
+    if (w <= 360) {
+        if (len > 15) input.style.fontSize = '0.72rem';
+        else if (len > 12) input.style.fontSize = '0.82rem';
+        else if (len > 9) input.style.fontSize = '0.94rem';
+        else if (len > 6) input.style.fontSize = '1.08rem';
+        else input.style.fontSize = '1.22rem';
+    } else if (w <= 440) {
+        if (len > 16) input.style.fontSize = '0.78rem';
+        else if (len > 13) input.style.fontSize = '0.88rem';
+        else if (len > 10) input.style.fontSize = '1.02rem';
+        else if (len > 7) input.style.fontSize = '1.16rem';
+        else input.style.fontSize = '1.3rem';
+    } else {
+        if (len > 16) input.style.fontSize = '0.85rem';
+        else if (len > 12) input.style.fontSize = '1.05rem';
+        else if (len > 9) input.style.fontSize = '1.22rem';
+        else input.style.fontSize = '1.4rem';
+    }
 }
 
 /**
