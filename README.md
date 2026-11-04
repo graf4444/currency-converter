@@ -9,7 +9,7 @@
 ### 🌐 Select Language / Выберите язык документации:
 [![English Documentation](https://img.shields.io/badge/Language-English-blue?style=for-the-badge&logo=readme&logoColor=white)](#english)
 [![Русская документация](https://img.shields.io/badge/Язык-Русский-red?style=for-the-badge&logo=readme&logoColor=white)](#russian)
-[![Changelog / История версий](https://img.shields.io/badge/Changelog-v1.22.0-brightgreen?style=for-the-badge&logo=git)](CHANGELOG.md)
+[![Changelog / История версий](https://img.shields.io/badge/Changelog-v1.23.0-brightgreen?style=for-the-badge&logo=git)](CHANGELOG.md)
 
 ---
 
@@ -72,6 +72,8 @@ A modern, fast, and lightweight **Open Source** web tool for converting world cu
 * **💸 No Ads & No Registration:** Start using it instantly without creating accounts or sharing your personal data.
 * **📶 Full Offline Mode:** Lost your internet connection? The app keeps working seamlessly using cached exchange rates.
 * **🧠 Smart Memory:** Automatically saves your favorite currency layout, custom order, and preferred theme (Light/Dark).
+* **🕹️ Secret Easter Eggs & Themes:** Discover fun hidden secrets inside the calculator and interface (Matrix mode `1337`, Casino Jackpot `777`, Zero-division blast, AMOLED Gold VIP theme, device shake gravity physics, and Bitcoin rocket To The Moon).
+
 
 ---
 
@@ -221,6 +223,8 @@ If you find a bug, have an idea, or want to add a feature:
 * **💸 Без рекламы и регистрации:** Только чистая конвертация и удобный интерфейс без назойливых баннеров или необходимости создавать аккаунт.
 * **📶 Оффлайн-режим:** Если пропал интернет или вы находитесь в полете, приложение продолжит полноценно работать на основе закэшированных курсов.
 * **🧠 Умное сохранение:** Автоматически запоминает выбранные вами валюты, их порядок на экране и настройки темы (Светлая/Тёмная).
+* **🕹️ Секретные пасхалки и темы:** Интерактивные секреты и мини-игры, спрятанные в калькуляторе и интерфейсе (режим Матрицы `1337`, Казино Джекпот `777`, взрыв при делении на ноль, тема Gold VIP AMOLED, физика падения карточек при встряхивании и ракета To The Moon).
+
 
 ---
 

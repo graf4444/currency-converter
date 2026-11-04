@@ -9,6 +9,7 @@ The project adheres to [Semantic Versioning (SemVer)](https://semver.org/).
 
 ## 📑 Table of Contents
 
+- [v1.23.0 (2026-11-04) — Interactive Easter Eggs, Adaptive Rate Pills & UI Refinements](#v1230-2026-11-04)
 - [v1.22.0 (2026-11-01) — Custom Exchange Rates, Mobile UI Fixes & Smooth Drag and Drop](#v1220-2026-11-01)
 - [v1.21.0 (2026-10-29) — Major Release: App Shortcuts, Smart Clipboard, Share Breakdown & Privacy](#v1210-2026-10-29)
 - [v1.20.0 (2026-10-28) — Synchronous Header Slide & Active Input Viewport](#v1200-2026-10-28)
@@ -18,6 +19,32 @@ The project adheres to [Semantic Versioning (SemVer)](https://semver.org/).
 - [v1.13.0 – v1.9.0 — Custom Keypad, Splash Screen & Themes](#v1130--v190)
 - [v1.6.0 (2026-10-25) — PWA Installation Modal & Private Analytics](#v160-2026-10-25)
 - [v1.0.0 (2026-10-21) — Initial Stable Release](#v100-2026-10-21)
+
+---
+
+## [v1.23.0] — 2026-11-04
+
+This release introduces an interactive suite of secret easter eggs and mini-games, dynamic custom exchange rate pill adaptation, smoother card physics during reordering, and full 13-language localization for all new interactive elements.
+
+### 🕹️ 1. Interactive Easter Eggs & Hidden Secrets
+Discover fun surprises and mini-games built directly into the converter and keypad:
+- **`1337` (Matrix Mode):** Typing 1337 transforms the interface into a retro green phosphor terminal with falling digital matrix rain.
+- **`777` (Jackpot Casino):** Hitting 777 spins casino slot reels and showers the screen with golden coin confetti.
+- **`/ 0` (Zero Division Warning):** Dividing by zero triggers a playful high-tech emergency blast warning banner and screen vibration.
+- **`80085` & `01134` (Keypad Fun):** Classic calculator tricks: giggling inputs and upside-down display greetings (`hELLO`).
+- **Splash Roulette:** Double or triple-tapping the animated splash screen logo triggers an interactive slot roulette minigame.
+- **Gold VIP AMOLED Edition:** Rapidly toggling themes unveils a hidden pitch-black AMOLED Gold VIP theme.
+- **Device Shake Physics:** Shaking your smartphone triggers accelerometer-driven physics collapse of currency cards.
+- **Moon Rocket:** Triple-tapping the Bitcoin (₿) symbol launches an animated pixel rocket with particle exhaust and victory confetti.
+- **Full Localization & Haptics:** All easter egg messages and prompts are fully translated into all 13 supported languages with synchronized mobile vibration feedback (`navigator.vibrate`).
+
+### 🏷️ 2. Adaptive Custom Rate Pills
+- **Dynamic Width:** Custom exchange rate pills now automatically adjust their width to fit long currency names, custom tags, and multi-currency values gracefully.
+- **Touch Refinements:** Improved tap sensitivity and accordion transition smoothness for quick custom rate variant switching.
+
+### 🎴 3. Card Physics & Reordering Rest
+- **Spring Repulsion Removal:** Eliminated distracting spring bounce artifacts during currency card drag-and-drop.
+- **Stable Anchoring:** Smooth physics resting animation ensures cards land cleanly into their target positions without jitter.
 
 ---
 
