@@ -15,11 +15,22 @@
 let isMatrixActive = false;
 let matrixTimeout = null;
 let isJackpotActive = false;
+let jackpotInterval = null;
+let jackpotTimeouts = [];
 let isEconomyWarningActive = false;
 let isGiggleActive = false;
 let giggleTimeout = null;
 let isUpsideDownActive = false;
 let upsideDownTimeout = null;
+
+function clearJackpotTimers() {
+    if (jackpotInterval) {
+        clearInterval(jackpotInterval);
+        jackpotInterval = null;
+    }
+    jackpotTimeouts.forEach(t => clearTimeout(t));
+    jackpotTimeouts = [];
+}
 
 // ============================================================
 // LOCALIZATION HELPER (Reads from central i18n in constants.js)
@@ -286,6 +297,7 @@ function resetActiveEasterEggs() {
         const container = document.getElementById('favorites-container');
         if (keypad) keypad.classList.remove('keypad-giggle-active');
         if (container) container.classList.remove('display-giggle-active');
+        document.querySelectorAll('.currency-card').forEach(card => card.classList.remove('card-giggle-active'));
         isGiggleActive = false;
     }
 
@@ -295,6 +307,7 @@ function resetActiveEasterEggs() {
         const container = document.getElementById('favorites-container');
         if (keypad) keypad.classList.remove('keypad-upside-down');
         if (container) container.classList.remove('display-upside-down');
+        document.querySelectorAll('.currency-card').forEach(card => card.classList.remove('card-upside-down'));
         isUpsideDownActive = false;
     }
 
@@ -302,7 +315,8 @@ function resetActiveEasterEggs() {
         exitMatrixMode();
     }
 
-    if (isJackpotActive) {
+    if (isJackpotActive || jackpotTimeouts.length > 0 || jackpotInterval) {
+        clearJackpotTimers();
         const banner = document.querySelector('.jackpot-banner');
         if (banner) {
             try { banner.remove(); } catch (_) {}
@@ -365,6 +379,8 @@ function toLeetSpeak(text, isCode = false) {
         .replace(/[ZzЗз]/g, '2');
 }
 
+let matrixPointerStart = null;
+
 function enterMatrixMode() {
     if (isMatrixActive) return;
     isMatrixActive = true;
@@ -402,14 +418,25 @@ function enterMatrixMode() {
 
     setTimeout(() => {
         if (isMatrixActive) {
-            window.addEventListener('pointerdown', onMatrixTap, { capture: true, once: true });
+            window.addEventListener('pointerdown', onMatrixPointerDown, { capture: true });
+            window.addEventListener('pointerup', onMatrixPointerUp, { capture: true });
         }
-    }, 180);
+    }, 200);
 }
 
-function onMatrixTap() {
-    if (!isMatrixActive) return;
-    exitMatrixMode();
+function onMatrixPointerDown(e) {
+    matrixPointerStart = { x: e.clientX, y: e.clientY };
+}
+
+function onMatrixPointerUp(e) {
+    if (!isMatrixActive || !matrixPointerStart) return;
+    const dx = e.clientX - matrixPointerStart.x;
+    const dy = e.clientY - matrixPointerStart.y;
+    matrixPointerStart = null;
+    // Allow scrolling without exiting: only exit if movement was a clean tap (< 14px)
+    if (Math.hypot(dx, dy) < 14) {
+        exitMatrixMode();
+    }
 }
 
 function exitMatrixMode() {
@@ -417,7 +444,8 @@ function exitMatrixMode() {
     isMatrixActive = false;
 
     clearTimeout(matrixTimeout);
-    window.removeEventListener('pointerdown', onMatrixTap, { capture: true });
+    window.removeEventListener('pointerdown', onMatrixPointerDown, { capture: true });
+    window.removeEventListener('pointerup', onMatrixPointerUp, { capture: true });
 
     document.body.classList.remove('easter-egg-matrix');
 
@@ -442,7 +470,7 @@ function launchGoldConfetti(durationMs = 4500, coinChar = '$') {
     canvas.style.width = '100vw';
     canvas.style.height = '100vh';
     canvas.style.pointerEvents = 'none';
-    canvas.style.zIndex = '99999';
+    canvas.style.zIndex = '100005';
     document.body.appendChild(canvas);
 
     const ctx = canvas.getContext('2d');
@@ -555,6 +583,7 @@ function launchGoldConfetti(durationMs = 4500, coinChar = '$') {
 // ============================================================
 
 function triggerJackpotEasterEgg() {
+    clearJackpotTimers();
     if (isJackpotActive) return;
     isJackpotActive = true;
 
@@ -564,17 +593,18 @@ function triggerJackpotEasterEgg() {
 
     const banner = document.createElement('div');
     banner.className = 'jackpot-banner';
-    banner.innerHTML = 'JACKPOT! 🎰';
+    const jackpotText = getEasterEggText('jackpot', 'JACKPOT! 🎰');
+    banner.innerHTML = jackpotText;
     document.body.appendChild(banner);
-    setTimeout(() => {
+    jackpotTimeouts.push(setTimeout(() => {
         try { banner.remove(); } catch (_) {}
-    }, 3200);
+    }, 3200));
 
     const cards = Array.from(document.querySelectorAll('.currency-card'));
     if (!cards.length) {
-        setTimeout(() => {
+        jackpotTimeouts.push(setTimeout(() => {
             isJackpotActive = false;
-        }, 2800);
+        }, 2800));
         return;
     }
 
@@ -596,9 +626,9 @@ function triggerJackpotEasterEgg() {
     const spinSymbols = ['777', '7 7 7', '777.77', '888', '333', '999', '777'];
     const startTime = Date.now();
 
-    const interval = setInterval(() => {
+    jackpotInterval = setInterval(() => {
         if (!isJackpotActive) {
-            clearInterval(interval);
+            clearJackpotTimers();
             return;
         }
         const now = Date.now();
@@ -614,12 +644,15 @@ function triggerJackpotEasterEgg() {
         });
 
         if (!anySpinning) {
-            clearInterval(interval);
+            if (jackpotInterval) {
+                clearInterval(jackpotInterval);
+                jackpotInterval = null;
+            }
         }
     }, 45);
 
     reelData.forEach(item => {
-        setTimeout(() => {
+        jackpotTimeouts.push(setTimeout(() => {
             if (!isJackpotActive) return;
             item.input.classList.remove('slot-spinning');
             item.input.value = item.targetValue || '777';
@@ -627,17 +660,18 @@ function triggerJackpotEasterEgg() {
             item.input.classList.add('slot-locked');
             triggerHaptic(18);
             playReelTickSound();
-            setTimeout(() => {
+            jackpotTimeouts.push(setTimeout(() => {
                 item.input.classList.remove('slot-locked');
-            }, 400);
-        }, item.stopDelay);
+            }, 400));
+        }, item.stopDelay));
     });
 
     const maxDelay = Math.max(...reelData.map(d => d.stopDelay), 2400);
-    setTimeout(() => {
+    jackpotTimeouts.push(setTimeout(() => {
         isJackpotActive = false;
+        clearJackpotTimers();
         // Note: entered number 777 remains in the input as requested!
-    }, maxDelay + 600);
+    }, maxDelay + 600));
 }
 
 // ============================================================
@@ -647,6 +681,13 @@ function triggerJackpotEasterEgg() {
 function triggerDivideByZeroEasterEgg(input) {
     if (isEconomyWarningActive || isPhysicsActive) return;
     isEconomyWarningActive = true;
+
+    clearJackpotTimers();
+    if (isJackpotActive) {
+        isJackpotActive = false;
+        const banner = document.querySelector('.jackpot-banner');
+        if (banner) try { banner.remove(); } catch (_) {}
+    }
 
     prepareForEasterEggAnimation(() => {
         if (navigator.vibrate) {
@@ -667,14 +708,17 @@ function triggerDivideByZeroEasterEgg(input) {
         // 2. Blast all blocks outward with unified physics & show reassemble button!
         startCardsPhysics('explosion');
 
-        if (input) {
-            input.value = '';
-            if (typeof adjustFontSize === 'function') adjustFontSize(input);
-            const clearBtn = document.getElementById(`clear-${input.dataset.code}`);
-            if (clearBtn) clearBtn.classList.remove('visible');
-            const shareBtn = document.getElementById(`share-${input.dataset.code}`);
-            if (shareBtn) shareBtn.classList.remove('visible');
-        }
+        currentInputCode = null;
+        currentInputValue = '';
+        if (typeof saveState === 'function') saveState();
+
+        document.querySelectorAll('.currency-input').forEach(inp => {
+            inp.value = '';
+            if (inp.style) inp.style.fontSize = '1.4rem';
+        });
+        document.querySelectorAll('.clear-btn, .share-btn').forEach(btn => {
+            btn.classList.remove('visible');
+        });
 
         setTimeout(() => {
             try { banner.remove(); } catch (_) {}
@@ -695,7 +739,7 @@ function restoreExplosionCards() {
 // EASTER EGG 4: «80085» — ONLY GIGGLE (ХИХИКАТЬ)
 // ============================================================
 
-function triggerGiggleEasterEgg() {
+function triggerGiggleEasterEgg(inputEl) {
     if (isGiggleActive) return;
     isGiggleActive = true;
 
@@ -704,12 +748,17 @@ function triggerGiggleEasterEgg() {
 
     const keypad = document.getElementById('virtual-keypad');
     const container = document.getElementById('favorites-container');
-    const isKeypadOpen = document.body.classList.contains('has-keypad-open');
+    const isKeypadOpen = document.body.classList.contains('has-keypad-open') ||
+        (keypad && !keypad.hasAttribute('hidden') && keypad.classList.contains('is-visible'));
 
     if (keypad && isKeypadOpen) {
         keypad.classList.add('keypad-giggle-active');
     }
-    if (container) {
+
+    const activeCard = inputEl ? inputEl.closest('.currency-card') : document.querySelector('.active-input-card');
+    if (activeCard) {
+        activeCard.classList.add('card-giggle-active');
+    } else if (container) {
         container.classList.add('display-giggle-active');
     }
 
@@ -720,6 +769,7 @@ function triggerGiggleEasterEgg() {
     clearTimeout(giggleTimeout);
     giggleTimeout = setTimeout(() => {
         if (keypad) keypad.classList.remove('keypad-giggle-active');
+        if (activeCard) activeCard.classList.remove('card-giggle-active');
         if (container) container.classList.remove('display-giggle-active');
         isGiggleActive = false;
         // Note: entered number 80085 remains in the input as requested!
@@ -730,7 +780,7 @@ function triggerGiggleEasterEgg() {
 // EASTER EGG 5: «01134» / «1134» — FLIP UPSIDE DOWN (ПЕРЕВОРАЧИВАТЬ)
 // ============================================================
 
-function triggerUpsideDownEasterEgg() {
+function triggerUpsideDownEasterEgg(inputEl) {
     if (isUpsideDownActive) return;
     isUpsideDownActive = true;
 
@@ -739,12 +789,17 @@ function triggerUpsideDownEasterEgg() {
 
     const keypad = document.getElementById('virtual-keypad');
     const container = document.getElementById('favorites-container');
-    const isKeypadOpen = document.body.classList.contains('has-keypad-open');
+    const isKeypadOpen = document.body.classList.contains('has-keypad-open') ||
+        (keypad && !keypad.hasAttribute('hidden') && keypad.classList.contains('is-visible'));
 
     if (keypad && isKeypadOpen) {
         keypad.classList.add('keypad-upside-down');
     }
-    if (container) {
+
+    const activeCard = inputEl ? inputEl.closest('.currency-card') : document.querySelector('.active-input-card');
+    if (activeCard) {
+        activeCard.classList.add('card-upside-down');
+    } else if (container) {
         container.classList.add('display-upside-down');
     }
 
@@ -755,6 +810,7 @@ function triggerUpsideDownEasterEgg() {
     clearTimeout(upsideDownTimeout);
     upsideDownTimeout = setTimeout(() => {
         if (keypad) keypad.classList.remove('keypad-upside-down');
+        if (activeCard) activeCard.classList.remove('card-upside-down');
         if (container) container.classList.remove('display-upside-down');
         isUpsideDownActive = false;
         // Note: entered number 01134 remains in the input as requested!
@@ -776,10 +832,13 @@ function setupSplashMinigame() {
 
     badge.classList.add('splash-badge-minigame');
 
-    const handleTap = () => {
+    const handleTap = (e) => {
+        if (window.__splashMinigameActive) return;
         splashTapCount++;
+        triggerHaptic(18);
+
         clearTimeout(splashTapResetTimer);
-        splashTapResetTimer = setTimeout(() => { splashTapCount = 0; }, 600);
+        splashTapResetTimer = setTimeout(() => { splashTapCount = 0; }, 800);
 
         if (splashTapCount >= 2) {
             splashTapCount = 0;
@@ -787,10 +846,7 @@ function setupSplashMinigame() {
         }
     };
 
-    badge.addEventListener('click', handleTap);
-    badge.addEventListener('pointerdown', () => {
-        triggerHaptic(15);
-    });
+    badge.addEventListener('pointerdown', handleTap);
 }
 
 function startSplashSlotMinigame(splash, badge) {
@@ -862,7 +918,8 @@ function startSplashSlotMinigame(splash, badge) {
         }
 
         if (isBitcoinWin) {
-            if (statusText) statusText.textContent = '₿ ₿ ₿ BITCOIN JACKPOT! ₿ ₿ ₿';
+            const btcText = getEasterEggText('btcJackpot', '₿ ₿ ₿ BITCOIN JACKPOT! ₿ ₿ ₿');
+            if (statusText) statusText.textContent = btcText;
             playJackpotSound();
             launchGoldConfetti(4500, '₿');
         } else {
@@ -887,7 +944,7 @@ let themeTapCount = 0;
 let themeTapResetTimer = null;
 let goldThemeCooldownUntil = 0;
 
-function handleThemeBtnEasterEggClick() {
+function handleThemeBtnEasterEggClick(themeBtn) {
     const now = Date.now();
 
     // If currently in Gold theme
@@ -910,7 +967,21 @@ function handleThemeBtnEasterEggClick() {
     clearTimeout(themeTapResetTimer);
     themeTapResetTimer = setTimeout(() => {
         themeTapCount = 0;
-    }, 1800);
+    }, 700);
+
+    // Tap 1: Normal user click -> let normal theme toggle run instantly
+    if (themeTapCount === 1) {
+        return false;
+    }
+
+    // Taps 2 to 6: User is rapid-tapping towards easter egg!
+    // Playfully pulse button with haptic tick instead of violently flashing screen black/white
+    if (themeBtn) {
+        themeBtn.classList.remove('theme-btn-charging');
+        void themeBtn.offsetWidth;
+        themeBtn.classList.add('theme-btn-charging');
+    }
+    triggerHaptic(15);
 
     if (themeTapCount >= 7) {
         themeTapCount = 0;
@@ -919,7 +990,7 @@ function handleThemeBtnEasterEggClick() {
         return true;
     }
 
-    return false;
+    return true; // absorb intermediate rapid taps 2..6!
 }
 
 function activateGoldVipTheme() {
@@ -975,9 +1046,26 @@ function setupAccelerometerEasterEgg() {
         window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
     }
 
-    // Keyboard shortcut (Ctrl+Shift+S) for easy desktop testing
+    // Request accelerometer permission on iOS 13+ on first user interaction
+    if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        const askPermission = () => {
+            DeviceMotionEvent.requestPermission()
+                .then(perm => {
+                    if (perm === 'granted') {
+                        window.addEventListener('devicemotion', handleDeviceMotion, { passive: true });
+                    }
+                })
+                .catch(() => {});
+            window.removeEventListener('pointerdown', askPermission);
+            window.removeEventListener('keydown', askPermission);
+        };
+        window.addEventListener('pointerdown', askPermission, { once: true });
+        window.addEventListener('keydown', askPermission, { once: true });
+    }
+
+    // Keyboard shortcut (Ctrl+Shift+S on Windows/Linux, Cmd+Shift+S on macOS) for desktop testing
     window.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 's') {
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 's') {
             e.preventDefault();
             if (isPhysicsActive) {
                 restorePhysicsCards();
@@ -1047,6 +1135,7 @@ function startCardsPhysics(mode = 'shake') {
     if (isPhysicsActive) return;
     isPhysicsActive = true;
     isExplosionActive = (mode === 'explosion');
+    document.body.classList.add('cards-physics-active');
 
     const domCards = Array.from(document.querySelectorAll('.currency-card'));
     if (!domCards.length) {
@@ -1224,6 +1313,7 @@ function restorePhysicsCards() {
     if (!isPhysicsActive) return;
     isPhysicsActive = false;
     isExplosionActive = false;
+    document.body.classList.remove('cards-physics-active');
     if (physicsAnimId) {
         cancelAnimationFrame(physicsAnimId);
         physicsAnimId = null;
@@ -1293,10 +1383,12 @@ function triggerBitcoinToTheMoon() {
 
         const banner = document.createElement('div');
         banner.className = 'moon-banner';
+        const titleText = getEasterEggText('moonTitle', 'TO THE MOON! 🚀');
+        const subText = getEasterEggText('moonSub', '₿ HODL BTC TO 1 000 000 $');
         banner.innerHTML = `
             <span class="moon-icon">🚀 🌕</span>
-            <div class="moon-title">TO THE MOON!</div>
-            <div class="moon-sub">₿ HODL BTC TO 1 000 000 $</div>
+            <div class="moon-title">${titleText}</div>
+            <div class="moon-sub">${subText}</div>
         `;
         document.body.appendChild(banner);
         setTimeout(() => {
@@ -1317,18 +1409,24 @@ function checkInputEasterEggs(cleanVal, inputEl) {
         return;
     }
 
-    // While field is non-empty / being edited, play strictly ONCE per session!
+    const cleanDigits = cleanVal.replace(/[^0-9]/g, '');
+
+    // Reset lock if the value changed away from the previously triggered easter egg
+    if (lastTriggeredEasterEgg && cleanDigits !== lastTriggeredEasterEgg) {
+        lastTriggeredEasterEgg = null;
+        hasEasterEggFired = false;
+    }
+
+    // While current easter egg is active/typed, prevent duplicate re-triggers on every key
     if (hasEasterEggFired) {
         return;
     }
-
-    const cleanDigits = cleanVal.replace(/[^0-9]/g, '');
 
     // 1. «1337» (Matrix Mode)
     if (cleanVal === '1337' || cleanDigits === '1337') {
         hasEasterEggFired = true;
         lastTriggeredEasterEgg = '1337';
-        prepareForEasterEggAnimation(() => enterMatrixMode());
+        enterMatrixMode();
         return;
     }
 
@@ -1345,7 +1443,7 @@ function checkInputEasterEggs(cleanVal, inputEl) {
     if (is80085) {
         hasEasterEggFired = true;
         lastTriggeredEasterEgg = '80085';
-        prepareForEasterEggAnimation(() => triggerGiggleEasterEgg());
+        triggerGiggleEasterEgg(inputEl);
         return;
     }
 
@@ -1354,7 +1452,7 @@ function checkInputEasterEggs(cleanVal, inputEl) {
     if (is01134) {
         hasEasterEggFired = true;
         lastTriggeredEasterEgg = '01134';
-        prepareForEasterEggAnimation(() => triggerUpsideDownEasterEgg());
+        triggerUpsideDownEasterEgg(inputEl);
         return;
     }
 }

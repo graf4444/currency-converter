@@ -415,7 +415,7 @@ function renderMain() {
         }
 
         card.addEventListener('click', (e) => {
-            if (e.target.closest('.clear-btn') || e.target.closest('.share-btn') || e.target.closest('.currency-input') || e.target.closest('.custom-rate-pill')) return;
+            if (e.target.closest('.clear-btn') || e.target.closest('.share-btn') || e.target.closest('.currency-input') || e.target.closest('.custom-rate-pill') || e.target.closest('.flag')) return;
             const input = card.querySelector('.currency-input');
             if (!input || input.disabled) return;
 
@@ -541,6 +541,12 @@ function renderMain() {
                         if (otherShare) otherShare.classList.remove('visible');
                     }
                 });
+                if (typeof checkInputEasterEggs === 'function') {
+                    checkInputEasterEggs('', inputEl);
+                }
+                if (typeof resetActiveEasterEggs === 'function') {
+                    resetActiveEasterEggs();
+                }
             } else {
                 saveState();
                 recalculate(inputEl.dataset.code, cleanVal);
@@ -734,7 +740,7 @@ function setupUIEvents() {
                 e.preventDefault();
                 e.stopPropagation();
             }
-            if (typeof handleThemeBtnEasterEggClick === 'function' && handleThemeBtnEasterEggClick()) {
+            if (typeof handleThemeBtnEasterEggClick === 'function' && handleThemeBtnEasterEggClick(themeBtn)) {
                 return;
             }
             triggerHaptic(10);

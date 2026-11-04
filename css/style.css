@@ -81,6 +81,9 @@ h1 { font-size: 1.5rem; font-weight: 700; }
     display: inline-block;
     flex-shrink: 0;
     line-height: 1;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
 }
 .code-name {
     display: flex;
@@ -3308,7 +3311,8 @@ body.easter-egg-matrix header {
     border-bottom: 1px solid rgba(0, 255, 102, 0.3) !important;
 }
 
-body.easter-egg-matrix .virtual-keypad {
+body.easter-egg-matrix .keypad-container,
+body.easter-egg-matrix #virtual-keypad {
     background: #010a03 !important;
     border-top: 1px solid #00ff66 !important;
     box-shadow: 0 -4px 20px rgba(0, 255, 102, 0.3) !important;
@@ -3497,6 +3501,7 @@ body.easter-egg-matrix .key-btn:active {
     animation: keypadContainerGiggle 0.16s ease-in-out infinite alternate !important;
 }
 
+.currency-card.card-giggle-active,
 .display-giggle-active {
     animation: displayGiggleOnly 0.16s ease-in-out infinite alternate !important;
 }
@@ -3506,10 +3511,10 @@ body.easter-egg-matrix .key-btn:active {
         transform: rotate(0deg) scale(1);
     }
     50% {
-        transform: rotate(-3.5deg) translateY(-3px) scale(1.02);
+        transform: rotate(-3deg) translateY(-2px) scale(1.02);
     }
     100% {
-        transform: rotate(3.5deg) translateY(2px) scale(0.99);
+        transform: rotate(3deg) translateY(2px) scale(0.99);
     }
 }
 
@@ -3531,6 +3536,12 @@ body.easter-egg-matrix .key-btn:active {
     transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
 }
 
+.currency-card.card-upside-down {
+    transform: rotate(180deg) !important;
+    transform-origin: center center !important;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+
 .display-upside-down {
     transform: rotate(180deg) !important;
     transform-origin: center center !important;
@@ -3540,8 +3551,19 @@ body.easter-egg-matrix .key-btn:active {
 /* ============================================================
    EASTER EGG: GOLD VIP EDITION (AMOLED PITCH BLACK & LUXURY GOLD)
    ============================================================ */
+.theme-toggle.theme-btn-charging {
+    animation: themeChargingPulse 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+@keyframes themeChargingPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.28) rotate(18deg); }
+    100% { transform: scale(1); }
+}
+
 [data-theme="gold"] {
     --bg: #000000;
+    --card: #0d0c0a;
     --card-bg: #0d0c0a;
     --text: #f5e8c7;
     --text-muted: #c9ab6b;
@@ -3584,7 +3606,8 @@ body[data-theme="gold"] {
     box-shadow: 0 4px 18px rgba(255, 215, 0, 0.35) !important;
 }
 
-[data-theme="gold"] .virtual-keypad {
+[data-theme="gold"] .keypad-container,
+[data-theme="gold"] #virtual-keypad {
     background: #060605 !important;
     border-top: 1px solid rgba(255, 215, 0, 0.4) !important;
     box-shadow: 0 -4px 25px rgba(255, 215, 0, 0.15) !important;
@@ -3708,6 +3731,14 @@ body[data-theme="gold"] {
 /* ============================================================
    EASTER EGG: ACCELEROMETER PHYSICS COLLAPSE & REASSEMBLE
    ============================================================ */
+body.cards-physics-active {
+    overflow: hidden !important;
+}
+
+body.cards-physics-active .currency-card {
+    pointer-events: none !important;
+}
+
 .reassemble-btn {
     position: fixed;
     bottom: 24px;
