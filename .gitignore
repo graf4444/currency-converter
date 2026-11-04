@@ -19,3 +19,12 @@ Thumbs.db
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Antigravity AI Agent configurations
+.agents/
+.agent/
+_agents/
+_agent/
+AGENTS.md
+GEMINI.md
+
