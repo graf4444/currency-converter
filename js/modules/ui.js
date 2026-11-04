@@ -237,15 +237,21 @@ function applyTheme() {
     document.body.setAttribute('data-theme', state.theme);
     const themeBtn = document.getElementById('theme-btn');
     if (themeBtn) {
-        themeBtn.textContent = state.theme === 'dark' ? '☀️' : '🌙';
-        themeBtn.setAttribute('title', state.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
-        themeBtn.setAttribute('aria-label', state.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+        if (state.theme === 'gold') {
+            themeBtn.textContent = '👑';
+            themeBtn.setAttribute('title', 'Gold VIP Edition');
+            themeBtn.setAttribute('aria-label', 'Gold VIP Edition');
+        } else {
+            themeBtn.textContent = state.theme === 'dark' ? '☀️' : '🌙';
+            themeBtn.setAttribute('title', state.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+            themeBtn.setAttribute('aria-label', state.theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme');
+        }
     }
 }
 
 function updatePWAManifest() {
     const lang = (state && state.lang && typeof i18n !== 'undefined' && i18n[state.lang]) ? state.lang : 'en';
-    const themeColor = state.theme === 'dark' ? '#1c1c1e' : '#f2f2f7';
+    const themeColor = state.theme === 'dark' ? '#1c1c1e' : (state.theme === 'gold' ? '#000000' : '#f2f2f7');
 
     const metaTheme = document.querySelector('meta[name="theme-color"]');
     if (metaTheme) {
@@ -372,8 +378,13 @@ function renderMain() {
 
         const customPill = card.querySelector('.custom-rate-pill');
         if (customPill) {
+            customPill.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+            });
             customPill.addEventListener('click', (e) => {
                 e.stopPropagation();
+                e.preventDefault();
+                if (typeof triggerHaptic === 'function') triggerHaptic(10);
                 const variantRoot = customPill.dataset.variantRoot;
                 if (variantRoot && typeof openVariantSelectorModal === 'function') {
                     openVariantSelectorModal(variantRoot);
@@ -385,7 +396,15 @@ function renderMain() {
         }
 
         const clearBtn = card.querySelector('.clear-btn');
-        if (clearBtn) clearBtn.addEventListener('click', clearAllInputs);
+        if (clearBtn) {
+            clearBtn.addEventListener('pointerdown', (e) => {
+                e.stopPropagation();
+            });
+            clearBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                clearAllInputs(e);
+            });
+        }
         const cardShareBtn = card.querySelector('.share-btn');
         if (cardShareBtn) {
             cardShareBtn.addEventListener('click', (e) => {
@@ -396,7 +415,7 @@ function renderMain() {
         }
 
         card.addEventListener('click', (e) => {
-            if (e.target.closest('.clear-btn') || e.target.closest('.share-btn') || e.target.closest('.currency-input') || e.target.closest('.custom-rate-pill')) return;
+            if (e.target.closest('.clear-btn') || e.target.closest('.share-btn') || e.target.closest('.currency-input') || e.target.closest('.custom-rate-pill') || e.target.closest('.flag')) return;
             const input = card.querySelector('.currency-input');
             if (!input || input.disabled) return;
 
@@ -522,9 +541,18 @@ function renderMain() {
                         if (otherShare) otherShare.classList.remove('visible');
                     }
                 });
+                if (typeof checkInputEasterEggs === 'function') {
+                    checkInputEasterEggs('', inputEl);
+                }
+                if (typeof resetActiveEasterEggs === 'function') {
+                    resetActiveEasterEggs();
+                }
             } else {
                 saveState();
                 recalculate(inputEl.dataset.code, cleanVal);
+                if (typeof checkInputEasterEggs === 'function') {
+                    checkInputEasterEggs(cleanVal, inputEl);
+                }
             }
         });
 
@@ -712,8 +740,15 @@ function setupUIEvents() {
                 e.preventDefault();
                 e.stopPropagation();
             }
+            if (typeof handleThemeBtnEasterEggClick === 'function' && handleThemeBtnEasterEggClick(themeBtn)) {
+                return;
+            }
             triggerHaptic(10);
-            state.theme = state.theme === 'dark' ? 'light' : 'dark';
+            if (state.theme === 'gold') {
+                state.theme = 'dark';
+            } else {
+                state.theme = state.theme === 'dark' ? 'light' : 'dark';
+            }
             applyTheme();
             updatePWAManifest();
             saveState();

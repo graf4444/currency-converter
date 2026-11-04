@@ -52,7 +52,7 @@ function initSystemSettings() {
     if (loaded && typeof loaded === 'object') {
         state = Object.assign({}, state, loaded);
         if (typeof i18n !== 'undefined' && !i18n[state.lang]) state.lang = 'en';
-        if (state.theme !== 'dark' && state.theme !== 'light') state.theme = 'dark';
+        if (state.theme !== 'dark' && state.theme !== 'light' && state.theme !== 'gold') state.theme = 'dark';
         if (!Array.isArray(state.favorites)) state.favorites = ['USD', 'EUR', 'RUB', 'UZS', 'BTC'];
         if (!state.rates || typeof state.rates !== 'object') state.rates = {};
         if (!state.customCurrencies || typeof state.customCurrencies !== 'object') state.customCurrencies = {};

@@ -42,7 +42,10 @@ function recalculate(activeCode, rawValue) {
             const clearBtn = document.getElementById(`clear-${code}`);
             if (input) {
                 if (!state.rates[code]) {
-                    input.value = state.lang === 'ru' ? 'Нет курса' : 'No rate';
+                    const noRateText = (typeof i18n !== 'undefined' && i18n[state.lang] && i18n[state.lang].noRate)
+                        ? i18n[state.lang].noRate
+                        : (state.lang === 'ru' ? 'Нет курса' : 'No rate');
+                    input.value = noRateText;
                     input.style.fontSize = '1rem';
                     return;
                 }
@@ -70,10 +73,15 @@ function recalculate(activeCode, rawValue) {
  * Clears all inputs and resets active calculation state.
  */
 function clearAllInputs(e) {
-    if (e && (Date.now() - lastCloseKeypadTime < 420)) {
+    const isDirectClearBtn = Boolean(e && e.target && e.target.closest && e.target.closest('.clear-btn'));
+    if (!isDirectClearBtn && e && (Date.now() - lastCloseKeypadTime < 420)) {
         if (e.preventDefault) e.preventDefault();
         if (e.stopPropagation) e.stopPropagation();
         return;
+    }
+
+    if (typeof resetActiveEasterEggs === 'function') {
+        resetActiveEasterEggs();
     }
     currentInputCode = null;
     currentInputValue = '';

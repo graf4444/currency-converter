@@ -1270,7 +1270,10 @@ function setupCustomRateEvents() {
     const variantCloseBtn = document.getElementById('variant-modal-close-btn');
     const variantModal = document.getElementById('variant-selector-modal');
     if (variantCloseBtn) {
-        variantCloseBtn.addEventListener('click', closeVariantSelectorModal);
+        variantCloseBtn.addEventListener('click', () => {
+            if (typeof triggerHaptic === 'function') triggerHaptic(8);
+            closeVariantSelectorModal();
+        });
     }
     if (variantModal) {
         variantModal.addEventListener('click', (e) => {

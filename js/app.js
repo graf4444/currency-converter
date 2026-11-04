@@ -27,6 +27,7 @@ function dismissSplashScreen() {
     const delay = Math.max(0, 1600 - elapsed);
 
     setTimeout(() => {
+        if (window.__splashMinigameActive) return;
         splash.classList.add('splash-fade-out');
         const cleanup = () => {
             try { splash.remove(); } catch (_) { splash.style.display = 'none'; }
@@ -37,6 +38,19 @@ function dismissSplashScreen() {
         setTimeout(cleanup, 500);
     }, delay);
 }
+
+window.dismissSplashScreenNow = function() {
+    const splash = document.getElementById('splash-screen');
+    if (!splash) return;
+    splash.classList.add('splash-fade-out');
+    const cleanup = () => {
+        try { splash.remove(); } catch (_) { splash.style.display = 'none'; }
+        const crit = document.getElementById('splash-critical-css');
+        if (crit) crit.remove();
+    };
+    splash.addEventListener('transitionend', cleanup, { once: true });
+    setTimeout(cleanup, 500);
+};
 
 // ============================================================
 // GLOBAL WINDOW EVENT LISTENERS
