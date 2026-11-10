@@ -87,6 +87,10 @@ function initSystemSettings() {
  * while persisting theme and language.
  */
 function saveState() { 
+    if (saveStateTimeout) {
+        clearTimeout(saveStateTimeout);
+        saveStateTimeout = null;
+    }
     const isTemporary = (isQuickMode || isLinkSession);
     const favsToPersist = (isTemporary && Array.isArray(permanentFavorites) && permanentFavorites.length > 0)
         ? permanentFavorites
@@ -107,4 +111,35 @@ function saveState() {
     };
 
     localStorage.setItem('conv_max_state', JSON.stringify(stateToSave)); 
+}
+
+let saveStateTimeout = null;
+
+/**
+ * Debounces state persistence to prevent blocking the main thread during rapid user typing.
+ */
+function debouncedSaveState(delay = 250) {
+    if (saveStateTimeout) clearTimeout(saveStateTimeout);
+    saveStateTimeout = setTimeout(() => {
+        saveStateTimeout = null;
+        saveState();
+    }, delay);
+}
+
+// Ensure any queued state write is flushed immediately when switching away from the tab/app
+if (typeof window !== 'undefined') {
+    window.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden' && saveStateTimeout) {
+            clearTimeout(saveStateTimeout);
+            saveStateTimeout = null;
+            saveState();
+        }
+    });
+    window.addEventListener('pagehide', () => {
+        if (saveStateTimeout) {
+            clearTimeout(saveStateTimeout);
+            saveStateTimeout = null;
+            saveState();
+        }
+    });
 }

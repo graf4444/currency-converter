@@ -265,6 +265,71 @@ function updatePWAManifest() {
 }
 
 /**
+ * Updates existing currency card inputs and pills in-place without rebuilding the DOM.
+ * Returns true if successfully updated in-place, or false if the DOM structure differs
+ * from state.favorites and requires a full renderMain().
+ */
+function updateCardsInPlace() {
+    const container = document.getElementById('favorites-container');
+    if (!container) return false;
+
+    const cards = container.querySelectorAll('.currency-card');
+    if (cards.length !== state.favorites.length) return false;
+
+    for (let i = 0; i < state.favorites.length; i++) {
+        const input = cards[i].querySelector('.currency-input');
+        if (!input || input.dataset.code !== state.favorites[i]) {
+            return false;
+        }
+    }
+
+    const t = (typeof i18n !== 'undefined' && i18n[state.lang]) ? i18n[state.lang] : i18n['en'];
+
+    cards.forEach(card => {
+        const input = card.querySelector('.currency-input');
+        if (!input) return;
+        const code = input.dataset.code;
+        const hasRate = !!(state.rates && state.rates[code]);
+        const placeholderText = hasRate ? '0' : (t.noRate || (state.lang === 'ru' ? 'Нет курса' : 'No rate'));
+
+        if (input.placeholder !== placeholderText) input.placeholder = placeholderText;
+        input.disabled = !hasRate;
+
+        const pill = card.querySelector('.custom-rate-pill');
+        if (pill && state.customCurrencies && state.customCurrencies[code]) {
+            const customItem = state.customCurrencies[code];
+            const baseSymbol = typeof getCurrencySymbol === 'function'
+                ? getCurrencySymbol(customItem.baseCode || customItem.code || 'CUSTOM')
+                : (customItem.baseCode || customItem.code || 'CUSTOM');
+            const targetSymbol = typeof getCurrencySymbol === 'function'
+                ? getCurrencySymbol(customItem.rateCurrency || 'USD')
+                : (customItem.rateCurrency || 'USD');
+            const formattedRate = typeof formatNumberString === 'function'
+                ? formatNumberString(String(customItem.rateValue))
+                : String(customItem.rateValue);
+
+            const pillPrefix = customItem.rateDirection === 'reverse'
+                ? `1 ${targetSymbol} = `
+                : `1 ${baseSymbol} = `;
+            const pillVal = customItem.rateDirection === 'reverse'
+                ? `${formattedRate} ${baseSymbol}`
+                : `${formattedRate} ${targetSymbol}`;
+
+            const prefixEl = pill.querySelector('.custom-rate-pill-prefix');
+            const valEl = pill.querySelector('.custom-rate-pill-val');
+            if (prefixEl && prefixEl.textContent !== pillPrefix) prefixEl.textContent = pillPrefix;
+            if (valEl && valEl.textContent !== pillVal) valEl.textContent = pillVal;
+        }
+    });
+
+    if (currentInputCode && currentInputValue !== '') {
+        recalculate(currentInputCode, currentInputValue);
+    }
+
+    return true;
+}
+
+/**
  * Main DOM renderer for currency converter cards.
  */
 function renderMain() {
@@ -423,7 +488,6 @@ function renderMain() {
             const isFirst = !isCurrencyActive(code, input);
 
             if (isTouchDevice()) {
-                if (isClosingKeypad || (Date.now() - lastCloseKeypadTime < 420)) return;
                 openVirtualKeypad(input);
             } else {
                 input.focus({ preventScroll: true });
@@ -464,7 +528,7 @@ function renderMain() {
             const isFirst = inputEl.dataset.isFirstTap === 'true' || currentEditingCode !== code;
 
             if (isTouchDevice()) {
-                if (!isClosingKeypad && (Date.now() - lastCloseKeypadTime >= 420)) openVirtualKeypad(inputEl);
+                openVirtualKeypad(inputEl);
             }
 
             if (isFirst) {
@@ -482,7 +546,7 @@ function renderMain() {
             const isFirst = inputEl.dataset.isFirstTap === 'true';
 
             if (isTouchDevice()) {
-                if (!isClosingKeypad && (Date.now() - lastCloseKeypadTime >= 420)) openVirtualKeypad(inputEl);
+                openVirtualKeypad(inputEl);
             }
 
             if (isFirst) {
@@ -528,9 +592,9 @@ function renderMain() {
             }
 
             if (cleanVal.trim() === '') {
-                currentInputCode = null;
                 currentInputValue = '';
-                saveState();
+                if (typeof debouncedSaveState === 'function') debouncedSaveState();
+                else saveState();
                 state.favorites.forEach(c => {
                     if (c !== inputEl.dataset.code) {
                         const otherInput = document.getElementById(`input-${c}`);
@@ -548,7 +612,8 @@ function renderMain() {
                     resetActiveEasterEggs();
                 }
             } else {
-                saveState();
+                if (typeof debouncedSaveState === 'function') debouncedSaveState();
+                else saveState();
                 recalculate(inputEl.dataset.code, cleanVal);
                 if (typeof checkInputEasterEggs === 'function') {
                     checkInputEasterEggs(cleanVal, inputEl);

@@ -3,6 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script>
+        (function() {
+            try {
+                var theme = 'dark';
+                var saved = localStorage.getItem('conv_max_state');
+                if (saved) {
+                    var s = JSON.parse(saved);
+                    if (s && (s.theme === 'dark' || s.theme === 'light')) theme = s.theme;
+                } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+                    theme = 'light';
+                }
+                document.documentElement.setAttribute('data-theme', theme);
+                var meta = document.getElementById('meta-theme-color');
+                if (meta) meta.setAttribute('content', theme === 'light' ? '#ffffff' : '#1c1c1e');
+            } catch (_) {}
+        })();
+    </script>
     <title>Currency Converter</title>
     <meta name="description" content="Fast, lightweight, ad-free multi-currency and cryptocurrency converter PWA with offline support.">
 
@@ -141,7 +158,7 @@
                 <div class="spinner" id="loader" aria-hidden="true"></div>
             </div>
             <div id="last-update"></div>
-            <div id="app-version" class="app-version">v1.23.0 (2026-11-04 22:36)</div>
+            <div id="app-version" class="app-version">v1.24.0 (2026-11-10 17:56)</div>
         </div>
 
         <div class="footer-links">

@@ -54,7 +54,14 @@ function updateListPositionForCard(card, keypad) {
 }
 
 function openVirtualKeypad(input) {
-    if (!input || input.disabled || isClosingKeypad || (Date.now() - lastCloseKeypadTime < 420)) return;
+    if (!input || input.disabled) return;
+
+    if (isClosingKeypad) {
+        clearTimeout(keypadCloseTimeout);
+        isClosingKeypad = false;
+        const kp = document.getElementById('virtual-keypad');
+        if (kp) kp.classList.remove('is-closing');
+    }
     
     activeInputEl = input;
     currentInputCode = input.dataset.code;
@@ -154,11 +161,24 @@ function closeVirtualKeypad() {
 
 function handleKeypadPress(key) {
     let input = activeInputEl;
+    if (!input && currentEditingCode) {
+        input = document.getElementById(`input-${currentEditingCode}`);
+    }
     if (!input && currentInputCode) {
         input = document.getElementById(`input-${currentInputCode}`);
     }
+    if (!input) {
+        const activeCard = document.querySelector('.currency-card.active-input-card');
+        if (activeCard) input = activeCard.querySelector('.currency-input');
+    }
+    if (!input) {
+        const firstInput = document.querySelector('.currency-input:not([disabled])');
+        if (firstInput) input = firstInput;
+    }
     if (!input) return;
     activeInputEl = input;
+    currentEditingCode = input.dataset.code;
+    currentInputCode = input.dataset.code;
     
     triggerHaptic(key === '=' || key === 'C' ? 16 : 10);
 
@@ -286,7 +306,10 @@ function setupKeypadEvents() {
             !target.closest('#virtual-keypad') &&
             !target.closest('.currency-card') &&
             !target.closest('#search-modal') &&
-            !target.closest('header')
+            !target.closest('header') &&
+            !target.closest('#ui-add-btn') &&
+            !target.closest('#ui-exit-quick-mode-btn') &&
+            !target.closest('.smart-paste-banner')
         ) {
             if (document.body.classList.contains('has-keypad-open') && !isClosingKeypad) {
                 closeVirtualKeypad();

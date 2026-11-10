@@ -9,6 +9,7 @@ The project adheres to [Semantic Versioning (SemVer)](https://semver.org/).
 
 ## 📑 Table of Contents
 
+- [v1.24.0 (2026-11-10) — Touch Responsiveness, Zero-Delay Startup & In-Place DOM Sync](#v1240-2026-11-10)
 - [v1.23.0 (2026-11-04) — Interactive Easter Eggs, Adaptive Rate Pills & UI Refinements](#v1230-2026-11-04)
 - [v1.22.0 (2026-11-01) — Custom Exchange Rates, Mobile UI Fixes & Smooth Drag and Drop](#v1220-2026-11-01)
 - [v1.21.0 (2026-10-29) — Major Release: App Shortcuts, Smart Clipboard, Share Breakdown & Privacy](#v1210-2026-10-29)
@@ -19,6 +20,27 @@ The project adheres to [Semantic Versioning (SemVer)](https://semver.org/).
 - [v1.13.0 – v1.9.0 — Custom Keypad, Splash Screen & Themes](#v1130--v190)
 - [v1.6.0 (2026-10-25) — PWA Installation Modal & Private Analytics](#v160-2026-10-25)
 - [v1.0.0 (2026-10-21) — Initial Stable Release](#v100-2026-10-21)
+
+---
+
+## [v1.24.0] — 2026-11-10
+
+This production release resolves input locking and touch lag across virtual keypad controls, optimizes typing performance with debounced storage persistence, and eliminates visual flickering and delays during PWA application launch and background rate updates.
+
+### ⚡ 1. Instant Touch Responsiveness & Tap Lockout Removal
+- **Zero-Latency Interactions:** Removed the aggressive 420ms global lockout window (`lastCloseKeypadTime < 420` and `isClosingKeypad`) across currency cards, keypad re-opening, the "+ Add Currency" button, and clear actions. All touches and card switches now respond instantaneously without dropping first taps.
+- **Fail-Safe Keypad Input Resolution:** Fixed a critical bug where clearing an input field caused `handleKeypadPress` to lose its target when native focus desynced. Implemented multi-stage active input fallback (`activeInputEl` → `currentEditingCode` → `currentInputCode` → `.active-input-card` → first available input), preventing unresponsive calculator buttons after clearing digits.
+- **Pointerdown Whitelisting:** Whitelisted key action buttons (`#ui-add-btn`, `#ui-exit-quick-mode-btn`, `.smart-paste-banner`) from global outside-click dismissal, guaranteeing single-tap modal opening without dropped click events.
+
+### 🚀 2. Debounced State Persistence & Stutter-Free Typing
+- **Asynchronous Storage Sync:** Replaced blocking synchronous JSON serialization and `localStorage.setItem` on every keystroke with a high-performance `debouncedSaveState(250)`. Rapid digit entry and math operations remain buttery-smooth on mobile devices.
+- **Guaranteed Durability:** Flushes queued state changes immediately on `visibilitychange` (hidden) and `pagehide` to ensure no user calculations are ever lost when switching apps or locking the device.
+
+### 🖥️ 3. Flicker-Free PWA Launch & In-Place DOM Updates
+- **In-Place Card Synchronization:** Introduced `updateCardsInPlace()`: background exchange rates updates smoothly refresh live rates, placeholders, and custom rate pills directly in the existing DOM without destroying cards (`container.innerHTML = ''`). Eliminates layout shift, screen flashes, and aborted gesture animations.
+- **Critical Theme Head Script:** Added early inline script in `<head>` to evaluate and apply `data-theme` prior to stylesheet rendering, preventing light/dark theme flash (FOUC) when opening in standalone PWA mode.
+- **Snappy Splash Exit:** Reduced artificial in-app splash screen delay from 1600ms down to 320ms, allowing immediate access to the converter without visual stutter.
+- **Instant Online Status:** Decoupled `updateOnlineStatusUI()` from blocking network connectivity checks (`1.1.1.1` ping), using synchronous `navigator.onLine` for immediate UI feedback.
 
 ---
 
