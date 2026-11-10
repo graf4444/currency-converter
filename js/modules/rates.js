@@ -60,8 +60,14 @@ async function updateOnlineStatusUI(isSyncing = false) {
 
     if (loader) loader.style.display = 'none';
 
-    const isOnline = await checkRealOnlineStatus();
-    status.textContent = isOnline ? t.online : t.offline;
+    status.textContent = navigator.onLine ? t.online : t.offline;
+    if (navigator.onLine) {
+        checkRealOnlineStatus().then(realOnline => {
+            if (status && !isUpdatingRates) {
+                status.textContent = realOnline ? t.online : t.offline;
+            }
+        }).catch(() => {});
+    }
 }
 
 /**
@@ -177,12 +183,10 @@ async function updateRates(forceUpdate = false) {
         isUpdatingRates = false;
         await updateOnlineStatusUI(false);
 
-        // Re-render DOM only if input is not focused and virtual keypad is not active
-        const activeEl = document.activeElement;
-        const isInputFocused = activeEl && activeEl.classList.contains('currency-input');
-        const isKeypadOpen = document.body.classList.contains('has-keypad-open') || activeInputEl !== null;
-
-        if (!isInputFocused && !isKeypadOpen) {
+        // Smoothly update cards in-place without destroying DOM elements or interrupting touch events
+        if (typeof updateCardsInPlace === 'function' && updateCardsInPlace()) {
+            // In-place refresh completed successfully
+        } else if (!isInputFocused && !isKeypadOpen) {
             renderMain();
         } else if (currentInputCode && currentInputValue !== '') {
             recalculate(currentInputCode, currentInputValue);

@@ -23,8 +23,8 @@ function dismissSplashScreen() {
 
     const startTime = window.__splashStartTime || Date.now();
     const elapsed = Date.now() - startTime;
-    // Keep visible for ~1600ms so the user can enjoy the smooth roll and glow on fresh launch
-    const delay = Math.max(0, 1600 - elapsed);
+    // Fast, smooth dismiss on fresh cold start (prevents double splash delay and visual flash)
+    const delay = Math.max(0, 320 - elapsed);
 
     setTimeout(() => {
         if (window.__splashMinigameActive) return;

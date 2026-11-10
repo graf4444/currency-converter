@@ -73,13 +73,6 @@ function recalculate(activeCode, rawValue) {
  * Clears all inputs and resets active calculation state.
  */
 function clearAllInputs(e) {
-    const isDirectClearBtn = Boolean(e && e.target && e.target.closest && e.target.closest('.clear-btn'));
-    if (!isDirectClearBtn && e && (Date.now() - lastCloseKeypadTime < 420)) {
-        if (e.preventDefault) e.preventDefault();
-        if (e.stopPropagation) e.stopPropagation();
-        return;
-    }
-
     if (typeof resetActiveEasterEggs === 'function') {
         resetActiveEasterEggs();
     }

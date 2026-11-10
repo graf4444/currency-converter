@@ -7,11 +7,6 @@ const expandedCurrencyRoots = new Set();
 
 function openModal(e) { 
     if (isQuickMode) return;
-    if (isClosingKeypad || (Date.now() - lastCloseKeypadTime < 420)) {
-        if (e && e.preventDefault) e.preventDefault();
-        if (e && e.stopPropagation) e.stopPropagation();
-        return;
-    }
     closeVirtualKeypad();
 
     // If active view was a temporary link session, restore permanent favorites before opening customization modal
@@ -753,11 +748,6 @@ function setupManageListEvents() {
     const addBtn = document.getElementById('ui-add-btn');
     if (addBtn) {
         addBtn.addEventListener('click', (e) => {
-            if (isClosingKeypad || (Date.now() - lastCloseKeypadTime < 420)) {
-                e.preventDefault();
-                e.stopPropagation();
-                return;
-            }
             openModal(e);
         });
     }
