@@ -429,7 +429,7 @@ function renderMain() {
                 <input type="text" ${isTouchDevice() ? 'inputmode="none"' : 'inputmode="decimal"'} class="currency-input" id="input-${code}" placeholder="${placeholderText}" data-code="${code}" autocomplete="off" ${!hasRate ? 'disabled' : ''}>
                 <div class="card-action-btns">
                     <button type="button" class="share-btn" id="share-${code}" title="${escapeHTML(t.shareBreakdown || 'Share Breakdown')}" aria-label="${escapeHTML(t.shareBreakdown || 'Share conversion')}">
-                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
                             <polyline points="16 6 12 2 8 6"></polyline>
                             <line x1="12" y1="2" x2="12" y2="15"></line>
@@ -462,13 +462,18 @@ function renderMain() {
 
         const clearBtn = card.querySelector('.clear-btn');
         if (clearBtn) {
-            clearBtn.addEventListener('pointerdown', (e) => {
+            let lastClearTap = 0;
+            const handleClear = (e) => {
                 e.stopPropagation();
-            });
-            clearBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
+                e.preventDefault();
+                const now = Date.now();
+                if (now - lastClearTap < 200) return;
+                lastClearTap = now;
+                if (typeof triggerHaptic === 'function') triggerHaptic(12);
                 clearAllInputs(e);
-            });
+            };
+            clearBtn.addEventListener('pointerdown', handleClear);
+            clearBtn.addEventListener('click', handleClear);
         }
         const cardShareBtn = card.querySelector('.share-btn');
         if (cardShareBtn) {

@@ -232,7 +232,7 @@ function filterCurrencies() {
                         <div class="subgroup-item-actions">
                             <button type="button" class="subgroup-edit-btn" data-edit-id="${v.id}" title="${escapeHTML(t.editRate || (state.lang === 'ru' ? 'Редактировать курс' : 'Edit rate'))}" aria-label="${escapeHTML(t.editRate || 'Edit rate')}">✎</button>
                             <button type="button" class="subgroup-delete-btn" data-delete-id="${v.id}" title="${escapeHTML(t.deleteRate || (state.lang === 'ru' ? 'Удалить курс' : 'Delete rate'))}" aria-label="${escapeHTML(t.deleteRate || 'Delete rate')}">
-                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
                                 </svg>
                             </button>
@@ -276,7 +276,7 @@ function filterCurrencies() {
             // Expand/collapse on header row click
             const mainRow = item.querySelector('.search-item-main-row');
             mainRow.addEventListener('click', (e) => {
-                if (e.target.closest('.drag-handle') || e.target.closest('.action-icon')) return;
+                if (e.target.closest('.drag-handle') || e.target.closest('.action-icon') || e.target.closest('.search-item-btn') || e.target.closest('.subgroup-delete-btn')) return;
                 e.stopPropagation();
 
                 const wasExpanded = expandedCurrencyRoots.has(rootCode);
@@ -297,11 +297,22 @@ function filterCurrencies() {
             });
 
             // Remove entire currency (all variants) from favorites
-            item.querySelector('.action-icon').addEventListener('click', (e) => {
-                e.stopPropagation();
-                expandedCurrencyRoots.delete(rootCode);
-                toggleFavorite(rootCode, false);
-            });
+            const actionIcon = item.querySelector('.action-icon');
+            if (actionIcon) {
+                let lastRemoveTap = 0;
+                const handleRemove = (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    const now = Date.now();
+                    if (now - lastRemoveTap < 250) return;
+                    lastRemoveTap = now;
+                    if (typeof triggerHaptic === 'function') triggerHaptic(14);
+                    expandedCurrencyRoots.delete(rootCode);
+                    toggleFavorite(rootCode, false);
+                };
+                actionIcon.addEventListener('pointerdown', (e) => e.stopPropagation());
+                actionIcon.addEventListener('click', handleRemove);
+            }
 
             // Select variant immediately on tap
             item.querySelectorAll('.subgroup-item').forEach(subRow => {
@@ -328,15 +339,19 @@ function filterCurrencies() {
 
             // Delete custom rate immediately with undo
             item.querySelectorAll('.subgroup-delete-btn').forEach(delBtn => {
-                delBtn.addEventListener('click', (e) => {
+                const handleDelete = (e) => {
                     e.stopPropagation();
+                    e.preventDefault();
+                    if (typeof triggerHaptic === 'function') triggerHaptic(14);
                     const delId = delBtn.dataset.deleteId;
                     if (typeof deleteCustomRateWithUndo === 'function') {
                         deleteCustomRateWithUndo(delId);
                     } else if (typeof deleteCustomRate === 'function') {
                         deleteCustomRate(delId);
                     }
-                });
+                };
+                delBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
+                delBtn.addEventListener('click', handleDelete);
             });
 
             // Add new custom rate for this base currency
@@ -385,7 +400,7 @@ function filterCurrencies() {
                     <div class="search-item-actions">
                         <button type="button" class="search-item-btn edit-custom-btn" title="${escapeHTML(t.editRate || (state.lang === 'ru' ? 'Редактировать курс' : 'Edit rate'))}" aria-label="${escapeHTML(t.editRate || 'Edit rate')}">✎</button>
                         <button type="button" class="search-item-btn delete-custom-btn" title="${escapeHTML(t.deleteRate || (state.lang === 'ru' ? 'Удалить курс' : 'Delete rate'))}" aria-label="${escapeHTML(t.deleteRate || 'Delete rate')}">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>
                             </svg>
                         </button>
@@ -400,14 +415,21 @@ function filterCurrencies() {
                     }
                 });
 
-                item.querySelector('.delete-custom-btn').addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (typeof deleteCustomRateWithUndo === 'function') {
-                        deleteCustomRateWithUndo(code);
-                    } else if (typeof deleteCustomRate === 'function') {
-                        deleteCustomRate(code);
-                    }
-                });
+                const delCustomBtn = item.querySelector('.delete-custom-btn');
+                if (delCustomBtn) {
+                    const handleDelete = (e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        if (typeof triggerHaptic === 'function') triggerHaptic(14);
+                        if (typeof deleteCustomRateWithUndo === 'function') {
+                            deleteCustomRateWithUndo(code);
+                        } else if (typeof deleteCustomRate === 'function') {
+                            deleteCustomRate(code);
+                        }
+                    };
+                    delCustomBtn.addEventListener('pointerdown', (e) => e.stopPropagation());
+                    delCustomBtn.addEventListener('click', handleDelete);
+                }
             } else {
                 item.innerHTML = `
                     <div class="search-item-left">
@@ -424,10 +446,21 @@ function filterCurrencies() {
                 `;
             }
 
-            item.querySelector('.action-icon').addEventListener('click', (e) => {
-                e.stopPropagation();
-                toggleFavorite(rootCode, false);
-            });
+            const singleActionIcon = item.querySelector('.action-icon');
+            if (singleActionIcon) {
+                let lastRemoveTap = 0;
+                const handleRemove = (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    const now = Date.now();
+                    if (now - lastRemoveTap < 250) return;
+                    lastRemoveTap = now;
+                    if (typeof triggerHaptic === 'function') triggerHaptic(14);
+                    toggleFavorite(rootCode, false);
+                };
+                singleActionIcon.addEventListener('pointerdown', (e) => e.stopPropagation());
+                singleActionIcon.addEventListener('click', handleRemove);
+            }
 
             addedFragment.appendChild(item);
         }
