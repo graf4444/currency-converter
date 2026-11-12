@@ -68,6 +68,11 @@ function openVirtualKeypad(input) {
     const code = currentInputCode;
     const keypad = document.getElementById('virtual-keypad');
     const titleEl = document.getElementById('keypad-active-code');
+
+    try {
+        const valLen = input.value.length;
+        input.setSelectionRange(valLen, valLen);
+    } catch (_) {}
     
     if (keypad) {
         if (titleEl) {
@@ -123,12 +128,36 @@ function openVirtualKeypad(input) {
     }
 }
 
+let ghostClickBlockUntil = 0;
+
+function blockGhostClicks(durationMs = 450) {
+    ghostClickBlockUntil = Date.now() + durationMs;
+}
+
+// Intercept synthesized ghost clicks in capture phase to protect underlying UI
+document.addEventListener('click', (e) => {
+    if (Date.now() < ghostClickBlockUntil) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+    }
+}, true);
+
+document.addEventListener('pointerdown', (e) => {
+    if (Date.now() < ghostClickBlockUntil && !e.target.closest('#virtual-keypad')) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+    }
+}, true);
+
 function closeVirtualKeypad() {
     if (isClosingKeypad) return;
     isClosingKeypad = true;
     currentEditingCode = null;
     lastCloseKeypadTime = Date.now();
     triggerHaptic(8);
+    blockGhostClicks(450);
     
     const keypad = document.getElementById('virtual-keypad');
     document.querySelectorAll('.currency-card').forEach(card => card.classList.remove('active-input-card'));
@@ -197,11 +226,18 @@ function handleKeypadPress(key) {
         return;
     }
 
-    const { start, end, val } = getCursorSelection(input);
+    let { start, end, val } = getCursorSelection(input);
 
     if (key === 'BACKSPACE') {
         if (val.length === 0) return;
-        
+
+        // If cursor was reset to 0 (e.g. mobile blur or selection collapsed on focus),
+        // fallback to deleting the last character so backspace is always immediate and reliable.
+        if (start === 0 && end === 0) {
+            start = val.length;
+            end = val.length;
+        }
+
         let newRaw = '';
         let targetNonSpaces = 0;
         
@@ -254,10 +290,24 @@ function handleKeypadPress(key) {
  * Attaches event listeners for keypad buttons, close controls, and outside clicks.
  */
 function setupKeypadEvents() {
+    const keypad = document.getElementById('virtual-keypad');
+    if (keypad) {
+        // Prevent touches/clicks from falling through or re-triggering while keypad is closing
+        const dropClosingEvent = (e) => {
+            if (isClosingKeypad) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        };
+        keypad.addEventListener('click', dropClosingEvent, true);
+        keypad.addEventListener('pointerdown', dropClosingEvent, true);
+    }
+
     document.querySelectorAll('.key-btn').forEach(btn => {
         const handlePress = (e) => {
             e.preventDefault();
             e.stopPropagation();
+            if (isClosingKeypad) return;
             const key = btn.dataset.key;
             handleKeypadPress(key);
         };

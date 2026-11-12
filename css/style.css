@@ -57,7 +57,8 @@ h1 { font-size: 1.5rem; font-weight: 700; }
 }
 .currency-card {
     background: var(--card);
-    padding: 11px 14px;
+    padding: 13px 15px;
+    min-height: 62px;
     border-radius: 14px;
     display: flex;
     align-items: center;
@@ -69,14 +70,14 @@ h1 { font-size: 1.5rem; font-weight: 700; }
 .currency-meta {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 12px;
     flex: 1 1 auto;
     min-width: 0;
     user-select: none;
 }
 .flag {
-    font-size: 1.65rem;
-    width: 32px;
+    font-size: 1.95rem;
+    width: 38px;
     text-align: center;
     display: inline-block;
     flex-shrink: 0;
@@ -101,9 +102,9 @@ h1 { font-size: 1.5rem; font-weight: 700; }
     width: auto;
     flex-shrink: 0;
 }
-.c-code { font-weight: 700; font-size: 1.05rem; flex-shrink: 0; line-height: 1.2; }
+.c-code { font-weight: 700; font-size: 1.12rem; flex-shrink: 0; line-height: 1.2; }
 .c-name {
-    font-size: 0.76rem;
+    font-size: 0.82rem;
     color: var(--text-muted);
     line-height: 1.25;
     white-space: nowrap;
@@ -125,7 +126,7 @@ h1 { font-size: 1.5rem; font-weight: 700; }
     border: none;
     color: var(--text);
     padding: 3px 0;
-    font-size: 1.35rem;
+    font-size: 1.38rem;
     text-align: right;
     width: 100%;
     min-width: 40px;
@@ -135,36 +136,60 @@ h1 { font-size: 1.5rem; font-weight: 700; }
     cursor: text;
 }
 .currency-input:focus { outline: none; }
-.card-action-btns { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+.card-action-btns { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
 .share-btn {
     background: none;
     border: none;
     color: var(--text-muted);
     cursor: pointer;
-    padding: 4px;
+    width: 36px;
+    height: 36px;
+    padding: 0;
     display: none;
     align-items: center;
     justify-content: center;
-    opacity: 0.35;
+    opacity: 0.42;
     transition: opacity 0.2s ease, color 0.2s ease, transform 0.15s ease;
-    border-radius: 6px;
+    border-radius: 8px;
     flex-shrink: 0;
+    touch-action: manipulation;
 }
 .share-btn.visible { display: inline-flex; }
-.share-btn:hover { opacity: 0.9; color: var(--accent); }
-.share-btn:active { transform: scale(0.88); }
-.clear-btn { background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1.2rem; opacity: 0.3; padding: 0 4px; display: none; flex-shrink: 0; }
-.clear-btn.visible { display: inline-block; }
-.clear-btn:hover { opacity: 0.7; }
+.share-btn svg { width: 17px; height: 17px; }
+.share-btn:hover { opacity: 0.95; color: var(--accent); }
+.share-btn:active { transform: scale(0.9); }
+.clear-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    font-size: 1.45rem;
+    line-height: 1;
+    opacity: 0.42;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    flex-shrink: 0;
+    transition: opacity 0.2s ease, color 0.2s ease, transform 0.15s ease;
+    touch-action: manipulation;
+}
+.clear-btn.visible { display: inline-flex; }
+.clear-btn:hover { opacity: 0.95; color: #ff453a; }
+.clear-btn:active { transform: scale(0.9); background: rgba(255, 69, 58, 0.12); }
 
 .add-btn {
     width: 100%;
-    padding: 13px 16px;
+    padding: 15px 16px;
+    min-height: 52px;
     background: var(--card);
     border: 1px solid var(--border);
     color: var(--accent);
     border-radius: 14px;
-    font-size: 0.95rem;
+    font-size: 1.02rem;
     font-weight: 600;
     cursor: pointer;
     text-align: center;
@@ -483,16 +508,38 @@ footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 11px 12px;
-    border-radius: 12px;
+    padding: 13px 14px;
+    min-height: 60px;
+    border-radius: 14px;
     background: var(--bg);
     border: 1px solid transparent;
-    gap: 8px;
+    gap: 10px;
     transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 .search-item.clickable { cursor: pointer; }
 .search-item.clickable:hover { border-color: var(--accent); }
-.action-icon { font-size: 1.4rem; font-weight: bold; padding-right: 5px; width: 24px; text-align: center; cursor: pointer; flex-shrink: 0; }
+.action-icon {
+    font-size: 1.65rem;
+    font-weight: 700;
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+    line-height: 1;
+    transition: background-color 0.15s ease, transform 0.12s ease;
+    touch-action: manipulation;
+}
+.action-icon:hover {
+    background: rgba(255, 69, 58, 0.1);
+}
+.action-icon:active {
+    transform: scale(0.9);
+    background: rgba(255, 69, 58, 0.18);
+}
 
 .search-item.dragging {
     opacity: 0.42;
@@ -528,9 +575,14 @@ footer {
 
 .drag-handle {
     cursor: grab;
-    font-size: 1.25rem;
+    font-size: 1.45rem;
     color: var(--text-muted);
-    padding: 0 8px 0 2px;
+    width: 32px;
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 4px;
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
@@ -618,7 +670,7 @@ footer {
 .keypad-container.is-closing {
     transform: translateX(-50%) translateY(100%);
     opacity: 0;
-    pointer-events: none;
+    pointer-events: auto;
     transition: transform 0.4s cubic-bezier(0.25, 0.9, 0.3, 1), opacity 0.35s ease;
 }
 
@@ -698,15 +750,16 @@ footer {
     border-radius: 12px;
     background: var(--bg);
     color: var(--text);
-    font-size: 1.35rem;
+    font-size: 1.4rem;
     font-weight: 600;
-    padding: 12px 0;
+    padding: 13px 0;
+    min-height: 52px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     transition: transform 0.08s ease, background-color 0.15s ease;
-    touch-action: manipulation;
+    touch-action: none;
 }
 
 .key-btn:active {
@@ -1721,14 +1774,17 @@ footer {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 8px;
-    padding: 4px 8px;
-    font-size: 0.85rem;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 6px;
+    font-size: 0.95rem;
     cursor: pointer;
     color: var(--text-muted);
     display: inline-flex;
     align-items: center;
     justify-content: center;
     transition: all 0.15s ease;
+    touch-action: manipulation;
 }
 
 .search-item-btn:hover {
@@ -2764,7 +2820,8 @@ footer {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 9px 12px 9px 34px;
+    padding: 12px 14px 12px 36px;
+    min-height: 48px;
     cursor: pointer;
     transition: background-color 0.15s ease;
     user-select: none;
@@ -2883,15 +2940,16 @@ footer {
     background: var(--bg);
     border: 1px solid var(--border);
     color: var(--text-muted);
-    font-size: 0.85rem;
-    width: 28px;
-    height: 28px;
+    font-size: 0.95rem;
+    width: 34px;
+    height: 34px;
     cursor: pointer;
-    border-radius: 7px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.15s ease;
+    touch-action: manipulation;
 }
 
 .subgroup-edit-btn:hover {
@@ -2907,15 +2965,16 @@ footer {
     background: var(--bg);
     border: 1px solid var(--border);
     color: var(--text-muted);
-    width: 28px;
-    height: 28px;
+    width: 34px;
+    height: 34px;
     cursor: pointer;
-    border-radius: 7px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.15s ease;
     padding: 0;
+    touch-action: manipulation;
 }
 
 .subgroup-delete-btn:hover {
@@ -2932,8 +2991,8 @@ footer {
     background: var(--card);
     border: 1px solid var(--border);
     border-radius: 8px;
-    width: 32px;
-    height: 32px;
+    width: 36px;
+    height: 36px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -2941,6 +3000,7 @@ footer {
     color: var(--text-muted);
     transition: all 0.15s ease;
     padding: 0;
+    touch-action: manipulation;
 }
 
 .variant-btn-delete:hover {
@@ -3194,17 +3254,21 @@ footer {
     }
 
     .share-btn {
-        padding: 2px;
+        width: 34px;
+        height: 34px;
+        padding: 0;
     }
 
     .share-btn svg {
-        width: 13px;
-        height: 13px;
+        width: 16px;
+        height: 16px;
     }
 
     .clear-btn {
-        font-size: 1.15rem;
-        padding: 0 2px;
+        width: 34px;
+        height: 34px;
+        font-size: 1.4rem;
+        padding: 0;
     }
 
     .footer-links {
@@ -3238,17 +3302,21 @@ footer {
     }
 
     .share-btn {
-        padding: 1px;
+        width: 32px;
+        height: 32px;
+        padding: 0;
     }
 
     .share-btn svg {
-        width: 12px;
-        height: 12px;
+        width: 15px;
+        height: 15px;
     }
 
     .clear-btn {
-        font-size: 1.05rem;
-        padding: 0 1px;
+        width: 32px;
+        height: 32px;
+        font-size: 1.35rem;
+        padding: 0;
     }
 }
 
