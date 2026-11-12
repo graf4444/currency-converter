@@ -9,6 +9,7 @@ The project adheres to [Semantic Versioning (SemVer)](https://semver.org/).
 
 ## 📑 Table of Contents
 
+- [v1.25.0 (2026-11-12) — Keypad Tap-Through Fix, Instant Deletions & Mobile Layout Polish](#v1250-2026-11-12)
 - [v1.24.0 (2026-11-10) — Touch Responsiveness, Zero-Delay Startup & In-Place DOM Sync](#v1240-2026-11-10)
 - [v1.23.0 (2026-11-04) — Interactive Easter Eggs, Adaptive Rate Pills & UI Refinements](#v1230-2026-11-04)
 - [v1.22.0 (2026-11-01) — Custom Exchange Rates, Mobile UI Fixes & Smooth Drag and Drop](#v1220-2026-11-01)
@@ -20,6 +21,26 @@ The project adheres to [Semantic Versioning (SemVer)](https://semver.org/).
 - [v1.13.0 – v1.9.0 — Custom Keypad, Splash Screen & Themes](#v1130--v190)
 - [v1.6.0 (2026-10-25) — PWA Installation Modal & Private Analytics](#v160-2026-10-25)
 - [v1.0.0 (2026-10-21) — Initial Stable Release](#v100-2026-10-21)
+
+---
+
+## [v1.25.0] — 2026-11-12
+
+This release eliminates background tap-through ghost clicks when closing the virtual keypad, makes deletion actions across calculator and list views 100% reliable and instantaneous, and polishes mobile UI typography and compact touch targets.
+
+### 🛡️ 1. Ghost Tap Elimination & Keypad Tap-Through Protection
+- **Capture-Phase Click Shield:** Implemented `blockGhostClicks(450)` on `document` during keypad dismiss animation. Synthesized mobile pointerup and click events are caught and dropped in the capture phase before reaching background elements.
+- **Protected Closing State:** Kept `pointer-events: auto` on `.keypad-container.is-closing`, ensuring that lifting a finger off the `=` or close button lands harmlessly on the closing keypad rather than clicking underlying buttons (such as "+ Add Currency" `#ui-add-btn` or currency cards).
+
+### ⚡ 2. Instant Deletions & Reliable Touch Targets
+- **Fail-Safe Backspace (`⌫`):** Resolved an issue where virtual keypad backspace failed when mobile browsers reset cursor selection to `0` on blur. Backspace now reliably deletes the last character on first tap whenever text exists.
+- **Extended Hit Boxes:** Added pseudo-element hit-area expansion (`::before`) to `.share-btn`, `.clear-btn` (`×`), and `.action-icon` (`−`), giving each button a 36–40px invisible tap target while keeping compact visual dimensions.
+- **Zero-Latency Touch Actions:** Added direct `pointerdown` response with haptic feedback to clear and delete controls, and applied `touch-action: none;` to all virtual keypad buttons to avoid gesture delays.
+
+### 📐 3. Refined Mobile Geometry & Typography
+- **Balanced Input Typography:** Reduced `.currency-input` font size to a comfortable `1.15rem` and recalibrated dynamic `adjustFontSize()` to prevent right-hand numbers from dominating the card.
+- **Compact Action Icons:** Arranged share and clear buttons tightly (`gap: 2px`, `28×28px`) to maximize available space for currency codes, names, and custom rate pills.
+- **Harmonized Flag & Row Sizing:** Unified emoji flag size (`1.65rem` / `32px`) and balanced row padding across currency cards and the management modal.
 
 ---
 
